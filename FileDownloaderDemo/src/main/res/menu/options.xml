@@ -1,0 +1,19 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android" >
+
+    <item
+        android:id="@+id/optionsNew"
+        android:orderInCategory="100"
+        android:showAsAction="never"
+        android:title="新建下载"/>
+    <item
+        android:id="@+id/optionsNews"
+        android:orderInCategory="100"
+        android:showAsAction="never"
+        android:title="新建下载（批量）"/>
+    <item
+        android:id="@+id/optionsNewWithDetect"
+        android:orderInCategory="100"
+        android:showAsAction="never"
+        android:title="新建下载（自定义保存路径和名称）"/>
+
+</menu>
