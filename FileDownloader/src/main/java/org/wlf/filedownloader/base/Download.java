@@ -1,18 +1,19 @@
 package org.wlf.filedownloader.base;
 
 /**
+ * download
+ * <br/>
  * 下载接口
- * 
- * @author wlf
- * 
+ *
+ * @author wlf(Andy)
+ * @email 411086563@qq.com
  */
 public interface Download {
 
-	/**
-	 * 下载
-	 * 
-	 * @throws FailException
-	 *             下载过程中遇到的任何异常
-	 */
-	void download() throws FailException;
+    /**
+     * download
+     *
+     * @throws FailException any fail exception during download
+     */
+    void download() throws FailException;
 }

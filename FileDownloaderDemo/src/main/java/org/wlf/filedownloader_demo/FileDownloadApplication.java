@@ -1,49 +1,54 @@
 package org.wlf.filedownloader_demo;
 
-import java.io.File;
+import android.app.Application;
+import android.os.Environment;
 
 import org.wlf.filedownloader.FileDownloadConfiguration;
 import org.wlf.filedownloader.FileDownloadConfiguration.Builder;
 import org.wlf.filedownloader.FileDownloadManager;
 
-import android.app.Application;
-import android.os.Environment;
+import java.io.File;
 
-/** 应用的Application */
+/**
+ * Demo Test Application
+ * <br/>
+ * 测试应用的Application
+ *
+ * @author wlf(Andy)
+ * @email 411086563@qq.com
+ */
 public class FileDownloadApplication extends Application {
 
-	@Override
-	public void onCreate() {
-		super.onCreate();
+    @Override
+    public void onCreate() {
+        super.onCreate();
 
-		// 初始化FileDownloadManager
-		initFileDownloadManager();
-	}
+        // init FileDownloadManager
+        initFileDownloadManager();
+    }
 
-	@Override
-	public void onTerminate() {
-		super.onTerminate();
+    @Override
+    public void onTerminate() {
+        super.onTerminate();
 
-		// 释放FileDownloadManager
-		releaseFileDownloadManager();
-	}
+        // release FileDownloadManager
+        releaseFileDownloadManager();
+    }
 
-	// 初始化
-	private void initFileDownloadManager() {
-		// 1、初始化FileDownloadConfiguration.Buider
-		Builder config = new FileDownloadConfiguration.Builder(this);
-		// 2、配置FileDownloadConfiguration.Buider
-		config.configFileDownloadDir(Environment.getExternalStorageDirectory().getAbsolutePath() + File.separator
-				+ "FileDownload");// 配置下载路径
-		config.configDownloadTaskSize(2);// 同时下载两个任务
-		FileDownloadConfiguration configuration = config.build();// 创建FileDownloadConfiguration
-		// 3、初始化FileDownloadManager
-		FileDownloadManager.getInstance(this).init(configuration);
-	}
+    // init FileDownloadManager
+    private void initFileDownloadManager() {
+        // 1.init FileDownloadConfiguration.Builder
+        Builder config = new FileDownloadConfiguration.Builder(this);
+        // 2.config FileDownloadConfiguration.Builder
+        config.configFileDownloadDir(Environment.getExternalStorageDirectory().getAbsolutePath() + File.separator + "FileDownload");// config download path
+        config.configDownloadTaskSize(2);// allow 2 download task at the same time
+        FileDownloadConfiguration configuration = config.build();// build FileDownloadConfiguration
+        // 3.init FileDownloadManager
+        FileDownloadManager.getInstance(this).init(configuration);
+    }
 
-	// 释放
-	private void releaseFileDownloadManager() {
-		// 释放FileDownloadManager资源
-		FileDownloadManager.getInstance(this).release();
-	}
+    // release FileDownloadManager
+    private void releaseFileDownloadManager() {
+        FileDownloadManager.getInstance(this).release();
+    }
 }

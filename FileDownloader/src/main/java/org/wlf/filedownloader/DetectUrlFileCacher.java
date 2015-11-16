@@ -1,68 +1,72 @@
 package org.wlf.filedownloader;
 
+import org.wlf.filedownloader.util.UrlUtil;
+
 import java.util.HashMap;
 import java.util.Map;
 
-import org.wlf.filedownloader.util.UrlUtil;
-
 /**
+ * Detect net File
+ * <br/>
  * 探测文件缓存器
- * 
- * @author wlf
- * 
+ *
+ * @author wlf(Andy)
+ * @email 411086563@qq.com
  */
 public class DetectUrlFileCacher {
 
-	private Map<String, DetectUrlFileInfo> mDetectUrlFileInfoMap = new HashMap<String, DetectUrlFileInfo>();// 探测的文件信息（内存缓存）
+    private Map<String, DetectUrlFileInfo> mDetectUrlFileInfoMap = new HashMap<String, DetectUrlFileInfo>();// 探测的文件信息（内存缓存）
 
-	private Object mModifyLock = new Object();// 修改锁
+    private Object mModifyLock = new Object();// lock
 
-	/**
-	 * 更新探测文件信息
-	 * 
-	 * @param detectUrlFileInfo
-	 * @return true表示更新成功
-	 */
-	public boolean addOrUpdateDetectUrlFile(DetectUrlFileInfo detectUrlFileInfo) {
+    /**
+     * update DetectUrlFile
+     *
+     * @param detectUrlFileInfo DetectUrlFile
+     * @return true means update succeed
+     */
+    public boolean addOrUpdateDetectUrlFile(DetectUrlFileInfo detectUrlFileInfo) {
 
-		if (detectUrlFileInfo == null) {
-			return false;
-		}
+        if (detectUrlFileInfo == null) {
+            return false;
+        }
 
-		String url = detectUrlFileInfo.getUrl();
+        String url = detectUrlFileInfo.getUrl();
 
-		if (!UrlUtil.isUrl(url)) {
-			return false;
-		}
+        if (!UrlUtil.isUrl(url)) {
+            return false;
+        }
 
-		DetectUrlFileInfo urlFileInfo = mDetectUrlFileInfoMap.get(url);
-		synchronized (mModifyLock) {// 同步
-			if (urlFileInfo != null) {
-				// 更新
-				urlFileInfo.update(detectUrlFileInfo);
-				return true;
-			} else {
-				// 添加
-				mDetectUrlFileInfoMap.put(url, detectUrlFileInfo);
-				return true;
-			}
-		}
-	}
+        DetectUrlFileInfo urlFileInfo = mDetectUrlFileInfoMap.get(url);
+        synchronized (mModifyLock) {// lock
+            if (urlFileInfo != null) {
+                // update
+                urlFileInfo.update(detectUrlFileInfo);
+                return true;
+            } else {
+                // add
+                mDetectUrlFileInfoMap.put(url, detectUrlFileInfo);
+                return true;
+            }
+        }
+    }
 
-	/**
-	 * 根据url获取缓存的探测文件
-	 * 
-	 * @param url
-	 * @return 获取探测文件
-	 */
-	DetectUrlFileInfo getDetectUrlFile(String url) {
-		return mDetectUrlFileInfoMap.get(url);
-	}
+    /**
+     * get DetectUrlFile by url
+     *
+     * @param url file url
+     * @return DetectUrlFile
+     */
+    DetectUrlFileInfo getDetectUrlFile(String url) {
+        return mDetectUrlFileInfoMap.get(url);
+    }
 
-	/** 释放资源 */
-	void release() {
-		synchronized (mModifyLock) {// 同步
-			mDetectUrlFileInfoMap.clear();
-		}
-	}
+    /**
+     * release cache
+     */
+    void release() {
+        synchronized (mModifyLock) {// 同步
+            mDetectUrlFileInfoMap.clear();
+        }
+    }
 }

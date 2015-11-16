@@ -1,21 +1,25 @@
 package org.wlf.filedownloader.base;
 
 /**
+ * interface for those can stop classes
+ * <br/>
  * 可停止接口
- * 
- * @author wlf
- * 
+ *
+ * @author wlf(Andy)
+ * @email 411086563@qq.com
  */
 public interface Stoppable {
 
-	/** 停止 */
-	void stop();
+    /**
+     * stop
+     */
+    void stop();
 
-	/**
-	 * 是否已经停止了
-	 * 
-	 * @return true表示已停止，false表示没有停止
-	 */
-	boolean isStopped();
+    /**
+     * whether is stopped
+     *
+     * @return true means stopped
+     */
+    boolean isStopped();
 
 }

@@ -1,302 +1,294 @@
 package org.wlf.filedownloader.http_downlaoder;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.HttpURLConnection;
-import java.net.SocketTimeoutException;
+import android.text.TextUtils;
+import android.util.Log;
 
 import org.wlf.filedownloader.base.Download;
 import org.wlf.filedownloader.base.FailException;
 import org.wlf.filedownloader.helper.HttpConnectionHelper;
 
-import android.text.TextUtils;
-import android.util.Log;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.SocketTimeoutException;
 
 /**
+ * http file download impl
+ * <br/>
  * Http下载器
- * 
+ *
  * @author wlf
- * 
  */
 public class HttpDownloader implements Download {
 
-	/** LOG TAG */
-	private static final String TAG = HttpDownloader.class.getSimpleName();
+    /**
+     * LOG TAG
+     */
+    private static final String TAG = HttpDownloader.class.getSimpleName();
 
-	private static final int MAX_REDIRECT_COUNT = 5;// 重定向次数
-	private static final int CONNECT_TIMEOUT = 10 * 1000;// 默认连接超时，10秒超时
-	private static final String CHARSET = "UTF-8";// 请求编码
+    private static final int MAX_REDIRECT_COUNT = 5;
+    private static final int CONNECT_TIMEOUT = 10 * 1000;// 10s
+    private static final String CHARSET = "UTF-8";
 
-	private String mUrl;// 下载资源连接
-	private Range mRange;// 下载的区域
-	private String mAcceptRangeType;// 接收的分段下载范围类型
-	private String mETag;// 下载资源对应的eTag
-	private int mConnectTimeout = CONNECT_TIMEOUT;// 连接超时
+    private String mUrl;
+    private Range mRange;// download data range
+    private String mAcceptRangeType;// accept range type
+    private String mETag;// http file eTag
+    private int mConnectTimeout = CONNECT_TIMEOUT;
 
-	private OnHttpDownloadLisener mOnHttpDownloadLisener;// Http下载监听器
+    private OnHttpDownloadListener mOnHttpDownloadListener;
 
-	/**
-	 * 构建Http资源下载器，从头开始下载整个资源
-	 * 
-	 * @param url
-	 *            下载地址
-	 */
-	public HttpDownloader(String url) {
-		this(url, null, null);
-	}
+    /**
+     * constructor of HttpDownloader,the range is from the beginning to the end
+     *
+     * @param url url path
+     */
+    public HttpDownloader(String url) {
+        this(url, null, null);
+    }
 
-	/**
-	 * 构建Http资源下载器，从指定range进行断点续传并严格检查acceptRangeType，若acceptRangeType不一致则无法下载
-	 * 
-	 * @param url
-	 *            下载地址
-	 * @param range
-	 *            下载范围
-	 * @param acceptRangeType
-	 *            接收的分段下载范围类型
-	 */
-	public HttpDownloader(String url, Range range, String acceptRangeType) {
-		this(url, range, acceptRangeType, null);
-	}
+    /**
+     * constructor of HttpDownloader,will check range and acceptRangeType
+     *
+     * @param url             url path
+     * @param range           data range
+     * @param acceptRangeType accept range type
+     */
+    public HttpDownloader(String url, Range range, String acceptRangeType) {
+        this(url, range, acceptRangeType, null);
+    }
 
-	/**
-	 * 构建Http资源下载器，从指定range进行断点续传并严格检查acceptRangeType和eTag，
-	 * 若acceptRangeType或eTag不一致则无法下载
-	 * 
-	 * @param url
-	 *            下载地址
-	 * @param range
-	 *            下载范围
-	 * @param acceptRangeType
-	 *            接收的分段下载范围类型
-	 * @param eTag
-	 *            资源eTag
-	 */
-	public HttpDownloader(String url, Range range, String acceptRangeType, String eTag) {
-		this.mUrl = url;
-		this.mRange = range;
-		this.mAcceptRangeType = acceptRangeType;
-		this.mETag = eTag;
-	}
+    /**
+     * constructor of HttpDownloader,will check range,acceptRangeType and eTag
+     *
+     * @param url             url path
+     * @param range           data range
+     * @param acceptRangeType accept range type
+     * @param eTag            file eTag
+     */
+    public HttpDownloader(String url, Range range, String acceptRangeType, String eTag) {
+        this.mUrl = url;
+        this.mRange = range;
+        this.mAcceptRangeType = acceptRangeType;
+        this.mETag = eTag;
+    }
 
-	/**
-	 * 设置下载Http下载监听器
-	 * 
-	 * @param onHttpDownloadLisener
-	 */
-	public void setOnHttpDownloadLisener(OnHttpDownloadLisener onHttpDownloadLisener) {
-		this.mOnHttpDownloadLisener = onHttpDownloadLisener;
-	}
+    /**
+     * set HttpDownloadListener
+     *
+     * @param onHttpDownloadListener HttpDownloadListener
+     */
+    public void setOnHttpDownloadListener(OnHttpDownloadListener onHttpDownloadListener) {
+        this.mOnHttpDownloadListener = onHttpDownloadListener;
+    }
 
-	@Override
-	public void download() throws HttpDownloadException {
+    @Override
+    public void download() throws HttpDownloadException {
 
-		String url = mUrl;// url
+        String url = mUrl;// url
 
-		HttpURLConnection conn = null;
-		InputStream inputStream = null;
+        HttpURLConnection conn = null;
+        InputStream inputStream = null;
 
-		try {
-			// 4.0后可能需要加上，但加上后效率很不好
-			// StrictMode.setThreadPolicy(new
-			// StrictMode.ThreadPolicy.Builder().detectDiskReads().detectDiskWrites()
-			// .detectNetwork().penaltyLog().build());
+        try {
+            conn = HttpConnectionHelper.createDownloadFileConnection(url, mConnectTimeout, CHARSET, mRange);
 
-			conn = HttpConnectionHelper.createDownloadFileConnection(url, mConnectTimeout, CHARSET, mRange);
+            int redirectCount = 0;
+            while (conn != null && conn.getResponseCode() / 100 == 3 && redirectCount < MAX_REDIRECT_COUNT) {
+                conn = HttpConnectionHelper.createDownloadFileConnection(conn.getHeaderField("Location"), mConnectTimeout, CHARSET, mRange);
+                redirectCount++;
+            }
 
-			int redirectCount = 0;
-			while (conn != null && conn.getResponseCode() / 100 == 3 && redirectCount < MAX_REDIRECT_COUNT) {
-				conn = HttpConnectionHelper.createDownloadFileConnection(conn.getHeaderField("Location"),
-						mConnectTimeout, CHARSET, mRange);
-				redirectCount++;
-			}
+            Log.d(TAG, "1、准备下载，重定向：" + redirectCount + "次" + "，最大重定向次数：" + MAX_REDIRECT_COUNT + "，url：" + url);
 
-			Log.d(TAG, "1、准备下载，重定向：" + redirectCount + "次" + "，最大重定向次数：" + MAX_REDIRECT_COUNT + "，url：" + url);
+            if (redirectCount > MAX_REDIRECT_COUNT) {
+                // error over max redirect
+                throw new HttpDownloadException("over max redirect:" + MAX_REDIRECT_COUNT + "!", HttpDownloadException.TYPE_REDIRECT_COUNT_OVER_LIMITS);
+            }
 
-			if (redirectCount > MAX_REDIRECT_COUNT) {
-				// error 重定向次数超过限制
-				throw new HttpDownloadException("重定向次数已经超过设置的最大限制次数：" + MAX_REDIRECT_COUNT + "！",
-						HttpDownloadException.TYPE_REDIRECT_COUNT_OVER_LIMITS);
-			}
+            // 1.check ResponseCode
+            int responseCode = conn.getResponseCode();
 
-			// 1、检查响应ResponseCode
-			int responseCode = conn.getResponseCode();
+            if (responseCode == HttpURLConnection.HTTP_OK || responseCode == HttpURLConnection.HTTP_PARTIAL) {
 
-			if (responseCode == HttpURLConnection.HTTP_OK || responseCode == HttpURLConnection.HTTP_PARTIAL) {
+                // 2.check contentLength
+                int contentLength = conn.getContentLength();
 
-				// 2、检查contentLength
-				int contentLength = conn.getContentLength();
+                Log.d(TAG, "2、得到服务器返回的资源contentLength：" + contentLength + "，传入的range：" + mRange.toString() + "，url：" + url);
 
-				Log.d(TAG, "2、得到服务器返回的资源contentLength：" + contentLength + "，传入的range：" + mRange.toString() + "，url："
-						+ url);
+                if (contentLength <= 0) {
+                    // error content length illegal
+                    throw new HttpDownloadException("content length illegal,get url file failed!", HttpDownloadException.TYPE_RESOURCES_SIZE_ILLEGAL);
+                }
 
-				if (contentLength <= 0) {
-					// error 资源大小不合法
-					throw new HttpDownloadException("资源大小不合法，获取网络资源很可能失败！",
-							HttpDownloadException.TYPE_RESOURCES_SIEZ_ILLEGAL);
-				}
+                // 3.check eTag(whether file is changed)
+                if (!TextUtils.isEmpty(mETag)) {
+                    String eTag = conn.getHeaderField("ETag");
 
-				// 3、检查eTag（验证资源是否变化）
-				if (!TextUtils.isEmpty(mETag)) {
-					String eTag = conn.getHeaderField("ETag");
+                    Log.d(TAG, "3、得到服务器返回的资源eTag：" + eTag + "，传入的eTag：" + mETag + "，url：" + url);
 
-					Log.d(TAG, "3、得到服务器返回的资源eTag：" + eTag + "，传入的eTag：" + mETag + "，url：" + url);
+                    if (TextUtils.isEmpty(eTag) || !mETag.equals(eTag)) {
+                        // error eTag is not equal
+                        throw new HttpDownloadException("eTag is not equal,please re-download!", HttpDownloadException.TYPE_ETAG_CHANGED);
+                    }
+                }
 
-					if (TextUtils.isEmpty(eTag) || !mETag.equals(eTag)) {
-						// error eTag验证不通过
-						throw new HttpDownloadException("服务器资源已变化，无法支撑断点续传，请重新下载整个新资源！",
-								HttpDownloadException.TYPE_ETAG_CHANGED);
-					}
-				}
+                // range is illegal,that means need download whole file from range 0 to file size
+                if (!Range.isLegal(mRange) || (mRange != null && mRange.getLength() > contentLength)) {
+                    mRange = new Range(0, contentLength);// FIXME whether notify?
+                }
+                // use range to continue download
+                else {
+                    // 4.check contentRange and acceptRangeType
+                    if (mRange != null && !TextUtils.isEmpty(mAcceptRangeType)) {
 
-				// 不期望断点续传，range为空或者不在合法的区域则下载整个资源（因为在创建连接的时候不会传递range给服务器）
-				if (!Range.isLegal(mRange) || (mRange != null && mRange.getLength() > contentLength)) {
-					mRange = new Range(0, contentLength);// FIXME 需要通知外部？
-				}
-				// 期望断点续传
-				else {
-					// 4、检查contentRange和acceptRangeType（若需要断点续传的话）
-					if (mRange != null && !TextUtils.isEmpty(mAcceptRangeType)) {
+                        boolean isRangeValidateSucceed = false;
 
-						boolean isRangeValidateSucceed = false;
+                        String contentRange = conn.getHeaderField("Content-Range");
+                        // get ContentRange
+                        ContentRangeInfo contentRangeInfo = ContentRangeInfo.getContentRangeInfo(contentRange);
+                        if (contentRangeInfo != null) {
+                            Range serverResponseRange = new Range(contentRangeInfo.startPos, contentRangeInfo.endPos);
+                            if (mRange.equals(serverResponseRange) && mAcceptRangeType.equals(contentRangeInfo.contentType) && serverResponseRange.getLength() == contentLength) {
+                                // range validate pass
+                                isRangeValidateSucceed = true;
+                            }
+                        }
 
-						String contentRange = conn.getHeaderField("Content-Range");
-						// 解析ContentRange
-						ContentRangeInfo contentRangeInfo = ContentRangeInfo.getContentRangeInfo(contentRange);
-						if (contentRangeInfo != null) {
-							Range serverResponseRange = new Range(contentRangeInfo.startPos, contentRangeInfo.endPos);
-							if (mRange.equals(serverResponseRange)
-									&& mAcceptRangeType.equals(contentRangeInfo.contentType)
-									&& serverResponseRange.getLength() == contentLength) {
-								// 验证通过
-								isRangeValidateSucceed = true;
-							}
-						}
+                        if (!isRangeValidateSucceed) {
+                            // error contentRange validate failed
+                            throw new HttpDownloadException("contentRange validate failed!", HttpDownloadException.TYPE_CONTENT_RANGE_VALIDATE_FAIL);
+                        }
+                    }
+                }
 
-						if (!isRangeValidateSucceed) {
-							// error contentRange验证不通过
-							throw new HttpDownloadException("无法完成请求的断点续传范围，contentRange验证不通过！",
-									HttpDownloadException.TYPE_CONTENT_RANGE_VALIDATE_FAIL);
-						}
-					}
-				}
+                // get server InputStream
+                InputStream serverInputStream = conn.getInputStream();
 
-				// 获取服务器返回的输入流
-				InputStream serverInputStream = conn.getInputStream();
+                // wrap serverInputStream
+                inputStream = new ContentLengthInputStream(serverInputStream, contentLength);
 
-				// 包装服务器返回的输入流
-				inputStream = new ContentLengthInputStream(serverInputStream, contentLength);
+                Log.d(TAG, "4、准备处理数据，获取服务器返回的资源长度为：" + contentLength + "，获取服务器返回的输入流长度为：" + inputStream.available() + "，需要处理的区域为：" + mRange.toString() + "，url：" + url);
 
-				Log.d(TAG, "4、准备处理数据，获取服务器返回的资源长度为：" + contentLength + "，获取服务器返回的输入流长度为：" + inputStream.available()
-						+ "，需要处理的区域为：" + mRange.toString() + "，url：" + url);
+                // notifyDownloadConnected
+                notifyDownloadConnected(inputStream, mRange.startPos);
+            }
+            // ResponseCode error
+            else {
+                // error ResponseCode error
+                throw new HttpDownloadException("ResponseCode:" + responseCode + " error,can not read data!", HttpDownloadException.TYPE_RESPONSE_CODE_ERROR);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            // network timeout
+            if (e instanceof SocketTimeoutException) {
+                // error network timeout
+                throw new HttpDownloadException("network timeout!", e, HttpDownloadException.TYPE_NETWORK_TIMEOUT);
+            } else if (e instanceof HttpDownloadException) {
+                // HttpDownloadException
+                throw (HttpDownloadException) e;
+            } else {
+                // other Exception
+                throw new HttpDownloadException(e);
+            }
+        } finally {
+            // close inputStream
+            if (inputStream != null) {
+                try {
+                    inputStream.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            // close connection
+            if (conn != null) {
+                conn.disconnect();
+            }
 
-				// 通知已经下载
-				notifyDownloadConnected(inputStream, mRange.startPos);
-			}
-			// ResponseCode验证不通过
-			else {
-				// error ResponseCode验证不通过
-				throw new HttpDownloadException("服务器返回的ResponseCode：" + responseCode + "无法读取数据！",
-						HttpDownloadException.TYPE_RESPONSE_CODE_ERROR);
-			}
-		} catch (Exception e) {
-			// 请求网络超时
-			if (e instanceof SocketTimeoutException) {
-				// error 请求网络超时
-				throw new HttpDownloadException("请求网络超时！", e, HttpDownloadException.TYPE_NETWORK_TIMEOUT);
-			} else {
-				// 将异常转抛出去
-				throw new HttpDownloadException(e);
-			}
-		} finally {
-			// 关闭输入流
-			if (inputStream != null) {
-				try {
-					inputStream.close();
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-			}
-			// 关闭联网
-			if (conn != null) {
-				conn.disconnect();
-			}
+            Log.d(TAG, "5、下载已结束" + "，url：" + url);
+        }
 
-			Log.d(TAG, "5、下载已结束" + "，url：" + url);
-		}
+    }
 
-	}
+    // notifyDownloadConnected
+    private void notifyDownloadConnected(InputStream inputStream, int startPosInTotal) {
+        if (mOnHttpDownloadListener != null) {
+            mOnHttpDownloadListener.onDownloadConnected(inputStream, startPosInTotal);
+        }
+    }
 
-	// 通知下载已连接
-	private void notifyDownloadConnected(InputStream inputStream, int startPosInTotal) {
-		if (mOnHttpDownloadLisener != null) {
-			mOnHttpDownloadLisener.onDownloadConnected(inputStream, mRange.startPos);
-		}
-	}
+    /**
+     * HttpDownloadException
+     */
+    public static class HttpDownloadException extends FailException {
 
-	/** Http下载异常 */
-	public static class HttpDownloadException extends FailException {
+        private static final long serialVersionUID = -1264975040094495002L;
 
-		private static final long serialVersionUID = -1264975040094495002L;
+        /**
+         * http redirect count over limits
+         */
+        public static final String TYPE_REDIRECT_COUNT_OVER_LIMITS = HttpDownloadException.class.getName() + "_TYPE_REDIRECT_COUNT_OVER_LIMITS";
+        /**
+         * resources size illegal
+         */
+        public static final String TYPE_RESOURCES_SIZE_ILLEGAL = HttpDownloadException.class.getName() + "_TYPE_RESOURCES_SIZE_ILLEGAL";
+        /**
+         * eTag is not equal
+         */
+        public static final String TYPE_ETAG_CHANGED = HttpDownloadException.class.getName() + "_TYPE_ETAG_CHANGED";
+        /**
+         * contentRange validate fail
+         */
+        public static final String TYPE_CONTENT_RANGE_VALIDATE_FAIL = HttpDownloadException.class.getName() + "_TYPE_CONTENT_RANGE_VALIDATE_FAIL";
+        /**
+         * ResponseCode error,can not read data
+         */
+        public static final String TYPE_RESPONSE_CODE_ERROR = HttpDownloadException.class.getName() + "_TYPE_RESPONSE_CODE_ERROR";
+        /**
+         * network timeout
+         */
+        public static final String TYPE_NETWORK_TIMEOUT = HttpDownloadException.class.getName() + "_TYPE_NETWORK_TIMEOUT";
 
-		/** 重定向次数超过限制 */
-		public static final String TYPE_REDIRECT_COUNT_OVER_LIMITS = HttpDownloadException.class.getName()
-				+ "_TYPE_REDIRECT_COUNT_OVER_LIMITS";
-		/** 资源大小不合法 */
-		public static final String TYPE_RESOURCES_SIEZ_ILLEGAL = HttpDownloadException.class.getName()
-				+ "_TYPE_RESOURCES_SIEZ_ILLEGAL";
-		/** eTag验证不通过 */
-		public static final String TYPE_ETAG_CHANGED = HttpDownloadException.class.getName() + "_TYPE_ETAG_CHANGED";
-		/** contentRange验证不通过 */
-		public static final String TYPE_CONTENT_RANGE_VALIDATE_FAIL = HttpDownloadException.class.getName()
-				+ "_TYPE_CONTENT_RANGE_VALIDATE_FAIL";
-		/** responseCode验证不通过 */
-		public static final String TYPE_RESPONSE_CODE_ERROR = HttpDownloadException.class.getName()
-				+ "_TYPE_RESPONSE_CODE_ERROR";
-		/** 网络超时 */
-		public static final String TYPE_NETWORK_TIMEOUT = HttpDownloadException.class.getName()
-				+ "_TYPE_NETWORK_TIMEOUT";
+        public HttpDownloadException(String detailMessage, String type) {
+            super(detailMessage, type);
+        }
 
-		public HttpDownloadException(String detailMessage, String type) {
-			super(detailMessage, type);
-		}
+        public HttpDownloadException(String detailMessage, Throwable throwable, String type) {
+            super(detailMessage, throwable, type);
+        }
 
-		public HttpDownloadException(String detailMessage, Throwable throwable, String type) {
-			super(detailMessage, throwable, type);
-		}
+        public HttpDownloadException(Throwable throwable) {
+            super(throwable);
+        }
 
-		public HttpDownloadException(Throwable throwable) {
-			super(throwable);
-		}
+        @Override
+        protected void onInitTypeWithThrowable(Throwable throwable) {
+            super.onInitTypeWithThrowable(throwable);
 
-		@Override
-		protected void onInitTypeWithThrowable(Throwable throwable) {
-			super.onInitTypeWithThrowable(throwable);
+            if (isTypeInit() || throwable == null) {
+                return;
+            }
 
-			if (isTypeInit() || throwable == null) {
-				return;
-			}
+            if (throwable instanceof SocketTimeoutException) {
+                setType(TYPE_NETWORK_TIMEOUT);
+            }
+        }
+    }
 
-			if (throwable instanceof SocketTimeoutException) {
-				setType(TYPE_NETWORK_TIMEOUT);
-			}
-		}
-	}
+    /**
+     * OnHttpDownloadListener
+     */
+    public interface OnHttpDownloadListener {
 
-	/** Http下载监听器 */
-	public interface OnHttpDownloadLisener {
-
-		/**
-		 * 下载已连接
-		 * 
-		 * @param inputStream
-		 *            下载输入流
-		 * @param startPosInTotal
-		 *            该参数是输入流位于总长度的起始点。
-		 *            <p>
-		 *            |(totalStart)----|(startPosInTotal,inputStream
-		 *            start)-----|(inputStream end)------|(totalEnd)
-		 */
-		void onDownloadConnected(InputStream inputStream, int startPosInTotal);
-	}
+        /**
+         * the download connected
+         *
+         * @param inputStream     download inputStream
+         * @param startPosInTotal the start position of inputStream start to save in total data
+         *                        <p/>
+         *                        |(0,totalStart)----|(startPosInTotal,inputStream start)---
+         *                        |(inputStream.length,inputStream end)----|(fileTotalSize,totalEnd)
+         */
+        void onDownloadConnected(InputStream inputStream, int startPosInTotal);
+    }
 }

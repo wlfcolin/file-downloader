@@ -3,25 +3,24 @@ package org.wlf.filedownloader.base;
 import java.io.InputStream;
 
 /**
+ * save data
+ * <br/>
  * 保存接口
- * 
- * @author wlf
- * 
+ *
+ * @author wlf(Andy)
+ * @email 411086563@qq.com
  */
 public interface Save {
 
-	/**
-	 * 保存数据
-	 * 
-	 * @param inputStream
-	 *            需要保存的输入流
-	 * @param startPosInTotal
-	 *            该参数是输入流位于总长度的起始点。
-	 *            <p>
-	 *            |(totalStart)----|(startPosInTotal,inputStream
-	 *            start)-----|(inputStream end)------|(totalEnd)
-	 * @throws FailException
-	 *             保存数据过程中遇到的任何异常
-	 */
-	void saveData(InputStream inputStream, int startPosInTotal) throws FailException;
+    /**
+     * save data
+     *
+     * @param inputStream     the inputStream data needed to save
+     * @param startPosInTotal the start position of inputStream start to save in total data
+     *                        <p/>
+     *                        |(0,totalStart)----|(startPosInTotal,inputStream start)---
+     *                        |(inputStream.length,inputStream end)----|(fileTotalSize,totalEnd)
+     * @throws FailException any fail exception during saving data
+     */
+    void saveData(InputStream inputStream, int startPosInTotal) throws FailException;
 }

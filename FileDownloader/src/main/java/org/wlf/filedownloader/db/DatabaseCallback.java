@@ -3,26 +3,26 @@ package org.wlf.filedownloader.db;
 import android.database.sqlite.SQLiteDatabase;
 
 /**
- * 数据库回调
- * 
- * @author wlf
- * 
+ * database callback
+ *
+ * @author wlf(Andy)
+ * @email 411086563@qq.com
  */
 public interface DatabaseCallback {
 
-	/**
-	 * 数据库创建
-	 * 
-	 * @param db
-	 */
-	void onCreate(SQLiteDatabase db);
+    /**
+     * the database has been created
+     *
+     * @param db SQLiteDatabase
+     */
+    void onCreate(SQLiteDatabase db);
 
-	/**
-	 * 数据库更新
-	 * 
-	 * @param db
-	 * @param oldVersion
-	 * @param newVersion
-	 */
-	void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion);
+    /**
+     * the database has been upgraded
+     *
+     * @param db         SQLiteDatabase
+     * @param oldVersion oldVersion
+     * @param newVersion newVersion
+     */
+    void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion);
 }
