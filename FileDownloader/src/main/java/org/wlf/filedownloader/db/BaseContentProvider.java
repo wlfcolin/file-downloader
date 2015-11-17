@@ -95,9 +95,7 @@ public abstract class BaseContentProvider extends ContentProvider {
         try {
             int flag = URI_MATCHER.match(uri);
             switch (flag) {
-                case ROW:
-                    //TODO
-                    break;
+                case ROW://TODO
                 case ROWS:
                     long id = mContentDbDaoImpl.insert(values);
                     resultUri = ContentUris.withAppendedId(uri, id);

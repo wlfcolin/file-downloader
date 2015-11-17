@@ -129,8 +129,8 @@ public class MainActivity extends Activity implements OnDetectUrlFileListener, O
         etUrl.setFocusable(true);
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("请输入要下载文件的地址").setView(etUrl).setNegativeButton("取消", null);
-        builder.setPositiveButton("确定", new DialogInterface.OnClickListener() {
+        builder.setTitle(getString(R.string.main__plaease_input_download_size)).setView(etUrl).setNegativeButton(getString(R.string.main__dialog_btn_cancel), null);
+        builder.setPositiveButton(getString(R.string.main__dialog_btn_confirm), new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int which) {
                 // file url
                 String url = etUrl.getText().toString().trim();
@@ -163,8 +163,8 @@ public class MainActivity extends Activity implements OnDetectUrlFileListener, O
         linearLayout.addView(etUrl3, params);
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("请输入要下载文件的所有地址").setView(linearLayout).setNegativeButton("取消", null);
-        builder.setPositiveButton("确定", new DialogInterface.OnClickListener() {
+        builder.setTitle(getString(R.string.main__plaease_input_download_size)).setView(linearLayout).setNegativeButton(getString(R.string.main__dialog_btn_cancel), null);
+        builder.setPositiveButton(getString(R.string.main__dialog_btn_confirm), new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int which) {
                 // file urls
                 String url1 = etUrl1.getText().toString().trim();
@@ -190,8 +190,8 @@ public class MainActivity extends Activity implements OnDetectUrlFileListener, O
         etUrlCustom.setFocusable(true);
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("请输入要下载文件的地址").setView(etUrlCustom).setNegativeButton("取消", null);
-        builder.setPositiveButton("确定", new DialogInterface.OnClickListener() {
+        builder.setTitle(getString(R.string.main__plaease_input_download_size)).setView(etUrlCustom).setNegativeButton(getString(R.string.main__dialog_btn_cancel), null);
+        builder.setPositiveButton(getString(R.string.main__dialog_btn_confirm), new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int which) {
                 // file url
                 String url = etUrlCustom.getText().toString().trim();
@@ -227,21 +227,21 @@ public class MainActivity extends Activity implements OnDetectUrlFileListener, O
     @Override
     public void onDetectNewDownloadFile(final String url, String fileName, final String saveDir, int fileSize) {
         final TextView tvFileDir = new TextView(MainActivity.this);
-        tvFileDir.setText("保存位置");
+        tvFileDir.setText(getString(R.string.main__save_path));
 
         final EditText etFileDir = new EditText(MainActivity.this);
         etFileDir.setText(saveDir);
         etFileDir.setFocusable(true);
 
         final TextView tvFileName = new TextView(MainActivity.this);
-        tvFileName.setText("保存名称");
+        tvFileName.setText(getString(R.string.main__save_file_name));
 
         final EditText etFileName = new EditText(MainActivity.this);
         etFileName.setText(fileName);
         etFileName.setFocusable(true);
 
         final TextView tvFileSize = new TextView(MainActivity.this);
-        tvFileSize.setText("文件大小：" + (fileSize / 1024f / 1024f) + " M");
+        tvFileSize.setText(getString(R.string.main__file_size) + (fileSize / 1024f / 1024f) + " M");
 
         LinearLayout linearLayout = new LinearLayout(MainActivity.this);
         linearLayout.setOrientation(LinearLayout.VERTICAL);
@@ -253,15 +253,15 @@ public class MainActivity extends Activity implements OnDetectUrlFileListener, O
         linearLayout.addView(tvFileSize, params);
 
         AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
-        builder.setTitle("请确认/修改保存路径和名称").setView(linearLayout).setNegativeButton("取消", null);
-        builder.setPositiveButton("确定", new DialogInterface.OnClickListener() {
+        builder.setTitle(getString(R.string.main__confirm_save_path_and_name)).setView(linearLayout).setNegativeButton(getString(R.string.main__dialog_btn_cancel), null);
+        builder.setPositiveButton(getString(R.string.main__dialog_btn_confirm), new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int which) {
                 // save file dir
                 String newFileDir = etFileDir.getText().toString().trim();
                 // save file name
                 String newFileName = etFileName.getText().toString().trim();
                 // create download
-                showToast("探测文件，新建下载：" + url);
+                showToast(getString(R.string.main__new_download) + url);
                 Log.e("wlf", "探测文件，新建下载：" + url);
                 mFileDownloadManager.createAndStart(url, newFileDir, newFileName, mOnFileDownloadStatusListener);
             }
@@ -271,7 +271,7 @@ public class MainActivity extends Activity implements OnDetectUrlFileListener, O
 
     @Override
     public void onDetectUrlFileExist(String url) {
-        showToast("探测文件，继续下载：" + url);
+        showToast(getString(R.string.main__continue_download) + url);
         Log.e("wlf", "探测文件，继续下载：" + url);
         // continue download
         mFileDownloadManager.start(url, mOnFileDownloadStatusListener);
@@ -289,7 +289,7 @@ public class MainActivity extends Activity implements OnDetectUrlFileListener, O
                 }
             }
         }
-        showToast("探测文件出错：" + msg + "," + url);
+        showToast(getString(R.string.main__detect_file_error) + msg + "," + url);
         Log.e("wlf", "出错回调，探测文件出错：" + msg + "," + url);
     }
 
@@ -323,18 +323,18 @@ public class MainActivity extends Activity implements OnDetectUrlFileListener, O
                     mFileDownloadManager.delete(urls.get(0), true, new OnDeleteDownloadFileListener() {
                         @Override
                         public void onDeleteDownloadFileSuccess(DownloadFileInfo downloadFileDeleted) {
-                            showToast("删除成功");
+                            showToast(getString(R.string.main__delete_succeed));
                             updateAdapter();
                         }
 
                         @Override
                         public void onDeleteDownloadFilePrepared(DownloadFileInfo downloadFileNeedDelete) {
-                            showToast("正在删除" + downloadFileNeedDelete.getFileName() + "....");
+                            showToast(getString(R.string.main__deleting) + downloadFileNeedDelete.getFileName());
                         }
 
                         @Override
                         public void onDeleteDownloadFileFailed(DownloadFileInfo downloadFileInfo, OnDeleteDownloadFileFailReason failReason) {
-                            showToast("删除" + downloadFileInfo.getFileName() + "失败");
+                            showToast(getString(R.string.main__delete) + downloadFileInfo.getFileName() + getString(R.string.main__failed));
                             Log.e("wlf", "出错回调，删除" + downloadFileInfo.getFileName() + "失败");
                         }
                     });
@@ -345,18 +345,18 @@ public class MainActivity extends Activity implements OnDetectUrlFileListener, O
 
                         @Override
                         public void onDeletingDownloadFiles(List<DownloadFileInfo> downloadFilesNeedDelete, List<DownloadFileInfo> downloadFilesDeleted, List<DownloadFileInfo> downloadFilesSkip, DownloadFileInfo downloadFileDeleting) {
-                            showToast("正在删除" + downloadFileDeleting.getFileName() + "，进度：" + (downloadFilesDeleted.size() + downloadFilesSkip.size()) + "(失败：" + downloadFilesSkip.size() + ")/" + downloadFilesNeedDelete.size());
+                            showToast(getString(R.string.main__deleting) + downloadFileDeleting.getFileName() + getString(R.string.main__progress) + (downloadFilesDeleted.size() + downloadFilesSkip.size()) + getString(R.string.main__failed2) + downloadFilesSkip.size() + getString(R.string.main__skip_and_total_delete_division) + downloadFilesNeedDelete.size());
                             updateAdapter();
                         }
 
                         @Override
                         public void onDeleteDownloadFilesPrepared(List<DownloadFileInfo> downloadFilesNeedDelete) {
-                            showToast("需要删除" + downloadFilesNeedDelete.size());
+                            showToast(getString(R.string.main__need_delete) + downloadFilesNeedDelete.size());
                         }
 
                         @Override
                         public void onDeleteDownloadFilesCompleted(List<DownloadFileInfo> downloadFilesNeedDelete, List<DownloadFileInfo> downloadFilesDeleted) {
-                            showToast("删除完成，成功：" + downloadFilesDeleted.size() + "，失败：" + (downloadFilesNeedDelete.size() - downloadFilesDeleted.size()));
+                            showToast(getString(R.string.main__delete_finish) + downloadFilesDeleted.size() + getString(R.string.main__failed3) + (downloadFilesNeedDelete.size() - downloadFilesDeleted.size()));
                             updateAdapter();
                         }
                     });
@@ -369,7 +369,7 @@ public class MainActivity extends Activity implements OnDetectUrlFileListener, O
             @Override
             public void onClick(View v) {
 
-                final String newDirPath = Environment.getDataDirectory().getAbsolutePath() + File.separator + "测试移动文件夹";
+                final String newDirPath = Environment.getDataDirectory().getAbsolutePath() + File.separator + getString(R.string.main__move_to_folder);
 
                 List<String> urls = new ArrayList<String>();
 
@@ -386,19 +386,18 @@ public class MainActivity extends Activity implements OnDetectUrlFileListener, O
 
                         @Override
                         public void onMoveDownloadFileSuccess(DownloadFileInfo downloadFileMoved) {
-                            showToast("移动成功，新路径：" + downloadFileMoved.getFilePath());
+                            showToast(getString(R.string.main__move_succeed) + downloadFileMoved.getFilePath());
                             updateAdapter();
-
                         }
 
                         @Override
                         public void onMoveDownloadFilePrepared(DownloadFileInfo downloadFileNeedToMove) {
-                            showToast("正在移动" + downloadFileNeedToMove.getFileName() + "....");
+                            showToast(getString(R.string.main__moving) + downloadFileNeedToMove.getFileName());
                         }
 
                         @Override
                         public void onMoveDownloadFileFailed(DownloadFileInfo downloadFileInfo, OnMoveDownloadFileFailReason failReason) {
-                            showToast("移动" + downloadFileInfo.getFileName() + "失败");
+                            showToast(getString(R.string.main__move) + downloadFileInfo.getFileName() + getString(R.string.main__failed));
                             Log.e("wlf", "出错回调，移动" + downloadFileInfo.getFileName() + "失败");
                         }
                     });
@@ -409,21 +408,20 @@ public class MainActivity extends Activity implements OnDetectUrlFileListener, O
 
                         @Override
                         public void onMoveDownloadFilesPrepared(List<DownloadFileInfo> downloadFilesNeedMove) {
-                            showToast("需要移动" + downloadFilesNeedMove.size());
+                            showToast(getString(R.string.main__need_move) + downloadFilesNeedMove.size());
                         }
 
                         @Override
                         public void onMovingDownloadFiles(List<DownloadFileInfo> downloadFilesNeedMove, List<DownloadFileInfo> downloadFilesMoved, List<DownloadFileInfo> downloadFilesSkip, DownloadFileInfo downloadFileMoving) {
-                            showToast("正在移动" + downloadFileMoving.getFileName() + "，进度：" + (downloadFilesMoved.size() + downloadFilesSkip.size()) + "(失败：" + downloadFilesSkip.size() + ")/" + downloadFilesNeedMove.size());
+                            showToast(getString(R.string.main__moving) + downloadFileMoving.getFileName() + getString(R.string.main__progress) + (downloadFilesMoved.size() + downloadFilesSkip.size()) + getString(R.string.main__failed2) + downloadFilesSkip.size() + getString(R.string.main__skip_and_total_delete_division) + downloadFilesNeedMove.size());
                             updateAdapter();
 
                         }
 
                         @Override
                         public void onMoveDownloadFilesCompleted(List<DownloadFileInfo> downloadFilesNeedMove, List<DownloadFileInfo> downloadFilesMoved) {
-                            showToast("移动完成，成功：" + downloadFilesMoved.size() + "，失败：" + (downloadFilesNeedMove.size() - downloadFilesMoved.size()));
+                            showToast(getString(R.string.main__move_finish) + downloadFilesMoved.size() + getString(R.string.main__failed3) + (downloadFilesNeedMove.size() - downloadFilesMoved.size()));
                         }
-
                     });
                 }
 
@@ -444,22 +442,22 @@ public class MainActivity extends Activity implements OnDetectUrlFileListener, O
                 }
 
                 if (urls.size() == 1) {
-                    mFileDownloadManager.rename(urls.get(0), "ABC", new OnRenameDownloadFileListener() {
+                    mFileDownloadManager.rename(urls.get(0), getString(R.string.main__rename_file_name), new OnRenameDownloadFileListener() {
 
                         @Override
                         public void onRenameDownloadFileSuccess(DownloadFileInfo downloadFileRenamed) {
-                            showToast("重命名成功");
+                            showToast(getString(R.string.main__rename_succeed));
                             updateAdapter();
                         }
 
                         @Override
                         public void onRenameDownloadFileFailed(DownloadFileInfo downloadFileInfo, OnRenameDownloadFileFailReason failReason) {
-                            showToast("重命名失败");
+                            showToast(getString(R.string.main__rename_failed));
                             Log.e("wlf", "出错回调，重命名失败");
                         }
                     });
                 } else {
-                    showToast("只支持单个文件重命名");
+                    showToast(getString(R.string.main__rename_failed_note));
                 }
             }
         });

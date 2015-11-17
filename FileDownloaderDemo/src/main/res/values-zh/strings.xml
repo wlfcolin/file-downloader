@@ -1,3 +1,63 @@
 <resources>
 
+    <string name="main__plaease_input_download_size">请输入要下载文件的地址</string>
+
+    <string name="main__dialog_btn_cancel">取消</string>
+    <string name="main__dialog_btn_confirm">确认</string>
+
+    <string name="main__save_path">保存位置</string>
+    <string name="main__save_file_name">保存名称</string>
+    <string name="main__file_size">文件大小：</string>
+
+    <string name="main__confirm_save_path_and_name">请确认/修改保存路径和名称</string>
+    <string name="main__new_download">探测文件，新建下载：</string>
+    <string name="main__continue_download">探测文件，继续下载：</string>
+    <string name="main__detect_file_error">探测文件出错：</string>
+
+    <string name="main__delete_succeed">删除成功</string>
+    <string name="main__deleting">正在删除</string>
+    <string name="main__delete">删除</string>
+    <string name="main__failed">失败</string>
+    <string name="main__progress">，进度：</string>
+    <string name="main__failed2">(失败：</string>
+    <string name="main__skip_and_total_delete_division">)/</string>
+    <string name="main__need_delete">需要删除</string>
+    <string name="main__delete_finish">删除完成，成功：</string>
+    <string name="main__failed3">，失败：</string>
+
+    <string name="main__move_to_folder">测试移动文件夹</string>
+    <string name="main__move_succeed">移动成功，新路径：</string>
+    <string name="main__moving">正在移动：</string>
+    <string name="main__move">移动</string>
+    <string name="main__need_move">需要移动</string>
+    <string name="main__move_finish">移动完成，成功：</string>
+
+    <string name="main__rename_file_name">测试新文件名</string>
+    <string name="main__rename_succeed">重命名成功</string>
+    <string name="main__rename_failed">重命名失败</string>
+    <string name="main__rename_failed_note">只支持单个文件重命名</string>
+
+    <string name="main__can_not_download">无法下载，请删除后重新下载</string>
+    <string name="main__getting_resource">正在获取资源</string>
+    <string name="main__connected_resource">已连接资源</string>
+    <string name="main__paused">已暂停</string>
+    <string name="main__downloading">正在下载</string>
+    <string name="main__download_error">下载出错</string>
+    <string name="main__waiting">等待下载</string>
+    <string name="main__open">打开</string>
+    <string name="main__uninstall">未安装</string>
+    <string name="main__download_completed">已下载完成</string>
+    <string name="main__file_not_exsit">文件不存在</string>
+
+    <string name="main__can_not_download2">无法下载，请删除：</string>
+    <string name="main__re_download"> 后重新下载</string>
+    <string name="main__start_download">开始/继续下载：</string>
+    <string name="main__whether_re_download">是否重新下载</string>
+    <string name="main__re_download2">重新下载</string>
+    <string name="main__paused_download">暂停下载：</string>
+    <string name="main__not_install_apk">（无法启动）请安装Apk：</string>
+    <string name="main__no_install">未安装</string>
+    <string name="main__not_install_apk2">（无法启动）请安装Apk：</string>
+    <string name="main__check_network">(请检查网络)</string>
+    <string name="main__url_illegal">Url不合法</string>
 </resources>

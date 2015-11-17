@@ -158,54 +158,56 @@ public class DownloadFileListAdapter extends BaseAdapter implements OnFileDownlo
         float percent = downloadSize / fileSize * 100;
         tvPercent.setText(((float) (Math.round(percent * 100)) / 100) + "%");
 
+        final Context context = cacheConvertView.getContext();
+
         switch (downloadFileInfo.getStatus()) {
             // download file status:unknown
             case Status.DOWNLOAD_STATUS_UNKNOWN:
-                tvText.setText("无法下载，请删除后重新下载");
+                tvText.setText(context.getString(R.string.main__can_not_download));
                 break;
             // download file status:preparing
             case Status.DOWNLOAD_STATUS_PREPARING:
-                tvText.setText("正在获取资源");
+                tvText.setText(context.getString(R.string.main__getting_resource));
                 break;
             // download file status:prepared
             case Status.DOWNLOAD_STATUS_PREPARED:
-                tvText.setText("已连接资源");
+                tvText.setText(context.getString(R.string.main__connected_resource));
                 break;
             // download file status:paused
             case Status.DOWNLOAD_STATUS_PAUSED:
-                tvText.setText("已暂停");
+                tvText.setText(context.getString(R.string.main__paused));
                 break;
             // download file status:downloading
             case Status.DOWNLOAD_STATUS_DOWNLOADING:
-                tvText.setText("正在下载");
+                tvText.setText(context.getString(R.string.main__downloading));
                 break;
             // download file status:error
             case Status.DOWNLOAD_STATUS_ERROR:
-                tvText.setText("下载出错");
+                tvText.setText(context.getString(R.string.main__download_error));
                 break;
             // download file status:waiting
             case Status.DOWNLOAD_STATUS_WAITING:
-                tvText.setText("等待下载");
+                tvText.setText(context.getString(R.string.main__waiting));
                 break;
             // download file status:completed
             case Status.DOWNLOAD_STATUS_COMPLETED:
                 tvDownloadSize.setText("");
                 if ("apk".equalsIgnoreCase(FileUtil.getFileSuffix(downloadFileInfo.getFileName()))) {// apk
-                    String packageName = ApkUtil.getUnInstallApkPckageName(mActivity, downloadFileInfo.getFilePath());
+                    String packageName = ApkUtil.getUnInstallApkPackageName(mActivity, downloadFileInfo.getFilePath());
                     boolean isInstall = ApkUtil.checkAppInstalled(mActivity, packageName);
                     if (isInstall) {
-                        tvText.setText("打开");
+                        tvText.setText(context.getString(R.string.main__open));
                     } else {
-                        tvText.setText("未安装");
+                        tvText.setText(context.getString(R.string.main__uninstall));
                     }
                 } else {
-                    tvText.setText("已下载完成");
+                    tvText.setText(context.getString(R.string.main__download_completed));
                 }
                 break;
             // download file status:file not exist
             case Status.DOWNLOAD_STATUS_FILE_NOT_EXIST:
                 tvDownloadSize.setText("");
-                tvText.setText("文件不存在");
+                tvText.setText(context.getString(R.string.main__file_not_exsit));
                 break;
         }
 
@@ -259,24 +261,24 @@ public class DownloadFileListAdapter extends BaseAdapter implements OnFileDownlo
                     switch (curDownloadFileInfo.getStatus()) {
                         // download file status:unknown
                         case Status.DOWNLOAD_STATUS_UNKNOWN:
-                            showToast("无法下载，请删除：" + curDownloadFileInfo.getFilePath() + " 后重新下载");
+                            showToast(context.getString(R.string.main__can_not_download2) + curDownloadFileInfo.getFilePath() + context.getString(R.string.main__re_download));
                             break;
                         // download file status:error & paused
                         case Status.DOWNLOAD_STATUS_ERROR:
                         case Status.DOWNLOAD_STATUS_PAUSED:
                             fileDownloadManager.start(curDownloadFileInfo.getUrl(), mOnFileDownloadStatusListener);
-                            showToast("开始/继续下载：" + curDownloadFileInfo.getFileName());
+                            showToast(context.getString(R.string.main__start_download) + curDownloadFileInfo.getFileName());
                             break;
                         // download file status:file not exist
                         case Status.DOWNLOAD_STATUS_FILE_NOT_EXIST:
                             // show dialog
                             AlertDialog.Builder builder = new AlertDialog.Builder(context);
-                            builder.setTitle("是否重新下载").setNegativeButton("取消", null);
-                            builder.setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                            builder.setTitle(context.getString(R.string.main__whether_re_download)).setNegativeButton(context.getString(R.string.main__dialog_btn_cancel), null);
+                            builder.setPositiveButton(context.getString(R.string.main__dialog_btn_confirm), new DialogInterface.OnClickListener() {
                                 public void onClick(DialogInterface dialog, int which) {
                                     // re-download
                                     fileDownloadManager.reStart(curDownloadFileInfo.getUrl(), mOnFileDownloadStatusListener);
-                                    showToast("重新下载下载：" + curDownloadFileInfo.getFileName());
+                                    showToast(context.getString(R.string.main__re_download2) + curDownloadFileInfo.getFileName());
                                 }
                             });
                             builder.show();
@@ -289,11 +291,11 @@ public class DownloadFileListAdapter extends BaseAdapter implements OnFileDownlo
                             // pause
                             fileDownloadManager.pause(curDownloadFileInfo.getUrl());
 
-                            showToast("暂停下载：" + curDownloadFileInfo.getFileName());
+                            showToast(context.getString(R.string.main__paused_download) + curDownloadFileInfo.getFileName());
 
                             TextView tvText = (TextView) lnlyDownloadItem.findViewById(R.id.tvText);
                             if (tvText != null) {
-                                tvText.setText("已暂停");
+                                tvText.setText(context.getString(R.string.main__paused));
                             }
                             break;
                         // download file status:completed
@@ -308,12 +310,12 @@ public class DownloadFileListAdapter extends BaseAdapter implements OnFileDownlo
 
                             if ("apk".equalsIgnoreCase(FileUtil.getFileSuffix(curDownloadFileInfo.getFileName()))) {// apk
 
-                                final String packageName = ApkUtil.getUnInstallApkPckageName(context, curDownloadFileInfo.getFilePath());
+                                final String packageName = ApkUtil.getUnInstallApkPackageName(context, curDownloadFileInfo.getFilePath());
                                 boolean isInstall = ApkUtil.checkAppInstalled(context, packageName);
 
                                 if (isInstall) {
                                     if (tvText2 != null) {
-                                        tvText2.setText("打开");
+                                        tvText2.setText(context.getString(R.string.main__open));
                                         try {
                                             Intent intent2 = mActivity.getPackageManager().getLaunchIntentForPackage(packageName);
                                             mActivity.startActivity(intent2);
@@ -321,19 +323,19 @@ public class DownloadFileListAdapter extends BaseAdapter implements OnFileDownlo
                                             e.printStackTrace();
                                             // show install dialog
                                             ApkUtil.installApk(context, curDownloadFileInfo.getFilePath());
-                                            showToast("（无法启动）请安装Apk：" + curDownloadFileInfo.getFileName());
-                                            tvText2.setText("未安装");
+                                            showToast(context.getString(R.string.main__not_install_apk) + curDownloadFileInfo.getFileName());
+                                            tvText2.setText(context.getString(R.string.main__no_install));
                                         }
                                     }
                                 } else {
                                     if (tvText2 != null) {
-                                        tvText2.setText("未安装");
+                                        tvText2.setText(context.getString(R.string.main__no_install));
                                     }
                                     ApkUtil.installApk(context, curDownloadFileInfo.getFilePath());
-                                    showToast("（未安装）请安装Apk：" + curDownloadFileInfo.getFileName());
+                                    showToast(context.getString(R.string.main__not_install_apk2) + curDownloadFileInfo.getFileName());
                                 }
                             } else {
-                                tvText2.setText("已下载完成");
+                                tvText2.setText(context.getString(R.string.main__download_completed));
                             }
                             break;
                     }
@@ -396,7 +398,7 @@ public class DownloadFileListAdapter extends BaseAdapter implements OnFileDownlo
             View cacheConvertView = mConvertViews.get(url);
             if (cacheConvertView != null) {
                 TextView tvText = (TextView) cacheConvertView.findViewById(R.id.tvText);
-                tvText.setText("等待下载");
+                tvText.setText(cacheConvertView.getContext().getString(R.string.main__waiting));
 
                 Log.w(TAG, "onFileDownloadStatusWaiting，url：" + url + "，status(正常应该是" + Status.DOWNLOAD_STATUS_WAITING + ")：" + downloadFileInfo.getStatus());
             } else {
@@ -416,7 +418,7 @@ public class DownloadFileListAdapter extends BaseAdapter implements OnFileDownlo
         View cacheConvertView = mConvertViews.get(url);
         if (cacheConvertView != null) {
             TextView tvText = (TextView) cacheConvertView.findViewById(R.id.tvText);
-            tvText.setText("正在获取资源");
+            tvText.setText(cacheConvertView.getContext().getString(R.string.main__getting_resource));
 
             Log.w(TAG, "onFileDownloadStatusPreparing，url：" + url + "，status(正常应该是" + Status.DOWNLOAD_STATUS_PREPARING + ")：" + downloadFileInfo.getStatus());
         } else {
@@ -435,7 +437,7 @@ public class DownloadFileListAdapter extends BaseAdapter implements OnFileDownlo
         View cacheConvertView = mConvertViews.get(url);
         if (cacheConvertView != null) {
             TextView tvText = (TextView) cacheConvertView.findViewById(R.id.tvText);
-            tvText.setText("已连接资源");
+            tvText.setText(cacheConvertView.getContext().getString(R.string.main__connected_resource));
 
             Log.w(TAG, "onFileDownloadStatusPrepared，url：" + url + "，status(正常应该是" + Status.DOWNLOAD_STATUS_PREPARED + ")：" + downloadFileInfo.getStatus());
         } else {
@@ -501,7 +503,7 @@ public class DownloadFileListAdapter extends BaseAdapter implements OnFileDownlo
             LinearLayout lnlyDownloadItem = (LinearLayout) cacheConvertView.findViewById(R.id.lnlyDownloadItem);
             TextView tvText = (TextView) cacheConvertView.findViewById(R.id.tvText);
 
-            tvText.setText("已暂停");
+            tvText.setText(cacheConvertView.getContext().getString(R.string.main__paused));
 
             setBackgroundOnClickListener(lnlyDownloadItem, downloadFileInfo);
 
@@ -537,16 +539,16 @@ public class DownloadFileListAdapter extends BaseAdapter implements OnFileDownlo
             if (downloadFileInfo.getStatus() == Status.DOWNLOAD_STATUS_COMPLETED) {
 
                 if ("apk".equalsIgnoreCase(FileUtil.getFileSuffix(downloadFileInfo.getFileName()))) {// apk
-                    String packageName = ApkUtil.getUnInstallApkPckageName(mActivity, downloadFileInfo.getFilePath());
+                    String packageName = ApkUtil.getUnInstallApkPackageName(mActivity, downloadFileInfo.getFilePath());
                     boolean isInstall = ApkUtil.checkAppInstalled(mActivity, packageName);
 
                     if (isInstall) {
-                        tvText.setText("打开");
+                        tvText.setText(cacheConvertView.getContext().getString(R.string.main__open));
                     } else {
-                        tvText.setText("未安装");
+                        tvText.setText(cacheConvertView.getContext().getString(R.string.main__uninstall));
                     }
                 } else {
-                    tvText.setText("已下载完成");
+                    tvText.setText(cacheConvertView.getContext().getString(R.string.main__download_completed));
                 }
             }
 
@@ -572,17 +574,17 @@ public class DownloadFileListAdapter extends BaseAdapter implements OnFileDownlo
             LinearLayout lnlyDownloadItem = (LinearLayout) cacheConvertView.findViewById(R.id.lnlyDownloadItem);
             TextView tvText = (TextView) cacheConvertView.findViewById(R.id.tvText);
 
-            String msg = "下载出错";
+            String msg = cacheConvertView.getContext().getString(R.string.main__download_error);
 
             if (failReason != null) {
                 if (OnFileDownloadStatusFailReason.TYPE_NETWORK_DENIED.equals(failReason.getType())) {
-                    msg += "(请检查网络)";
+                    msg += cacheConvertView.getContext().getString(R.string.main__check_network);
                     tvText.setText(msg);
                 } else if (OnFileDownloadStatusFailReason.TYPE_FILE_IS_DOWNLOADING.equals(failReason.getType())) {
-                    msg = downloadFileInfo.getFileName() + " 正在下载";
+                    msg = downloadFileInfo.getFileName() + cacheConvertView.getContext().getString(R.string.main__downloading);
                     showToast(msg);
                 } else if (OnFileDownloadStatusFailReason.TYPE_URL_ILLEGAL.equals(failReason.getType())) {
-                    msg = "Url不合法";
+                    msg = cacheConvertView.getContext().getString(R.string.main__url_illegal);
                     showToast(msg);
                 }
             }
