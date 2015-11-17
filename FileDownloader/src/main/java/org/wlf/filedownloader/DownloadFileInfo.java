@@ -315,6 +315,15 @@ public class DownloadFileInfo {
     // setters
 
     /**
+     * 设置id
+     *
+     * @param id
+     */
+    void setId(Integer id) {
+        mId = id;
+    }
+
+    /**
      * set save file dir
      */
     void setFileDir(String fileDir) {

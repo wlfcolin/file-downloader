@@ -4,6 +4,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.text.TextUtils;
+import android.util.Log;
 
 import org.wlf.filedownloader.base.FailException;
 import org.wlf.filedownloader.db.ContentDbDao;
@@ -47,6 +48,9 @@ public class DownloadFileCacher extends DownloadFileDbRecorder {
 
     @Override
     public void recordStatus(String url, int status, int increaseSize) throws DownloadStatusRecordException {
+
+        Log.e("wlf", "记录状态：status：" + status + "，increaseSize：" + +increaseSize + "，url：" + url);
+
         DownloadFileInfo downloadFileInfo = getDownloadFile(url);
         if (downloadFileInfo != null) {
             synchronized (mModifyLock) {// lock，FIXME 无法跟updateDownloadFile一起同步
@@ -79,9 +83,10 @@ public class DownloadFileCacher extends DownloadFileDbRecorder {
         String url = downloadFileInfo.getUrl();
 
         synchronized (mModifyLock) {// lock
-            long result = dao.insert(values);
-            if (result == 1) {
+            long id = dao.insert(values);
+            if (id != -1) {
                 // succeed,update memory cache
+                downloadFileInfo.setId(new Integer((int)id));
                 mDownloadFileInfoMap.put(url, downloadFileInfo);
                 return true;
             }
