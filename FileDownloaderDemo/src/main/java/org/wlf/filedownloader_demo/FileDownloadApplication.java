@@ -41,7 +41,7 @@ public class FileDownloadApplication extends Application {
         Builder config = new FileDownloadConfiguration.Builder(this);
         // 2.config FileDownloadConfiguration.Builder
         config.configFileDownloadDir(Environment.getExternalStorageDirectory().getAbsolutePath() + File.separator + "FileDownload");// config download path
-        config.configDownloadTaskSize(2);// allow 2 download task at the same time
+        config.configDownloadTaskSize(3);// allow 3 download task at the same time
         FileDownloadConfiguration configuration = config.build();// build FileDownloadConfiguration
         // 3.init FileDownloadManager
         FileDownloadManager.getInstance(this).init(configuration);
