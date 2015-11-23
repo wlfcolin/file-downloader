@@ -341,6 +341,7 @@ public class MainActivity extends Activity implements OnDetectUrlFileListener, O
                 }
                 // multi delete
                 else {
+                    Log.e("wlf_deletes","点击开始批量删除");
                     mFileDownloadManager.delete(urls, true, new OnDeleteDownloadFilesListener() {
 
                         @Override

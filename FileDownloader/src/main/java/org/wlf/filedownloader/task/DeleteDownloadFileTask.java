@@ -1,5 +1,7 @@
 package org.wlf.filedownloader.task;
 
+import android.util.Log;
+
 import org.wlf.filedownloader.DownloadFileCacher;
 import org.wlf.filedownloader.DownloadFileInfo;
 import org.wlf.filedownloader.listener.OnDeleteDownloadFileListener;
@@ -50,6 +52,7 @@ public class DeleteDownloadFileTask implements Runnable {
             // delete in database record
             boolean deleteResult = fileDownloadCacher.deleteDownloadFile(downloadFileInfo);
             if (deleteResult) {
+                Log.e("wlf_deletes", "数据库删除成功url：" + url);
                 // delete in path
                 if (deleteDownloadedFileInPath) {
                     File file = new File(downloadFileInfo.getFileDir(), downloadFileInfo.getFileName());
@@ -62,6 +65,7 @@ public class DeleteDownloadFileTask implements Runnable {
                     }
                 }
                 if (deleteResult) {
+                    Log.e("wlf_deletes", "数据库+文件删除成功url：" + url);
                     // 2.delete Success
                     OnDeleteDownloadFileListener.MainThreadHelper.onDeleteDownloadFileSuccess(downloadFileInfo, mOnDeleteDownloadFileListener);
                     return;
@@ -76,6 +80,7 @@ public class DeleteDownloadFileTask implements Runnable {
         }
 
         if (failReason != null) {
+            Log.e("wlf_deletes", "删除失败url：" + url + ",failReason:" + failReason.getType());
             // 2.delete failed
             OnDeleteDownloadFileListener.MainThreadHelper.onDeleteDownloadFileFailed(downloadFileInfo, failReason, mOnDeleteDownloadFileListener);
         }

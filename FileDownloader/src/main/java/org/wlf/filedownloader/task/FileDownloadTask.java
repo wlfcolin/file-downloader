@@ -420,6 +420,7 @@ public class FileDownloadTask implements Runnable, Stoppable, OnHttpDownloadList
                 if (mIsNotifyTaskFinish) {
                     return;
                 }
+                boolean notify = false;
                 try {
                     mRecorder.recordStatus(mTaskParamInfo.mUrl, status, increaseSize);
                     if (mOnFileDownloadStatusListener != null) {
@@ -428,11 +429,13 @@ public class FileDownloadTask implements Runnable, Stoppable, OnHttpDownloadList
                                 OnFileDownloadStatusListener.MainThreadHelper.onFileDownloadStatusPaused(getDownloadFile(), mOnFileDownloadStatusListener);
                                 // notifyStopSucceed
                                 notifyStopSucceed();
+                                notify = true;
                                 break;
                             case Status.DOWNLOAD_STATUS_COMPLETED:
                                 OnFileDownloadStatusListener.MainThreadHelper.onFileDownloadStatusCompleted(getDownloadFile(), mOnFileDownloadStatusListener);
                                 // notifyStopSucceed
                                 notifyStopSucceed();
+                                notify = true;
                                 break;
                             case Status.DOWNLOAD_STATUS_ERROR:
                                 OnFileDownloadStatusListener.MainThreadHelper.onFileDownloadStatusFailed(getDownloadFile(), failReason, mOnFileDownloadStatusListener);
@@ -449,7 +452,7 @@ public class FileDownloadTask implements Runnable, Stoppable, OnHttpDownloadList
                     mIsNotifyTaskFinish = true;
                 } finally {
                     // if notify task finish,force stop if necessary
-                    if (mIsNotifyTaskFinish) {
+                    if (mIsNotifyTaskFinish && !notify) {
                         stop();
                     }
                 }

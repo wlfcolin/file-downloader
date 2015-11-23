@@ -72,6 +72,10 @@ public class DownloadFileListAdapter extends BaseAdapter implements OnFileDownlo
     private void initDownloadFileInfos() {
         this.mDownloadFileInfos = FileDownloadManager.getInstance(mActivity).getDownloadFiles();
         mConvertViews.clear();
+        mSelectedDownloadFileInfos.clear();
+        if(mOnItemSelectListener != null){
+            mOnItemSelectListener.onNoneSelect();
+        }
     }
 
     /**
