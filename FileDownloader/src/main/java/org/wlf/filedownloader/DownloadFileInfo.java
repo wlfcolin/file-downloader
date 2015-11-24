@@ -460,7 +460,27 @@ public class DownloadFileInfo {
      * @return FilePath
      */
     public String getFilePath() {
-        return getFileDir() + File.separator + mFileName;
+        //        return getFileDir() + File.separator + mFileName;
+        return getFilePath(false);
+    }
+
+    /**
+     * get FilePath
+     *
+     * @param includeTempFilePath whether return the TempFilePath if Necessary
+     * @return
+     */
+    public String getFilePath(boolean includeTempFilePath) {
+
+        String filePath = getFileDir() + File.separator + mFileName;
+
+        if (TextUtils.isEmpty(filePath) || !new File(filePath).exists()) {
+            if (includeTempFilePath) {
+                filePath = getTempFilePath();
+            }
+        }
+
+        return filePath;
     }
 
 }

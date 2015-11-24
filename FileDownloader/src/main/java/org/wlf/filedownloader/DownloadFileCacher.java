@@ -6,6 +6,7 @@ import android.database.Cursor;
 import android.text.TextUtils;
 import android.util.Log;
 
+import org.wlf.filedownloader.DownloadFileInfo.Table;
 import org.wlf.filedownloader.base.FailException;
 import org.wlf.filedownloader.db.ContentDbDao;
 import org.wlf.filedownloader.db_recoder.DownloadFileDbHelper;
@@ -86,7 +87,7 @@ public class DownloadFileCacher extends DownloadFileDbRecorder {
             long id = dao.insert(values);
             if (id != -1) {
                 // succeed,update memory cache
-                downloadFileInfo.setId(new Integer((int)id));
+                downloadFileInfo.setId(new Integer((int) id));
                 mDownloadFileInfoMap.put(url, downloadFileInfo);
                 return true;
             }
@@ -220,12 +221,14 @@ public class DownloadFileCacher extends DownloadFileDbRecorder {
     }
 
     /**
+     * /**
      * get DownloadFile by savePath
      *
-     * @param savePath the path of the file saved in
+     * @param savePath            the path of the file saved in
+     * @param includeTempFilePath whether use the TempFilePath if Necessary
      * @return DownloadFile
      */
-    DownloadFileInfo getDownloadFileBySavePath(String savePath) {
+    DownloadFileInfo getDownloadFileBySavePath(String savePath, boolean includeTempFilePath) {
 
         if (!FileUtil.isFilePath(savePath)) {
             return null;
@@ -272,7 +275,7 @@ public class DownloadFileCacher extends DownloadFileDbRecorder {
             }
 
             String fileSaveDir = savePath.substring(0, separatorIndex);
-            String fileSaveName = savePath.substring(separatorIndex, savePath.length());
+            String fileSaveName = savePath.substring(separatorIndex + 1, savePath.length());
 
             Cursor cursor = dao.query(null, DownloadFileInfo.Table.COLUMN_NAME_OF_FIELD_FILE_DIR + "= ? AND " + DownloadFileInfo.Table.COLUMN_NAME_OF_FIELD_FILE_NAME + "= ?", new String[]{fileSaveDir, fileSaveName}, null);
             if (cursor != null && cursor.moveToFirst()) {
@@ -282,6 +285,21 @@ public class DownloadFileCacher extends DownloadFileDbRecorder {
             // close the cursor
             if (cursor != null && !cursor.isClosed()) {
                 cursor.close();
+            }
+
+            if (downloadFileInfo == null) {
+                if (includeTempFilePath) {
+                    // try use temp file to query
+                    cursor = dao.query(null, DownloadFileInfo.Table.COLUMN_NAME_OF_FIELD_FILE_DIR + "= ? AND " + Table.COLUMN_NAME_OF_FIELD_TEMP_FILE_NAME + "= ?", new String[]{fileSaveDir, fileSaveName}, null);
+                    if (cursor != null && cursor.moveToFirst()) {
+                        downloadFileInfo = new DownloadFileInfo(cursor);
+                    }
+
+                    // close the cursor
+                    if (cursor != null && !cursor.isClosed()) {
+                        cursor.close();
+                    }
+                }
             }
 
             if (downloadFileInfo == null) {

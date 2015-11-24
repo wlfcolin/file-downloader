@@ -24,6 +24,7 @@ import org.wlf.filedownloader.task.FileDownloadTask.OnStopDownloadFileTaskFailRe
 import org.wlf.filedownloader.task.FileDownloadTask.OnStopFileDownloadTaskListener;
 import org.wlf.filedownloader.task.FileDownloadTaskParamHelper;
 import org.wlf.filedownloader.task.MoveDownloadFileTask;
+import org.wlf.filedownloader.util.UrlUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -212,7 +213,12 @@ public class FileDownloadManager {
             case Status.DOWNLOAD_STATUS_DOWNLOADING:
                 return mFileDownloadTaskMap.containsKey(url);
         }
-        return mFileDownloadTaskMap.containsKey(url);
+
+        // status is not allowed,clear
+        if (mFileDownloadTaskMap.containsKey(url)) {
+            mFileDownloadTaskMap.remove(url);
+        }
+        return false;
     }
 
     /**
@@ -232,6 +238,11 @@ public class FileDownloadManager {
             case Status.DOWNLOAD_STATUS_PREPARED:
             case Status.DOWNLOAD_STATUS_DOWNLOADING:
                 return mFileDownloadTaskMap.get(url);
+        }
+
+        // status is not allowed,clear
+        if (mFileDownloadTaskMap.containsKey(url)) {
+            mFileDownloadTaskMap.remove(url);
         }
         return null;
     }
@@ -273,7 +284,17 @@ public class FileDownloadManager {
      * @return DownloadFile
      */
     public DownloadFileInfo getDownloadFileBySavePath(String savePath) {
-        return mDownloadFileCacher.getDownloadFileBySavePath(savePath);
+        return mDownloadFileCacher.getDownloadFileBySavePath(savePath, false);
+    }
+
+    /**
+     * get DownloadFile by save file path
+     *
+     * @param savePath save file path
+     * @return DownloadFile
+     */
+    public DownloadFileInfo getDownloadFileBySavePath(String savePath, boolean includeTempFilePath) {
+        return mDownloadFileCacher.getDownloadFileBySavePath(savePath, includeTempFilePath);
     }
 
     /**
@@ -593,7 +614,7 @@ public class FileDownloadManager {
 
                 @Override
                 public void onStopFileDownloadTaskSucceed(String url) {
-                    Log.e("wlf_pause","暂停成功url："+url);
+                    Log.e("wlf_pause", "暂停成功url：" + url);
                     onFileDownloadTaskStopped(url);
                     if (onStopFileDownloadTaskListener != null) {
                         onStopFileDownloadTaskListener.onStopFileDownloadTaskSucceed(url);
@@ -602,7 +623,7 @@ public class FileDownloadManager {
 
                 @Override
                 public void onStopFileDownloadTaskFailed(String url, OnStopDownloadFileTaskFailReason failReason) {
-                    Log.e("wlf_pause","暂停失败url："+url+",failReason:"+failReason);
+                    Log.e("wlf_pause", "暂停失败url：" + url + ",failReason:" + failReason);
                     if (onStopFileDownloadTaskListener != null) {
                         onStopFileDownloadTaskListener.onStopFileDownloadTaskFailed(url, failReason);
                     }
@@ -720,17 +741,21 @@ public class FileDownloadManager {
 
         FileDownloadTask task = getFileDownloadTask(url);
         if (task == null || task.isStopped()) {
+            Log.e("wlf__d", "直接删除,url:" + url);
             deleteInternal(url, deleteDownloadedFileInPath, onDeleteDownloadFileListener);
         } else {
+            Log.e("wlf__d", "先暂停后删除,url:" + url);
             // pause
             pauseInternal(url, new OnStopFileDownloadTaskListener() {
                 @Override
                 public void onStopFileDownloadTaskSucceed(String url) {
+                    Log.e("wlf__d", "暂停成功，删除,url:" + url);
                     deleteInternal(url, deleteDownloadedFileInPath, onDeleteDownloadFileListener);
                 }
 
                 @Override
                 public void onStopFileDownloadTaskFailed(String url, OnStopDownloadFileTaskFailReason failReason) {
+                    Log.e("wlf__d", "暂停失败，无法删除,url:" + url);
                     if (onDeleteDownloadFileListener != null) {
                         OnDeleteDownloadFileListener.MainThreadHelper.onDeleteDownloadFileFailed(getDownloadFile(url), new OnDeleteDownloadFileFailReason(failReason), onDeleteDownloadFileListener);
                     }
@@ -892,157 +917,123 @@ public class FileDownloadManager {
             return isStop;
         }
 
-        // on delete finish
-        private void onDeleteDownloadFilesCompleted() {
-            if (hasReturn || isStop) {
-                return;
-            }
-            if (mOnDeleteDownloadFilesListener != null) {
-                mOnDeleteDownloadFilesListener.onDeleteDownloadFilesCompleted(downloadFilesNeedDelete, downloadFilesDeleted);
-            }
-            
-            hasReturn = true;
-            isStop = true;
-        }
-
         @Override
         public void run() {
 
-            Log.e("wlf_deletes","运行批量删除");
-            
-            // get DownloadFiles by urls
             for (String url : urls) {
-                if (TextUtils.isEmpty(url)) {
+                if (!UrlUtil.isUrl(url)) {
                     continue;
                 }
-                downloadFilesNeedDelete.add(getDownloadFile(url));
+                DownloadFileInfo downloadFileInfo = getDownloadFile(url);
+                if (downloadFileInfo != null) {
+                    downloadFilesNeedDelete.add(downloadFileInfo);
+                }
             }
 
             // prepare to delete
             if (mOnDeleteDownloadFilesListener != null) {
-                Log.e("wlf_deletes","准备批量删除");
+                Log.e("wlf_deletes", "准备批量删除");
                 OnDeleteDownloadFilesListener.MainThreadHelper.onDeleteDownloadFilePrepared(downloadFilesNeedDelete, mOnDeleteDownloadFilesListener);
             }
 
-            // delete
-            for (int i = 0; i < downloadFilesNeedDelete.size(); i++) {
-                if (isStop) {
-                    // notify delete finish
-                    Log.e("wlf_deletes", "for ,onDeleteDownloadFilesCompleted");
-                    onDeleteDownloadFilesCompleted();
-                    break;
+            OnDeleteDownloadFileListener onDeleteDownloadFileListener = new OnDeleteDownloadFileListener() {
+
+                private int deleteCount = 0;
+
+                @Override
+                public void onDeleteDownloadFilePrepared(DownloadFileInfo downloadFileNeedDelete) {
+
+                    if (downloadFileNeedDelete != null) {
+                        Log.e("wlf_deletes", "准备批量删除downloadFileNeedDelete：" + downloadFileNeedDelete.getUrl());
+                    }
+
+                    // start new delete
+                    if (mOnDeleteDownloadFilesListener != null) {
+                        mOnDeleteDownloadFilesListener.onDeletingDownloadFiles(downloadFilesNeedDelete, downloadFilesDeleted, downloadFilesSkip, downloadFileNeedDelete);
+                    }
+
+                    deleteCount++;
                 }
 
-                DownloadFileInfo downloadFileInfo = downloadFilesNeedDelete.get(i);
+                @Override
+                public void onDeleteDownloadFileSuccess(DownloadFileInfo downloadFileDeleted) {
 
+                    String url = "";
+
+                    if (downloadFileDeleted != null) {
+                        url = downloadFileDeleted.getUrl();
+                    }
+
+                    Log.e("wlf__d", "onDeleteDownloadFileSuccess,删除成功，deleteCount：" + deleteCount + ",downloadFilesNeedDelete.size():" + downloadFilesNeedDelete.size() + ",url:" + url);
+
+                    // delete succeed
+                    downloadFilesDeleted.add(downloadFileDeleted);
+
+                    // if the last one to delete,notify finish the operation
+                    if (deleteCount == downloadFilesNeedDelete.size() - downloadFilesSkip.size()) {
+                        Log.e("wlf__d", "onDeleteDownloadFileSuccess,完成回调");
+                        onDeleteDownloadFilesCompleted();
+                    }
+                }
+
+                @Override
+                public void onDeleteDownloadFileFailed(DownloadFileInfo downloadFileInfo, OnDeleteDownloadFileFailReason failReason) {
+
+                    String url = "";
+
+                    if (downloadFileInfo != null) {
+                        url = downloadFileInfo.getUrl();
+                    }
+
+                    String type = "";
+
+                    if (failReason != null) {
+                        type = failReason.getType();
+                    }
+
+                    Log.e("wlf__d", "onDeleteDownloadFileFailed,删除失败，deleteCount：" + deleteCount + ",downloadFilesNeedDelete.size():" + downloadFilesNeedDelete.size() + ",url:" + url + ",failReason:" + type);
+
+                    // delete failed
+                    downloadFilesSkip.add(downloadFileInfo);
+
+                    // if the last one to delete,notify finish the operation
+                    if (deleteCount == downloadFilesNeedDelete.size() - downloadFilesNeedDelete.size()) {
+                        Log.e("wlf__d", "onDeleteDownloadFileFailed,完成回调");
+                        onDeleteDownloadFilesCompleted();
+                    }
+                }
+            };
+
+
+            for (int i = 0; i < downloadFilesNeedDelete.size(); i++) {
+
+                DownloadFileInfo downloadFileInfo = downloadFilesNeedDelete.get(i);
                 if (downloadFileInfo == null) {
                     continue;
                 }
 
                 String url = downloadFileInfo.getUrl();
 
-                // listen single download file deleted
-                final OnDeleteDownloadFileListener onDeleteDownloadFileListener = new OnDeleteDownloadFileListener() {
-                    
-                    private int count =0;
-
-                    @Override
-                    public void onDeleteDownloadFilePrepared(DownloadFileInfo downloadFileNeedDelete) {
-
-                        if(downloadFileNeedDelete != null) {
-                            Log.e("wlf_deletes", "准备批量删除downloadFileNeedDelete：" + downloadFileNeedDelete.getUrl());
-                        }
-                        
-                        // start new delete
-                        if (mOnDeleteDownloadFilesListener != null) {
-                            mOnDeleteDownloadFilesListener.onDeletingDownloadFiles(downloadFilesNeedDelete, downloadFilesDeleted, downloadFilesSkip, downloadFileNeedDelete);
-                        }
-
-                        count ++;
-                    }
-
-                    @Override
-                    public void onDeleteDownloadFileSuccess(DownloadFileInfo downloadFileDeleted) {
-
-                        if(downloadFileDeleted != null) {
-                            Log.e("wlf_deletes", "已经删除downloadFileDeleted：" + downloadFileDeleted.getUrl());
-                        }
-                        
-                        // delete succeed
-                        downloadFilesDeleted.add(downloadFileDeleted);
-                        
-                        // if the last one to delete,notify finish the operation
-                        if (count == downloadFilesNeedDelete.size() - 1) {
-                            Log.e("wlf_deletes", "onDeleteDownloadFileSuccess,onDeleteDownloadFilesCompleted");
-                            onDeleteDownloadFilesCompleted();
-                        }
-                    }
-
-                    @Override
-                    public void onDeleteDownloadFileFailed(DownloadFileInfo downloadFileInfo, OnDeleteDownloadFileFailReason failReason) {
-
-                        if(failReason != null) {
-                            Log.e("wlf_deletes", "删除失败,type：" + failReason.getType());
-                        }
-                        
-                        // delete failed
-                        downloadFilesSkip.add(downloadFileInfo);
-
-                        // if the last one to delete,notify finish the operation
-                        if (count == downloadFilesNeedDelete.size() - 1) {
-                            Log.e("wlf_deletes", "onDeleteDownloadFileFailed,onDeleteDownloadFilesCompleted");
-                            onDeleteDownloadFilesCompleted();
-                        }
-                    }
-                };
-
-                // start to delete single download
-                if (isInFileDownloadTaskMap(url)) {
-
-                        Log.e("wlf_deletes", "需要先暂停url："+url);
-                    
-                    // pause
-                    pauseInternal(url, new OnStopFileDownloadTaskListener() {
-
-                        @Override
-                        public void onStopFileDownloadTaskSucceed(String url) {
-
-                            Log.e("wlf_deletes", "暂停成功url："+url);
-                            
-                            if (isStop) {
-                                // notify delete finish
-                                Log.e("wlf_deletes", "onStopFileDownloadTaskSucceed,onDeleteDownloadFilesCompleted");
-                                onDeleteDownloadFilesCompleted();
-                                return;
-                            }
-                            // start delete
-                            deleteInternal(url, deleteDownloadedFile, onDeleteDownloadFileListener);
-                        }
-
-                        @Override
-                        public void onStopFileDownloadTaskFailed(String url, OnStopDownloadFileTaskFailReason failReason) {
-
-                            Log.e("wlf_deletes", "暂停失败url："+url+"，failReason："+failReason.getType());
-                            
-                            if (onDeleteDownloadFileListener != null) {
-                                OnDeleteDownloadFileListener.MainThreadHelper.onDeleteDownloadFileFailed(getDownloadFile(url), new OnDeleteDownloadFileFailReason(failReason), onDeleteDownloadFileListener);
-                            }
-                        }
-                    });
-                } else {
-
-                    Log.e("wlf_deletes", "直接删除url："+url);
-                    
-                    if (isStop) {
-                        // notify delete finish
-                        Log.e("wlf_deletes", "直接删除url,onDeleteDownloadFilesCompleted");
-                        onDeleteDownloadFilesCompleted();
-                        return;
-                    }
-                    // delete
-                    deleteInternal(url, deleteDownloadedFile, onDeleteDownloadFileListener);
+                if (isStopped()) {
+                    onDeleteDownloadFilesCompleted();
                 }
+
+                // deleting
+                delete(url, deleteDownloadedFile, onDeleteDownloadFileListener);
             }
+        }
+
+        // on delete finish
+        private void onDeleteDownloadFilesCompleted() {
+            if (hasReturn) {
+                return;
+            }
+            if (mOnDeleteDownloadFilesListener != null) {
+                mOnDeleteDownloadFilesListener.onDeleteDownloadFilesCompleted(downloadFilesNeedDelete, downloadFilesDeleted);
+            }
+
+            hasReturn = true;
+            isStop = true;
         }
     }
 
