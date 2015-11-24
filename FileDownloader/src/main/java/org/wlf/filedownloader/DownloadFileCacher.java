@@ -225,7 +225,7 @@ public class DownloadFileCacher extends DownloadFileDbRecorder {
      * get DownloadFile by savePath
      *
      * @param savePath            the path of the file saved in
-     * @param includeTempFilePath whether use the TempFilePath if Necessary
+     * @param includeTempFilePath true means try use the savePath as temp file savePath if can not get DownloadFile by savePath
      * @return DownloadFile
      */
     DownloadFileInfo getDownloadFileBySavePath(String savePath, boolean includeTempFilePath) {

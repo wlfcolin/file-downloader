@@ -446,6 +446,11 @@ public class MainActivity extends Activity implements OnDetectUrlFileListener, O
                     mFileDownloadManager.rename(urls.get(0), getString(R.string.main__rename_file_name), new OnRenameDownloadFileListener() {
 
                         @Override
+                        public void onRenameDownloadFilePrepared(DownloadFileInfo downloadFileNeedRename) {
+                            
+                        }
+
+                        @Override
                         public void onRenameDownloadFileSuccess(DownloadFileInfo downloadFileRenamed) {
                             showToast(getString(R.string.main__rename_succeed));
                             updateAdapter();

@@ -438,7 +438,7 @@ public class FileDownloadTask implements Runnable, Stoppable, OnHttpDownloadList
                                 notify = true;
                                 break;
                             case Status.DOWNLOAD_STATUS_ERROR:
-                                OnFileDownloadStatusListener.MainThreadHelper.onFileDownloadStatusFailed(getDownloadFile(), failReason, mOnFileDownloadStatusListener);
+                                OnFileDownloadStatusListener.MainThreadHelper.onFileDownloadStatusFailed(getUrl(),getDownloadFile(), failReason, mOnFileDownloadStatusListener);
                                 // notifyStopFailed
                                 notifyStopFailed(new OnStopDownloadFileTaskFailReason(failReason));
                                 break;
@@ -448,7 +448,7 @@ public class FileDownloadTask implements Runnable, Stoppable, OnHttpDownloadList
                 } catch (Exception e) {
                     e.printStackTrace();
                     // error
-                    OnFileDownloadStatusListener.MainThreadHelper.onFileDownloadStatusFailed(getDownloadFile(), new OnFileDownloadStatusFailReason(e), mOnFileDownloadStatusListener);
+                    OnFileDownloadStatusListener.MainThreadHelper.onFileDownloadStatusFailed(getUrl(),getDownloadFile(), new OnFileDownloadStatusFailReason(e), mOnFileDownloadStatusListener);
                     mIsNotifyTaskFinish = true;
                 } finally {
                     // if notify task finish,force stop if necessary

@@ -61,10 +61,11 @@ public interface OnFileDownloadStatusListener {
     /**
      * download error
      *
-     * @param downloadFileInfo download file info
+     * @param url              file url
+     * @param downloadFileInfo download file info,may null
      * @param failReason       fail reason
      */
-    void onFileDownloadStatusFailed(DownloadFileInfo downloadFileInfo, OnFileDownloadStatusFailReason failReason);
+    void onFileDownloadStatusFailed(String url, DownloadFileInfo downloadFileInfo, OnFileDownloadStatusFailReason failReason);
 
     /**
      * Callback helper for main thread
@@ -172,15 +173,16 @@ public interface OnFileDownloadStatusListener {
         /**
          * download error
          *
+         * @param url              file url
          * @param downloadFileInfo download file info
          * @param failReason       fail reason
          */
-        public static void onFileDownloadStatusFailed(final DownloadFileInfo downloadFileInfo, final OnFileDownloadStatusFailReason failReason, final OnFileDownloadStatusListener onFileDownloadStatusListener) {
+        public static void onFileDownloadStatusFailed(final String url, final DownloadFileInfo downloadFileInfo, final OnFileDownloadStatusFailReason failReason, final OnFileDownloadStatusListener onFileDownloadStatusListener) {
             final Handler handler = new Handler(Looper.getMainLooper());
             handler.post(new Runnable() {
                 @Override
                 public void run() {
-                    onFileDownloadStatusListener.onFileDownloadStatusFailed(downloadFileInfo, failReason);
+                    onFileDownloadStatusListener.onFileDownloadStatusFailed(url, downloadFileInfo, failReason);
                     handler.removeCallbacksAndMessages(null);
                 }
             });

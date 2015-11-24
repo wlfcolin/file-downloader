@@ -565,13 +565,14 @@ public class DownloadFileListAdapter extends BaseAdapter implements OnFileDownlo
     }
 
     @Override
-    public void onFileDownloadStatusFailed(DownloadFileInfo downloadFileInfo, OnFileDownloadStatusFailReason failReason) {
+    public void onFileDownloadStatusFailed(String url,DownloadFileInfo downloadFileInfo, OnFileDownloadStatusFailReason failReason) {
 
         if (downloadFileInfo == null) {
+            //
             return;
         }
 
-        String url = downloadFileInfo.getUrl();
+         url = downloadFileInfo.getUrl();
         View cacheConvertView = mConvertViews.get(url);
         if (cacheConvertView != null) {
 

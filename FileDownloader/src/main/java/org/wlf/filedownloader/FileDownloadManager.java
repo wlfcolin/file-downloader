@@ -17,6 +17,7 @@ import org.wlf.filedownloader.listener.OnMoveDownloadFileListener;
 import org.wlf.filedownloader.listener.OnMoveDownloadFileListener.OnMoveDownloadFileFailReason;
 import org.wlf.filedownloader.listener.OnMoveDownloadFilesListener;
 import org.wlf.filedownloader.listener.OnRenameDownloadFileListener;
+import org.wlf.filedownloader.listener.OnRenameDownloadFileListener.OnRenameDownloadFileFailReason;
 import org.wlf.filedownloader.task.DeleteDownloadFileTask;
 import org.wlf.filedownloader.task.DetectUrlFileTask;
 import org.wlf.filedownloader.task.FileDownloadTask;
@@ -24,6 +25,8 @@ import org.wlf.filedownloader.task.FileDownloadTask.OnStopDownloadFileTaskFailRe
 import org.wlf.filedownloader.task.FileDownloadTask.OnStopFileDownloadTaskListener;
 import org.wlf.filedownloader.task.FileDownloadTaskParamHelper;
 import org.wlf.filedownloader.task.MoveDownloadFileTask;
+import org.wlf.filedownloader.task.RenameDownloadFileTask;
+import org.wlf.filedownloader.util.CollectionUtil;
 import org.wlf.filedownloader.util.UrlUtil;
 
 import java.util.ArrayList;
@@ -72,11 +75,11 @@ public class FileDownloadManager {
     /**
      * the task for delete multi DownloadFiles
      */
-    private DeleteDownloadFilesTask mDeleteDownloadFilesTask = null;// FIXME pause task
+    private DeleteDownloadFilesTask mDeleteDownloadFilesTask = null;
     /**
      * the task for move multi DownloadFiles
      */
-    private MoveDownloadFilesTask mMoveDownloadFilesTask = null;// FIXME pause task
+    private MoveDownloadFilesTask mMoveDownloadFilesTask = null;
 
     /**
      * init lock
@@ -125,7 +128,7 @@ public class FileDownloadManager {
     /**
      * whether is Configuration initialized
      *
-     * @return true表示已经出初始化
+     * @return true means initialized
      */
     public boolean isInit() {
         synchronized (mInitLock) {
@@ -147,9 +150,9 @@ public class FileDownloadManager {
      */
     private void exceptionStateRecovery(List<DownloadFileInfo> downloadFileInfos) {
 
-        Log.d(TAG, "异常恢复检查！");
+        Log.d(TAG, "exceptionStateRecovery 异常恢复检查！");
 
-        if (downloadFileInfos == null || downloadFileInfos.isEmpty()) {
+        if (CollectionUtil.isEmpty(downloadFileInfos)) {
             return;
         }
 
@@ -170,7 +173,7 @@ public class FileDownloadManager {
                 case Status.DOWNLOAD_STATUS_PREPARING:
                 case Status.DOWNLOAD_STATUS_PREPARED:
                 case Status.DOWNLOAD_STATUS_DOWNLOADING:
-                    // recover
+                    // recover paused
                     try {
                         mDownloadFileCacher.recordStatus(url, Status.DOWNLOAD_STATUS_PAUSED, 0);
                     } catch (DownloadStatusRecordException e) {
@@ -184,7 +187,7 @@ public class FileDownloadManager {
                     break;
                 case Status.DOWNLOAD_STATUS_UNKNOWN:
                 default:
-                    // recover
+                    // recover error
                     try {
                         mDownloadFileCacher.recordStatus(url, Status.DOWNLOAD_STATUS_ERROR, 0);
                     } catch (DownloadStatusRecordException e) {
@@ -202,23 +205,7 @@ public class FileDownloadManager {
      * @return true means the download task map contains the file url task
      */
     private boolean isInFileDownloadTaskMap(String url) {
-        DownloadFileInfo downloadFileInfo = mDownloadFileCacher.getDownloadFile(url);
-        if (downloadFileInfo == null) {
-            return mFileDownloadTaskMap.containsKey(url);
-        }
-        switch (downloadFileInfo.getStatus()) {
-            case Status.DOWNLOAD_STATUS_WAITING:
-            case Status.DOWNLOAD_STATUS_PREPARING:
-            case Status.DOWNLOAD_STATUS_PREPARED:
-            case Status.DOWNLOAD_STATUS_DOWNLOADING:
-                return mFileDownloadTaskMap.containsKey(url);
-        }
-
-        // status is not allowed,clear
-        if (mFileDownloadTaskMap.containsKey(url)) {
-            mFileDownloadTaskMap.remove(url);
-        }
-        return false;
+        return getFileDownloadTask(url) != null;
     }
 
     /**
@@ -229,9 +216,10 @@ public class FileDownloadManager {
      */
     private FileDownloadTask getFileDownloadTask(String url) {
         DownloadFileInfo downloadFileInfo = mDownloadFileCacher.getDownloadFile(url);
-        if (downloadFileInfo == null) {
+        if (downloadFileInfo == null) {// not in cache,may in memory
             return mFileDownloadTaskMap.get(url);
         }
+        // check status,only waiting,preparing,prepared,downloading status are available
         switch (downloadFileInfo.getStatus()) {
             case Status.DOWNLOAD_STATUS_WAITING:
             case Status.DOWNLOAD_STATUS_PREPARING:
@@ -240,7 +228,7 @@ public class FileDownloadManager {
                 return mFileDownloadTaskMap.get(url);
         }
 
-        // status is not allowed,clear
+        // status is not allowed in map,clear
         if (mFileDownloadTaskMap.containsKey(url)) {
             mFileDownloadTaskMap.remove(url);
         }
@@ -290,7 +278,8 @@ public class FileDownloadManager {
     /**
      * get DownloadFile by save file path
      *
-     * @param savePath save file path
+     * @param savePath            save file path
+     * @param includeTempFilePath true means try use the savePath as temp file savePath if can not get DownloadFile by savePath
      * @return DownloadFile
      */
     public DownloadFileInfo getDownloadFileBySavePath(String savePath, boolean includeTempFilePath) {
@@ -310,76 +299,77 @@ public class FileDownloadManager {
      * start download task
      */
     private void addAndRunFileDownloadTask(DownloadFileInfo downloadFileInfo, OnFileDownloadStatusListener onFileDownloadStatusListener) {
-        // create
+        // create task
         FileDownloadTask fileDownloadTask = new FileDownloadTask(FileDownloadTaskParamHelper.createByDownloadFile(downloadFileInfo), mDownloadFileCacher);
         fileDownloadTask.setOnFileDownloadStatusListener(onFileDownloadStatusListener);
-        // record
+        // record task map
         mFileDownloadTaskMap.put(fileDownloadTask.getUrl(), fileDownloadTask);
         // start exec task
         mConfiguration.getFileDownloadEngine().execute(fileDownloadTask);
     }
 
     /**
-     * notify download failed
+     * notify download failed with task check
      */
-    private void notifyFileDownloadStatusFailed(final DownloadFileInfo downloadFileInfo, final OnFileDownloadStatusFailReason failReason, final OnFileDownloadStatusListener onFileDownloadStatusListener, boolean recordStatus) {
+    private void notifyFileDownloadStatusFailedWithCheck(final String url, final OnFileDownloadStatusFailReason failReason, final OnFileDownloadStatusListener onFileDownloadStatusListener, final boolean recordStatus) {
+        final DownloadFileInfo downloadFileInfo = getDownloadFile(url);
         // null
         if (downloadFileInfo == null) {
             // notify callback
             if (onFileDownloadStatusListener != null) {
-                OnFileDownloadStatusListener.MainThreadHelper.onFileDownloadStatusFailed(downloadFileInfo, new OnFileDownloadStatusFailReason(failReason), onFileDownloadStatusListener);
+                OnFileDownloadStatusListener.MainThreadHelper.onFileDownloadStatusFailed(url, downloadFileInfo, new OnFileDownloadStatusFailReason(failReason), onFileDownloadStatusListener);
             }
             return;
         }
-        String url = downloadFileInfo.getUrl();
-        if (recordStatus && isInFileDownloadTaskMap(url)) {
+
+        final String downloadUrl = downloadFileInfo.getUrl();
+
+        // downloading,pause first
+        if (isInFileDownloadTaskMap(downloadUrl)) {
             // pause
-            FileDownloadTask fileDownloadTask = getFileDownloadTask(url);
+            FileDownloadTask fileDownloadTask = getFileDownloadTask(downloadUrl);
             if (fileDownloadTask != null) {
                 fileDownloadTask.setOnStopFileDownloadTaskListener(new OnStopFileDownloadTaskListener() {
                     @Override
                     public void onStopFileDownloadTaskSucceed(String url) {
-                        // record status
-                        try {
-                            mDownloadFileCacher.recordStatus(downloadFileInfo.getUrl(), Status.DOWNLOAD_STATUS_ERROR, 0);
-                        } catch (DownloadStatusRecordException e) {
-                            e.printStackTrace();
-                        }
-                        // notify callback
-                        if (onFileDownloadStatusListener != null) {
-                            OnFileDownloadStatusListener.MainThreadHelper.onFileDownloadStatusFailed(downloadFileInfo, failReason, onFileDownloadStatusListener);
-                        }
+                        // notify
+                        notifyFileDownloadStatusFailed(downloadUrl, downloadFileInfo, failReason, onFileDownloadStatusListener, recordStatus);
                     }
 
                     @Override
                     public void onStopFileDownloadTaskFailed(String url, OnStopDownloadFileTaskFailReason failReason) {
-                        // record status
-                        try {
-                            mDownloadFileCacher.recordStatus(downloadFileInfo.getUrl(), Status.DOWNLOAD_STATUS_ERROR, 0);
-                        } catch (DownloadStatusRecordException e) {
-                            e.printStackTrace();
-                        }
-                        // notify callback
-                        if (onFileDownloadStatusListener != null) {
-                            OnFileDownloadStatusListener.MainThreadHelper.onFileDownloadStatusFailed(downloadFileInfo, new OnFileDownloadStatusFailReason(failReason), onFileDownloadStatusListener);
-                        }
+                        // notify
+                        notifyFileDownloadStatusFailed(downloadUrl, downloadFileInfo, new OnFileDownloadStatusFailReason(failReason), onFileDownloadStatusListener, recordStatus);
                     }
                 });
+
+                // pause
                 fileDownloadTask.stop();
+            } else {
+                // notify
+                notifyFileDownloadStatusFailed(downloadUrl, downloadFileInfo, failReason, onFileDownloadStatusListener, recordStatus);
             }
         } else {
-            if (recordStatus) {
-                // record status
-                try {
-                    mDownloadFileCacher.recordStatus(downloadFileInfo.getUrl(), Status.DOWNLOAD_STATUS_ERROR, 0);
-                } catch (DownloadStatusRecordException e) {
-                    e.printStackTrace();
-                }
+            // notify
+            notifyFileDownloadStatusFailed(downloadUrl, downloadFileInfo, failReason, onFileDownloadStatusListener, recordStatus);
+        }
+    }
+
+    /**
+     * notify download failed
+     */
+    private void notifyFileDownloadStatusFailed(String url, DownloadFileInfo downloadFileInfo, OnFileDownloadStatusFailReason failReason, OnFileDownloadStatusListener onFileDownloadStatusListener, boolean recordStatus) {
+        if (recordStatus) {
+            // record status
+            try {
+                mDownloadFileCacher.recordStatus(url, Status.DOWNLOAD_STATUS_ERROR, 0);
+            } catch (DownloadStatusRecordException e) {
+                e.printStackTrace();
             }
-            // notify callback
-            if (onFileDownloadStatusListener != null) {
-                OnFileDownloadStatusListener.MainThreadHelper.onFileDownloadStatusFailed(downloadFileInfo, failReason, onFileDownloadStatusListener);
-            }
+        }
+        // notify callback
+        if (onFileDownloadStatusListener != null) {
+            OnFileDownloadStatusListener.MainThreadHelper.onFileDownloadStatusFailed(url, downloadFileInfo, failReason, onFileDownloadStatusListener);
         }
     }
 
@@ -424,7 +414,7 @@ public class FileDownloadManager {
      * @param url                     file url
      * @param onDetectUrlFileListener DetectUrlFileListener
      */
-    public void detect(final String url, final OnDetectUrlFileListener onDetectUrlFileListener) {
+    public void detect(String url, OnDetectUrlFileListener onDetectUrlFileListener) {
 
         checkInit();
 
@@ -439,7 +429,7 @@ public class FileDownloadManager {
     // --------------------------------------create/continue download--------------------------------------
 
     /**
-     * create download task,please use {@link #detect(String, OnDetectUrlFileListener)} to detect url file
+     * create download task,please use {@link #detect(String, OnDetectUrlFileListener)} to detect url file first
      *
      * @param url                          file url
      * @param saveDir                      saveDir
@@ -455,37 +445,37 @@ public class FileDownloadManager {
         if (detectUrlFileInfo == null) {
             // error detect file does not exist
             OnFileDownloadStatusFailReason failReason = new OnFileDownloadStatusFailReason("detect file does not exist!", OnFileDownloadStatusFailReason.TYPE_FILE_NOT_DETECT);
-            // notifyFileDownloadStatusFailed
-            notifyFileDownloadStatusFailed(getDownloadFile(url), failReason, onFileDownloadStatusListener, false);
+            // notifyFileDownloadStatusFailedWithCheck
+            notifyFileDownloadStatusFailedWithCheck(url, failReason, onFileDownloadStatusListener, false);
             return;
         }
 
         // 2.prepared to create task
         detectUrlFileInfo.setFileDir(saveDir);
         detectUrlFileInfo.setFileName(fileName);
-        createAndStartByDetectUrlFile(detectUrlFileInfo, onFileDownloadStatusListener);
+        createAndStartByDetectUrlFile(url, detectUrlFileInfo, onFileDownloadStatusListener);
     }
 
     // create download task by using detectUrlFileInfo
-    private void createAndStartByDetectUrlFile(DetectUrlFileInfo detectUrlFileInfo, OnFileDownloadStatusListener onFileDownloadStatusListener) {
+    private void createAndStartByDetectUrlFile(String url, DetectUrlFileInfo detectUrlFileInfo, OnFileDownloadStatusListener onFileDownloadStatusListener) {
 
         // 1.check detectUrlFileInfo
         if (detectUrlFileInfo == null) {
             // error detect file does not exist
             OnFileDownloadStatusFailReason failReason = new OnFileDownloadStatusFailReason("detect file does not exist!", OnFileDownloadStatusFailReason.TYPE_FILE_NOT_DETECT);
-            // notifyFileDownloadStatusFailed
-            notifyFileDownloadStatusFailed(null, failReason, onFileDownloadStatusListener, false);
+            // notifyFileDownloadStatusFailedWithCheck
+            notifyFileDownloadStatusFailedWithCheck(url, failReason, onFileDownloadStatusListener, false);
             return;
         }
 
-        String url = detectUrlFileInfo.getUrl();
+        String downloadUrl = detectUrlFileInfo.getUrl();
 
         // 2.whether task is in download map
-        if (isInFileDownloadTaskMap(url)) {
+        if (isInFileDownloadTaskMap(downloadUrl)) {
             // error downloading
             OnFileDownloadStatusFailReason failReason = new OnFileDownloadStatusFailReason("the task has been in download task map!", OnFileDownloadStatusFailReason.TYPE_FILE_IS_DOWNLOADING);
-            // notifyFileDownloadStatusFailed
-            notifyFileDownloadStatusFailed(getDownloadFile(url), failReason, onFileDownloadStatusListener, false);
+            // notifyFileDownloadStatusFailedWithCheck
+            notifyFileDownloadStatusFailedWithCheck(downloadUrl, failReason, onFileDownloadStatusListener, false);
             return;
         }
 
@@ -495,13 +485,13 @@ public class FileDownloadManager {
         mDownloadFileCacher.addDownloadFile(downloadFileInfo);
 
         // 4.start download task
-        startInternal(downloadFileInfo, onFileDownloadStatusListener);
+        startInternal(downloadUrl, downloadFileInfo, onFileDownloadStatusListener);
     }
 
     /**
      * start download task
      */
-    private void startInternal(DownloadFileInfo downloadFileInfo, OnFileDownloadStatusListener onFileDownloadStatusListener) {
+    private void startInternal(String url, DownloadFileInfo downloadFileInfo, OnFileDownloadStatusListener onFileDownloadStatusListener) {
 
         OnFileDownloadStatusFailReason failReason = null;// null means there are not errors
 
@@ -512,19 +502,20 @@ public class FileDownloadManager {
                 failReason = new OnFileDownloadStatusFailReason("the downloadFileInfo does not exist!", OnFileDownloadStatusFailReason.TYPE_NULL_POINTER);
             }
         } else {
-            String url = downloadFileInfo.getUrl();
+            String downloadUrl = downloadFileInfo.getUrl();
             // 2.whether task is in download map
-            if (failReason == null && isInFileDownloadTaskMap(url)) {
+            if (failReason == null && isInFileDownloadTaskMap(downloadUrl)) {
                 // error downloading
                 failReason = new OnFileDownloadStatusFailReason("the task has been in download task map!", OnFileDownloadStatusFailReason.TYPE_FILE_IS_DOWNLOADING);
+                url = downloadUrl;
             }
 
         }
 
         // error
         if (failReason != null) {
-            // notifyFileDownloadStatusFailed
-            notifyFileDownloadStatusFailed(downloadFileInfo, failReason, onFileDownloadStatusListener, false);
+            // notifyFileDownloadStatusFailedWithCheck
+            notifyFileDownloadStatusFailedWithCheck(url, failReason, onFileDownloadStatusListener, false);
             return;
         }
 
@@ -546,7 +537,7 @@ public class FileDownloadManager {
         // has been downloaded
         if (downloadFileInfo != null) {
             // continue download task
-            startInternal(downloadFileInfo, onFileDownloadStatusListener);
+            startInternal(downloadFileInfo.getUrl(), downloadFileInfo, onFileDownloadStatusListener);
         }
         // not download
         else {
@@ -554,7 +545,7 @@ public class FileDownloadManager {
             // detected
             if (detectUrlFileInfo != null) {
                 // create download task
-                createAndStartByDetectUrlFile(detectUrlFileInfo, onFileDownloadStatusListener);
+                createAndStartByDetectUrlFile(detectUrlFileInfo.getUrl(), detectUrlFileInfo, onFileDownloadStatusListener);
             }
             // not detect
             else {
@@ -562,14 +553,14 @@ public class FileDownloadManager {
                 detect(url, new OnDetectUrlFileListener() {
                     @Override
                     public void onDetectUrlFileFailed(String url, DetectUrlFileFailReason failReason) {
-                        // 1.notifyFileDownloadStatusFailed
-                        notifyFileDownloadStatusFailed(getDownloadFile(url), new OnFileDownloadStatusFailReason(failReason), onFileDownloadStatusListener, false);
+                        // 1.notifyFileDownloadStatusFailedWithCheck
+                        notifyFileDownloadStatusFailedWithCheck(url, new OnFileDownloadStatusFailReason(failReason), onFileDownloadStatusListener, false);
                     }
 
                     @Override
                     public void onDetectUrlFileExist(String url) {
                         // continue download task
-                        startInternal(getDownloadFile(url), onFileDownloadStatusListener);
+                        startInternal(url, getDownloadFile(url), onFileDownloadStatusListener);
                     }
 
                     @Override
@@ -608,13 +599,16 @@ public class FileDownloadManager {
 
         // get download task info
         FileDownloadTask fileDownloadTask = getFileDownloadTask(url);
+        // in the download task,need to pause
         if (fileDownloadTask != null) {
             // set OnStopFileDownloadTaskListener
             fileDownloadTask.setOnStopFileDownloadTaskListener(new OnStopFileDownloadTaskListener() {
 
                 @Override
                 public void onStopFileDownloadTaskSucceed(String url) {
-                    Log.e("wlf_pause", "暂停成功url：" + url);
+
+                    Log.d(TAG, "pauseInternal 暂停成功url：" + url);
+
                     onFileDownloadTaskStopped(url);
                     if (onStopFileDownloadTaskListener != null) {
                         onStopFileDownloadTaskListener.onStopFileDownloadTaskSucceed(url);
@@ -623,7 +617,9 @@ public class FileDownloadManager {
 
                 @Override
                 public void onStopFileDownloadTaskFailed(String url, OnStopDownloadFileTaskFailReason failReason) {
-                    Log.e("wlf_pause", "暂停失败url：" + url + ",failReason:" + failReason);
+
+                    Log.d(TAG, "pauseInternal 暂停失败url：" + url + ",failReason:" + failReason);
+
                     if (onStopFileDownloadTaskListener != null) {
                         onStopFileDownloadTaskListener.onStopFileDownloadTaskFailed(url, failReason);
                     }
@@ -633,6 +629,14 @@ public class FileDownloadManager {
             fileDownloadTask.stop();
             return true;
         } else {
+
+            OnStopDownloadFileTaskFailReason failReason = new OnStopDownloadFileTaskFailReason("the task has been paused!", OnStopDownloadFileTaskFailReason.TYPE_IS_STOPPED);
+
+            Log.d(TAG, "pauseInternal 已经暂停url：" + url + ",failReason:" + failReason);
+
+            if (onStopFileDownloadTaskListener != null) {
+                onStopFileDownloadTaskListener.onStopFileDownloadTaskFailed(url, failReason);
+            }
             return false;
         }
     }
@@ -690,8 +694,18 @@ public class FileDownloadManager {
 
                 @Override
                 public void onStopFileDownloadTaskFailed(String url, OnStopDownloadFileTaskFailReason failReason) {
-                    // error FIXME
-                    notifyFileDownloadStatusFailed(getDownloadFile(url), new OnFileDownloadStatusFailReason(failReason), onFileDownloadStatusListener, false);
+                    if (failReason != null) {
+                        if (OnStopDownloadFileTaskFailReason.TYPE_IS_STOPPED.equals(failReason.getType())) {
+                            // has been stopped
+                            start(url, onFileDownloadStatusListener);
+                        } else {
+                            // error
+                            notifyFileDownloadStatusFailedWithCheck(url, new OnFileDownloadStatusFailReason(failReason), onFileDownloadStatusListener, false);
+                        }
+                    } else {
+                        // error
+                        notifyFileDownloadStatusFailedWithCheck(url, new OnFileDownloadStatusFailReason(failReason), onFileDownloadStatusListener, false);
+                    }
                 }
             });
         } else {
@@ -719,7 +733,7 @@ public class FileDownloadManager {
     /**
      * delete download
      */
-    private void deleteInternal(String url, final boolean deleteDownloadedFileInPath, final OnDeleteDownloadFileListener onDeleteDownloadFileListener) {
+    private void deleteInternal(String url, boolean deleteDownloadedFileInPath, OnDeleteDownloadFileListener onDeleteDownloadFileListener) {
 
         // create delete download task
         DeleteDownloadFileTask deleteDownloadFileTask = new DeleteDownloadFileTask(url, deleteDownloadedFileInPath, mDownloadFileCacher);
@@ -739,25 +753,45 @@ public class FileDownloadManager {
 
         checkInit();
 
+        final DownloadFileInfo downloadFileInfo = getDownloadFile(url);
+        if (downloadFileInfo == null) {
+
+            Log.d(TAG, "delete 文件不存在,url:" + url);
+
+            // the DownloadFile does not exist
+            if (onDeleteDownloadFileListener != null) {
+                onDeleteDownloadFileListener.onDeleteDownloadFileFailed(downloadFileInfo, new OnDeleteDownloadFileFailReason("the download file doest not exist!", OnDeleteDownloadFileFailReason.TYPE_FILE_RECORD_IS_NOT_EXIST));
+            }
+            return;
+        }
+
         FileDownloadTask task = getFileDownloadTask(url);
         if (task == null || task.isStopped()) {
-            Log.e("wlf__d", "直接删除,url:" + url);
+
+            Log.d(TAG, "delete 直接删除,url:" + url);
+
             deleteInternal(url, deleteDownloadedFileInPath, onDeleteDownloadFileListener);
         } else {
-            Log.e("wlf__d", "先暂停后删除,url:" + url);
+
+            Log.d(TAG, "delete 需要先暂停后删除,url:" + url);
+
             // pause
             pauseInternal(url, new OnStopFileDownloadTaskListener() {
                 @Override
                 public void onStopFileDownloadTaskSucceed(String url) {
-                    Log.e("wlf__d", "暂停成功，删除,url:" + url);
+
+                    Log.d(TAG, "delete 暂停成功，开始删除,url:" + url);
+
                     deleteInternal(url, deleteDownloadedFileInPath, onDeleteDownloadFileListener);
                 }
 
                 @Override
                 public void onStopFileDownloadTaskFailed(String url, OnStopDownloadFileTaskFailReason failReason) {
-                    Log.e("wlf__d", "暂停失败，无法删除,url:" + url);
+
+                    Log.d(TAG, "delete 暂停失败，无法删除,url:" + url);
+
                     if (onDeleteDownloadFileListener != null) {
-                        OnDeleteDownloadFileListener.MainThreadHelper.onDeleteDownloadFileFailed(getDownloadFile(url), new OnDeleteDownloadFileFailReason(failReason), onDeleteDownloadFileListener);
+                        OnDeleteDownloadFileListener.MainThreadHelper.onDeleteDownloadFileFailed(downloadFileInfo, new OnDeleteDownloadFileFailReason(failReason), onDeleteDownloadFileListener);
                     }
                 }
             });
@@ -771,7 +805,7 @@ public class FileDownloadManager {
      * @param deleteDownloadedFile          whether delete file in path
      * @param onDeleteDownloadFilesListener DeleteDownloadFilesListener
      */
-    public void delete(final List<String> urls, final boolean deleteDownloadedFile, final OnDeleteDownloadFilesListener onDeleteDownloadFilesListener) {
+    public void delete(List<String> urls, boolean deleteDownloadedFile, OnDeleteDownloadFilesListener onDeleteDownloadFilesListener) {
 
         checkInit();
 
@@ -809,24 +843,49 @@ public class FileDownloadManager {
     public void move(final String url, final String newDirPath, final OnMoveDownloadFileListener onMoveDownloadFileListener) {
 
         checkInit();
-        if (isInFileDownloadTaskMap(url)) {
+
+        final DownloadFileInfo downloadFileInfo = getDownloadFile(url);
+        if (downloadFileInfo == null) {
+
+            Log.d(TAG, "move 文件不存在,url:" + url);
+
+            // the DownloadFile does not exist
+            if (onMoveDownloadFileListener != null) {
+                onMoveDownloadFileListener.onMoveDownloadFileFailed(downloadFileInfo, new OnMoveDownloadFileFailReason("the download file doest not exist!", OnMoveDownloadFileFailReason.TYPE_ORIGINAL_FILE_NOT_EXIST));
+            }
+            return;
+        }
+
+        FileDownloadTask task = getFileDownloadTask(url);
+        if (task == null || task.isStopped()) {
+
+            Log.d(TAG, "move 直接移动,url:" + url);
+
+            moveInternal(url, newDirPath, onMoveDownloadFileListener);
+        } else {
+
+            Log.d(TAG, "move 需要先暂停后移动,url:" + url);
+
             // pause
             pauseInternal(url, new OnStopFileDownloadTaskListener() {
-
                 @Override
                 public void onStopFileDownloadTaskSucceed(String url) {
+
+                    Log.d(TAG, "move 暂停成功，开始移动,url:" + url);
+
                     moveInternal(url, newDirPath, onMoveDownloadFileListener);
                 }
 
                 @Override
                 public void onStopFileDownloadTaskFailed(String url, OnStopDownloadFileTaskFailReason failReason) {
+
+                    Log.d(TAG, "move 暂停失败，无法移动,url:" + url);
+
                     if (onMoveDownloadFileListener != null) {
-                        OnMoveDownloadFileListener.MainThreadHelper.onMoveDownloadFileFailed(getDownloadFile(url), new OnMoveDownloadFileFailReason(failReason), onMoveDownloadFileListener);
+                        OnMoveDownloadFileListener.MainThreadHelper.onMoveDownloadFileFailed(downloadFileInfo, new OnMoveDownloadFileFailReason(failReason), onMoveDownloadFileListener);
                     }
                 }
             });
-        } else {
-            moveInternal(url, newDirPath, onMoveDownloadFileListener);
         }
     }
 
@@ -837,7 +896,7 @@ public class FileDownloadManager {
      * @param newDirPath                  new dir path
      * @param onMoveDownloadFilesListener MoveDownloadFilesListener
      */
-    public void move(List<String> urls, String newDirPath, final OnMoveDownloadFilesListener onMoveDownloadFilesListener) {
+    public void move(List<String> urls, String newDirPath, OnMoveDownloadFilesListener onMoveDownloadFilesListener) {
 
         checkInit();
 
@@ -855,6 +914,16 @@ public class FileDownloadManager {
         this.mMoveDownloadFilesTask = moveDownloadFilesTask;
     }
 
+    // --------------------------------------rename download--------------------------------------
+
+    private void renameInternal(String url, String newFileName, OnRenameDownloadFileListener onRenameDownloadFileListener) {
+
+        RenameDownloadFileTask task = new RenameDownloadFileTask(url, newFileName, mDownloadFileCacher);
+        task.setOnRenameDownloadFileListener(onRenameDownloadFileListener);
+
+        addAndRunSupportTask(task);
+    }
+
     /**
      * rename download
      *
@@ -866,15 +935,30 @@ public class FileDownloadManager {
 
         checkInit();
 
-        // TODO 待实现
+        OnRenameDownloadFileFailReason failReason = null;
 
-        if (isInFileDownloadTaskMap(url)) {
-            //            if(onRenameDownloadFileListener != null){
-            //                onRenameDownloadFileListener.onRenameDownloadFileFailed(getDownloadFile(url),);
-            //            }
-            // 正在下载不允许重命名
+        DownloadFileInfo downloadFileInfo = getDownloadFile(url);
+        if (downloadFileInfo == null) {
+            failReason = new OnRenameDownloadFileFailReason("the download file is not exist!", OnRenameDownloadFileFailReason.TYPE_FILE_RECORD_IS_NOT_EXIST);
         }
 
+        if (failReason == null && downloadFileInfo.getStatus() != Status.DOWNLOAD_STATUS_COMPLETED) {
+            failReason = new OnRenameDownloadFileFailReason("the file does not complete download!", OnRenameDownloadFileFailReason.TYPE_FILE_DOES_NOT_COMPLETE_DOWNLOAD);
+        }
+
+        if (failReason != null) {
+
+            Log.d(TAG, "rename 重命名失败,url:" + url);
+
+            // error
+            if (onRenameDownloadFileListener != null) {
+                onRenameDownloadFileListener.onRenameDownloadFileFailed(downloadFileInfo, failReason);
+            }
+            return;
+        }
+
+        // rename
+        renameInternal(url, newFileName, onRenameDownloadFileListener);
     }
 
     // ======================================inner classes(operation tasks)======================================
@@ -932,7 +1016,9 @@ public class FileDownloadManager {
 
             // prepare to delete
             if (mOnDeleteDownloadFilesListener != null) {
-                Log.e("wlf_deletes", "准备批量删除");
+
+                Log.d(TAG, "DeleteDownloadFilesTask.run 准备批量删除，大小：" + downloadFilesNeedDelete.size());
+
                 OnDeleteDownloadFilesListener.MainThreadHelper.onDeleteDownloadFilePrepared(downloadFilesNeedDelete, mOnDeleteDownloadFilesListener);
             }
 
@@ -943,9 +1029,12 @@ public class FileDownloadManager {
                 @Override
                 public void onDeleteDownloadFilePrepared(DownloadFileInfo downloadFileNeedDelete) {
 
+                    String url = null;
                     if (downloadFileNeedDelete != null) {
-                        Log.e("wlf_deletes", "准备批量删除downloadFileNeedDelete：" + downloadFileNeedDelete.getUrl());
+                        url = downloadFileNeedDelete.getUrl();
                     }
+
+                    Log.d(TAG, "DeleteDownloadFilesTask.run 准备删除，url：" + url);
 
                     // start new delete
                     if (mOnDeleteDownloadFilesListener != null) {
@@ -958,20 +1047,21 @@ public class FileDownloadManager {
                 @Override
                 public void onDeleteDownloadFileSuccess(DownloadFileInfo downloadFileDeleted) {
 
-                    String url = "";
-
+                    String url = null;
                     if (downloadFileDeleted != null) {
                         url = downloadFileDeleted.getUrl();
                     }
 
-                    Log.e("wlf__d", "onDeleteDownloadFileSuccess,删除成功，deleteCount：" + deleteCount + ",downloadFilesNeedDelete.size():" + downloadFilesNeedDelete.size() + ",url:" + url);
+                    Log.d(TAG, "DeleteDownloadFilesTask.run onDeleteDownloadFileSuccess,删除成功，deleteCount：" + deleteCount + ",downloadFilesNeedDelete.size():" + downloadFilesNeedDelete.size() + "，url：" + url);
 
                     // delete succeed
                     downloadFilesDeleted.add(downloadFileDeleted);
 
                     // if the last one to delete,notify finish the operation
                     if (deleteCount == downloadFilesNeedDelete.size() - downloadFilesSkip.size()) {
-                        Log.e("wlf__d", "onDeleteDownloadFileSuccess,完成回调");
+
+                        Log.d(TAG, "DeleteDownloadFilesTask.run onDeleteDownloadFileSuccess,删除成功，回调onDeleteDownloadFilesCompleted");
+
                         onDeleteDownloadFilesCompleted();
                     }
                 }
@@ -979,32 +1069,32 @@ public class FileDownloadManager {
                 @Override
                 public void onDeleteDownloadFileFailed(DownloadFileInfo downloadFileInfo, OnDeleteDownloadFileFailReason failReason) {
 
-                    String url = "";
-
+                    String url = null;
                     if (downloadFileInfo != null) {
                         url = downloadFileInfo.getUrl();
                     }
 
-                    String type = "";
-
+                    String type = null;
                     if (failReason != null) {
                         type = failReason.getType();
                     }
 
-                    Log.e("wlf__d", "onDeleteDownloadFileFailed,删除失败，deleteCount：" + deleteCount + ",downloadFilesNeedDelete.size():" + downloadFilesNeedDelete.size() + ",url:" + url + ",failReason:" + type);
+                    Log.d(TAG, "DeleteDownloadFilesTask.run onDeleteDownloadFileFailed,删除失败，deleteCount：" + deleteCount + ",downloadFilesNeedDelete.size():" + downloadFilesNeedDelete.size() + "，url：" + url + ",failReason:" + type);
 
                     // delete failed
                     downloadFilesSkip.add(downloadFileInfo);
 
                     // if the last one to delete,notify finish the operation
-                    if (deleteCount == downloadFilesNeedDelete.size() - downloadFilesNeedDelete.size()) {
-                        Log.e("wlf__d", "onDeleteDownloadFileFailed,完成回调");
+                    if (deleteCount == downloadFilesNeedDelete.size() - downloadFilesSkip.size()) {
+
+                        Log.d(TAG, "DeleteDownloadFilesTask.run onDeleteDownloadFileFailed,删除失败，回调onDeleteDownloadFilesCompleted");
+
                         onDeleteDownloadFilesCompleted();
                     }
                 }
             };
 
-
+            // delete every single one
             for (int i = 0; i < downloadFilesNeedDelete.size(); i++) {
 
                 DownloadFileInfo downloadFileInfo = downloadFilesNeedDelete.get(i);
@@ -1014,7 +1104,11 @@ public class FileDownloadManager {
 
                 String url = downloadFileInfo.getUrl();
 
+                // if the task stopped,notify completed
                 if (isStopped()) {
+
+                    Log.d(TAG, "DeleteDownloadFilesTask.run task has been sopped,任务已经被取消，无法继续删除，回调onDeleteDownloadFilesCompleted");
+
                     onDeleteDownloadFilesCompleted();
                 }
 
@@ -1031,7 +1125,6 @@ public class FileDownloadManager {
             if (mOnDeleteDownloadFilesListener != null) {
                 mOnDeleteDownloadFilesListener.onDeleteDownloadFilesCompleted(downloadFilesNeedDelete, downloadFilesDeleted);
             }
-
             hasReturn = true;
             isStop = true;
         }
@@ -1073,123 +1166,133 @@ public class FileDownloadManager {
             return isStop;
         }
 
+        @Override
+        public void run() {
+
+            for (String url : urls) {
+                if (!UrlUtil.isUrl(url)) {
+                    continue;
+                }
+                DownloadFileInfo downloadFileInfo = getDownloadFile(url);
+                if (downloadFileInfo != null) {
+                    downloadFilesNeedMove.add(downloadFileInfo);
+                }
+            }
+
+            // prepare to delete
+            if (mOnMoveDownloadFilesListener != null) {
+
+                Log.d(TAG, "MoveDownloadFilesTask.run 准备批量移动，大小：" + downloadFilesNeedMove.size());
+
+                OnMoveDownloadFilesListener.MainThreadHelper.onMoveDownloadFilesPrepared(downloadFilesNeedMove, mOnMoveDownloadFilesListener);
+            }
+
+            OnMoveDownloadFileListener onMoveDownloadFileListener = new OnMoveDownloadFileListener() {
+
+                private int deleteCount = 0;
+
+                @Override
+                public void onMoveDownloadFilePrepared(DownloadFileInfo downloadFileNeedToMove) {
+
+                    String url = null;
+                    if (downloadFileNeedToMove != null) {
+                        url = downloadFileNeedToMove.getUrl();
+                    }
+
+                    Log.d(TAG, "MoveDownloadFilesTask.run 准备删除，url：" + url);
+
+                    // start new move
+                    if (mOnMoveDownloadFilesListener != null) {
+                        mOnMoveDownloadFilesListener.onMovingDownloadFiles(downloadFilesNeedMove, downloadFilesMoved, downloadFilesSkip, downloadFileNeedToMove);
+                    }
+
+                    deleteCount++;
+                }
+
+                @Override
+                public void onMoveDownloadFileSuccess(DownloadFileInfo downloadFileMoved) {
+
+                    String url = null;
+                    if (downloadFileMoved != null) {
+                        url = downloadFileMoved.getUrl();
+                    }
+
+                    Log.d(TAG, "MoveDownloadFilesTask.run onMoveDownloadFileSuccess,移动成功，moveCount：" + deleteCount + ",downloadFilesNeedMove.size():" + downloadFilesNeedMove.size() + "，url：" + url);
+
+                    // move succeed
+                    downloadFilesMoved.add(downloadFileMoved);
+
+                    // if the last one to move,notify finish the operation
+                    if (deleteCount == downloadFilesNeedMove.size() - downloadFilesSkip.size()) {
+
+                        Log.d(TAG, "MoveDownloadFilesTask.run onMoveDownloadFileSuccess,移动成功，回调onMoveDownloadFilesCompleted");
+
+                        onMoveDownloadFilesCompleted();
+                    }
+                }
+
+                @Override
+                public void onMoveDownloadFileFailed(DownloadFileInfo downloadFileInfo, OnMoveDownloadFileFailReason failReason) {
+
+                    String url = null;
+                    if (downloadFileInfo != null) {
+                        url = downloadFileInfo.getUrl();
+                    }
+
+                    String type = null;
+                    if (failReason != null) {
+                        type = failReason.getType();
+                    }
+
+                    Log.d(TAG, "MoveDownloadFilesTask.run onMoveDownloadFileFailed,移动失败，moveCount：" + deleteCount + ",downloadFilesNeedMove.size():" + downloadFilesNeedMove.size() + "，url：" + url + ",failReason:" + type);
+
+                    // move failed
+                    downloadFilesSkip.add(downloadFileInfo);
+
+                    // if the last one to move,notify finish the operation
+                    if (deleteCount == downloadFilesNeedMove.size() - downloadFilesSkip.size()) {
+
+                        Log.d(TAG, "MoveDownloadFilesTask.run onMoveDownloadFileFailed,移动失败，回调onMoveDownloadFilesCompleted");
+
+                        onMoveDownloadFilesCompleted();
+                    }
+                }
+            };
+
+
+            // move every single one
+            for (int i = 0; i < downloadFilesNeedMove.size(); i++) {
+
+                DownloadFileInfo downloadFileInfo = downloadFilesNeedMove.get(i);
+                if (downloadFileInfo == null) {
+                    continue;
+                }
+
+                String url = downloadFileInfo.getUrl();
+
+                // if the task stopped,notify completed
+                if (isStopped()) {
+
+                    Log.d(TAG, "MoveDownloadFilesTask.run task has been sopped,任务已经被取消，无法继续移动，回调onMoveDownloadFilesCompleted");
+
+                    onMoveDownloadFilesCompleted();
+                }
+
+                // moving
+                move(url, newDirPath, onMoveDownloadFileListener);
+            }
+        }
+
         // move finish
         private void onMoveDownloadFilesCompleted() {
             if (hasReturn) {
                 return;
             }
-            hasReturn = true;
             if (mOnMoveDownloadFilesListener != null) {
                 mOnMoveDownloadFilesListener.onMoveDownloadFilesCompleted(downloadFilesNeedMove, downloadFilesMoved);
             }
+            hasReturn = true;
             isStop = true;
-        }
-
-        @Override
-        public void run() {
-
-            // get DownloadFiles by urls
-            for (String url : urls) {
-                if (TextUtils.isEmpty(url)) {
-                    continue;
-                }
-                downloadFilesNeedMove.add(getDownloadFile(url));
-            }
-
-            // prepare to move
-            if (mOnMoveDownloadFilesListener != null) {
-                mOnMoveDownloadFilesListener.onMoveDownloadFilesPrepared(downloadFilesNeedMove);
-            }
-
-            // move
-            for (int i = 0; i < downloadFilesNeedMove.size(); i++) {
-                if (isStop) {
-                    // notify move finish
-                    onMoveDownloadFilesCompleted();
-                    break;
-                }
-
-                DownloadFileInfo downloadFileInfo = downloadFilesNeedMove.get(i);
-
-                if (downloadFileInfo == null) {
-                    continue;
-                }
-
-                final int count = i;
-
-                String url = downloadFileInfo.getUrl();
-
-                // listen single download file moved
-                final OnMoveDownloadFileListener onMoveDownloadFileListener = new OnMoveDownloadFileListener() {
-
-                    @Override
-                    public void onMoveDownloadFilePrepared(DownloadFileInfo downloadFileNeedToMove) {
-                        if (isStop) {
-                            // notify move finish
-                            onMoveDownloadFilesCompleted();
-                            return;
-                        }
-                        // start move
-                        if (mOnMoveDownloadFilesListener != null) {
-                            mOnMoveDownloadFilesListener.onMovingDownloadFiles(downloadFilesNeedMove, downloadFilesMoved, downloadFilesSkip, downloadFileNeedToMove);
-                        }
-                    }
-
-                    @Override
-                    public void onMoveDownloadFileSuccess(DownloadFileInfo downloadFileMoved) {
-                        // move succeed
-                        downloadFilesMoved.add(downloadFileMoved);
-
-                        // if the last one to delete,notify finish the operation
-                        if (count == downloadFilesNeedMove.size() - 1) {
-                            onMoveDownloadFilesCompleted();
-                        }
-                    }
-
-                    @Override
-                    public void onMoveDownloadFileFailed(DownloadFileInfo downloadFileInfo, OnMoveDownloadFileFailReason failReason) {
-                        // move failed
-                        downloadFilesSkip.add(downloadFileInfo);
-
-                        // if the last one to delete,notify finish the operation
-                        if (count == downloadFilesNeedMove.size() - 1) {
-                            onMoveDownloadFilesCompleted();
-                        }
-                    }
-
-                };
-
-                // start move
-                if (isInFileDownloadTaskMap(url)) {
-                    // pause
-                    pauseInternal(url, new OnStopFileDownloadTaskListener() {
-
-                        @Override
-                        public void onStopFileDownloadTaskSucceed(String url) {
-                            if (isStop) {
-                                // notify move finish
-                                onMoveDownloadFilesCompleted();
-                                return;
-                            }
-                            moveInternal(url, newDirPath, onMoveDownloadFileListener);
-                        }
-
-                        @Override
-                        public void onStopFileDownloadTaskFailed(String url, OnStopDownloadFileTaskFailReason failReason) {
-                            if (onMoveDownloadFileListener != null) {
-                                OnMoveDownloadFileListener.MainThreadHelper.onMoveDownloadFileFailed(getDownloadFile(url), new OnMoveDownloadFileFailReason(failReason), onMoveDownloadFileListener);
-                            }
-                        }
-                    });
-                } else {
-                    if (isStop) {
-                        // notify move finish
-                        onMoveDownloadFilesCompleted();
-                        return;
-                    }
-                    moveInternal(url, newDirPath, onMoveDownloadFileListener);
-                }
-            }
         }
     }
 }
