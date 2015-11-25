@@ -8,3 +8,4 @@ this is a powerful http-file download tool,my goal is to make downloading file e
 ![image](https://github.com/wlfcolin/file-downloader/blob/master/capture/device-2015-11-25-181138.png)
 ![image](https://github.com/wlfcolin/file-downloader/blob/master/capture/device-2015-11-25-181155.png)
 ![image](https://github.com/wlfcolin/file-downloader/blob/master/capture/device-2015-11-25-181203.png)
+![image](https://github.com/wlfcolin/file-downloader/blob/master/capture/device-2015-11-25-181712.png)
