@@ -73,7 +73,7 @@ public class DownloadFileListAdapter extends BaseAdapter implements OnFileDownlo
         this.mDownloadFileInfos = FileDownloadManager.getInstance(mActivity).getDownloadFiles();
         mConvertViews.clear();
         mSelectedDownloadFileInfos.clear();
-        if(mOnItemSelectListener != null){
+        if (mOnItemSelectListener != null) {
             mOnItemSelectListener.onNoneSelect();
         }
     }
@@ -124,7 +124,7 @@ public class DownloadFileListAdapter extends BaseAdapter implements OnFileDownlo
         View cacheConvertView = mConvertViews.get(url);
 
         if (cacheConvertView == null) {
-            cacheConvertView = View.inflate(parent.getContext(), R.layout.item_download, null);
+            cacheConvertView = View.inflate(parent.getContext(), R.layout.main__item_download, null);
             mConvertViews.put(url, cacheConvertView);
         }
 
@@ -139,9 +139,9 @@ public class DownloadFileListAdapter extends BaseAdapter implements OnFileDownlo
         CheckBox cbSelect = (CheckBox) cacheConvertView.findViewById(R.id.cbSelect);
 
         if ("apk".equalsIgnoreCase(FileUtil.getFileSuffix(downloadFileInfo.getFileName()))) {// apk
-            ivIcon.setImageResource(R.drawable.ic_apk);
+            ivIcon.setImageResource(R.mipmap.main__ic_apk);
         } else {
-            ivIcon.setImageResource(R.drawable.ic_launcher);
+            ivIcon.setImageResource(R.mipmap.ic_launcher);
         }
 
         // file name
@@ -202,7 +202,7 @@ public class DownloadFileListAdapter extends BaseAdapter implements OnFileDownlo
                     if (isInstall) {
                         tvText.setText(context.getString(R.string.main__open));
                     } else {
-                        tvText.setText(context.getString(R.string.main__uninstall));
+                        tvText.setText(context.getString(R.string.main__not_install));
                     }
                 } else {
                     tvText.setText(context.getString(R.string.main__download_completed));
@@ -211,7 +211,7 @@ public class DownloadFileListAdapter extends BaseAdapter implements OnFileDownlo
             // download file status:file not exist
             case Status.DOWNLOAD_STATUS_FILE_NOT_EXIST:
                 tvDownloadSize.setText("");
-                tvText.setText(context.getString(R.string.main__file_not_exsit));
+                tvText.setText(context.getString(R.string.main__file_not_exist));
                 break;
         }
 
@@ -404,7 +404,7 @@ public class DownloadFileListAdapter extends BaseAdapter implements OnFileDownlo
                 TextView tvText = (TextView) cacheConvertView.findViewById(R.id.tvText);
                 tvText.setText(cacheConvertView.getContext().getString(R.string.main__waiting));
 
-                Log.w(TAG, "onFileDownloadStatusWaiting，url：" + url + "，status(正常应该是" + Status.DOWNLOAD_STATUS_WAITING + ")：" + downloadFileInfo.getStatus());
+                Log.d(TAG, "onFileDownloadStatusWaiting url：" + url + "，status(正常应该是" + Status.DOWNLOAD_STATUS_WAITING + ")：" + downloadFileInfo.getStatus());
             } else {
                 updateShow();
             }
@@ -424,7 +424,7 @@ public class DownloadFileListAdapter extends BaseAdapter implements OnFileDownlo
             TextView tvText = (TextView) cacheConvertView.findViewById(R.id.tvText);
             tvText.setText(cacheConvertView.getContext().getString(R.string.main__getting_resource));
 
-            Log.w(TAG, "onFileDownloadStatusPreparing，url：" + url + "，status(正常应该是" + Status.DOWNLOAD_STATUS_PREPARING + ")：" + downloadFileInfo.getStatus());
+            Log.d(TAG, "onFileDownloadStatusPreparing url：" + url + "，status(正常应该是" + Status.DOWNLOAD_STATUS_PREPARING + ")：" + downloadFileInfo.getStatus());
         } else {
             updateShow();
         }
@@ -443,7 +443,7 @@ public class DownloadFileListAdapter extends BaseAdapter implements OnFileDownlo
             TextView tvText = (TextView) cacheConvertView.findViewById(R.id.tvText);
             tvText.setText(cacheConvertView.getContext().getString(R.string.main__connected_resource));
 
-            Log.w(TAG, "onFileDownloadStatusPrepared，url：" + url + "，status(正常应该是" + Status.DOWNLOAD_STATUS_PREPARED + ")：" + downloadFileInfo.getStatus());
+            Log.d(TAG, "onFileDownloadStatusPrepared url：" + url + "，status(正常应该是" + Status.DOWNLOAD_STATUS_PREPARED + ")：" + downloadFileInfo.getStatus());
         } else {
             updateShow();
         }
@@ -490,7 +490,7 @@ public class DownloadFileListAdapter extends BaseAdapter implements OnFileDownlo
             updateShow();
         }
 
-        Log.w(TAG, "onFileDownloadStatusDownloading，url：" + url + "，status(正常应该是" + Status.DOWNLOAD_STATUS_DOWNLOADING + ")：" + downloadFileInfo.getStatus());
+        Log.d(TAG, "onFileDownloadStatusDownloading url：" + url + "，status(正常应该是" + Status.DOWNLOAD_STATUS_DOWNLOADING + ")：" + downloadFileInfo.getStatus());
     }
 
     @Override
@@ -511,7 +511,7 @@ public class DownloadFileListAdapter extends BaseAdapter implements OnFileDownlo
 
             setBackgroundOnClickListener(lnlyDownloadItem, downloadFileInfo);
 
-            Log.w(TAG, "onFileDownloadStatusPaused，url：" + url + "，status(正常应该是" + Status.DOWNLOAD_STATUS_PAUSED + ")：" + downloadFileInfo.getStatus());
+            Log.d(TAG, "onFileDownloadStatusPaused url：" + url + "，status(正常应该是" + Status.DOWNLOAD_STATUS_PAUSED + ")：" + downloadFileInfo.getStatus());
         } else {
             updateShow();
         }
@@ -549,7 +549,7 @@ public class DownloadFileListAdapter extends BaseAdapter implements OnFileDownlo
                     if (isInstall) {
                         tvText.setText(cacheConvertView.getContext().getString(R.string.main__open));
                     } else {
-                        tvText.setText(cacheConvertView.getContext().getString(R.string.main__uninstall));
+                        tvText.setText(cacheConvertView.getContext().getString(R.string.main__not_install));
                     }
                 } else {
                     tvText.setText(cacheConvertView.getContext().getString(R.string.main__download_completed));
@@ -561,18 +561,18 @@ public class DownloadFileListAdapter extends BaseAdapter implements OnFileDownlo
             updateShow();
         }
 
-        Log.w(TAG, "onFileDownloadStatusCompleted，url：" + url + "，status(正常应该是" + Status.DOWNLOAD_STATUS_COMPLETED + ")：" + downloadFileInfo.getStatus());
+        Log.d(TAG, "onFileDownloadStatusCompleted url：" + url + "，status(正常应该是" + Status.DOWNLOAD_STATUS_COMPLETED + ")：" + downloadFileInfo.getStatus());
     }
 
     @Override
-    public void onFileDownloadStatusFailed(String url,DownloadFileInfo downloadFileInfo, OnFileDownloadStatusFailReason failReason) {
+    public void onFileDownloadStatusFailed(String url, DownloadFileInfo downloadFileInfo, OnFileDownloadStatusFailReason failReason) {
 
         if (downloadFileInfo == null) {
             //
             return;
         }
 
-         url = downloadFileInfo.getUrl();
+        url = downloadFileInfo.getUrl();
         View cacheConvertView = mConvertViews.get(url);
         if (cacheConvertView != null) {
 
@@ -596,7 +596,7 @@ public class DownloadFileListAdapter extends BaseAdapter implements OnFileDownlo
 
             setBackgroundOnClickListener(lnlyDownloadItem, downloadFileInfo);
 
-            Log.w(TAG, "出错回调，onFileDownloadStatusFailed，url：" + url + "，status(正常应该是" + Status.DOWNLOAD_STATUS_ERROR + ")：" + downloadFileInfo.getStatus());
+            Log.d(TAG, "onFileDownloadStatusFailed 出错回调，url：" + url + "，status(正常应该是" + Status.DOWNLOAD_STATUS_ERROR + ")：" + downloadFileInfo.getStatus());
         } else {
             updateShow();
         }

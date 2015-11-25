@@ -7,6 +7,8 @@ import org.wlf.filedownloader.DownloadFileInfo;
 import org.wlf.filedownloader.base.FailReason;
 
 /**
+ * OnFileDownloadStatusListener
+ * <br/>
  * 文件下载状态改变监听器
  *
  * @author wlf(Andy)

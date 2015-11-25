@@ -1,6 +1,76 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="app_name">文件下载管理器</string>
+    <string name="app_name">File-Downloader Demo</string>
+
+    <string name="main__please_input_download_size">Please enter the url of the download file</string>
+
+    <string name="main__dialog_btn_cancel">Cancel</string>
+    <string name="main__dialog_btn_confirm">Confirm</string>
+
+    <string name="main__save_path">Save Path</string>
+    <string name="main__save_file_name">Save Name</string>
+    <string name="main__file_size">File size:</string>
+
+    <string name="main__confirm_save_path_and_name">Please confirm the save path and name</string>
+    <string name="main__new_download">New download:</string>
+    <string name="main__continue_download">Continue_download:</string>
+    <string name="main__detect_file_error">Detect file error:</string>
+
+    <string name="main__delete_succeed">Delete success</string>
+    <string name="main__deleting">Deleting</string>
+    <string name="main__delete">Delete</string>
+    <string name="main__failed">Failed</string>
+    <string name="main__progress">,Progress:</string>
+    <string name="main__failed2">(Failed:</string>
+    <string name="main__skip_and_total_delete_division">)/</string>
+    <string name="main__need_delete">Need to delete</string>
+    <string name="main__delete_finish">Delete finish,success:</string>
+    <string name="main__failed3">,Failed:</string>
+
+    <string name="main__move_to_folder">New Folder(Move Test)</string>
+    <string name="main__move_succeed">Move succeed,new Path:</string>
+    <string name="main__moving">Moving:</string>
+    <string name="main__move">Move</string>
+    <string name="main__need_move">Need to move</string>
+    <string name="main__move_finish">Move finish,success:</string>
+
+    <string name="main__rename_file_name">New File Name(Rename Test)</string>
+    <string name="main__rename_succeed">Rename Succeed</string>
+    <string name="main__rename_failed">Rename Failed</string>
+    <string name="main__rename_failed_note">Only support single file to rename at the same time</string>
+
+    <string name="main__can_not_download">Can not download, please delete the file</string>
+    <string name="main__getting_resource">Getting resource</string>
+    <string name="main__connected_resource">Connected resource</string>
+    <string name="main__paused">Paused</string>
+    <string name="main__downloading">Downloading</string>
+    <string name="main__download_error">Download error</string>
+    <string name="main__waiting">Waiting</string>
+    <string name="main__open">Open</string>
+    <string name="main__not_install">Not install</string>
+    <string name="main__download_completed">Download completed</string>
+    <string name="main__file_not_exist">File not exist</string>
+
+    <string name="main__can_not_download2">Can not download,please delete the file:</string>
+    <string name="main__re_download"> re-download</string>
+    <string name="main__start_download">Start/Continue download:</string>
+    <string name="main__whether_re_download">Whether re-download</string>
+    <string name="main__re_download2">re-download</string>
+    <string name="main__paused_download">Paused download:</string>
+    <string name="main__not_install_apk">Not install,please install apk:</string>
+    <string name="main__no_install">Not install</string>
+    <string name="main__not_install_apk2">Not install,please install apk:</string>
+    <string name="main__check_network">(Check network)</string>
+    <string name="main__url_illegal">Url illegal</string>
+
+    <!-- menu -->
+    <string name="main__menu_new_download">New single download</string>
+    <string name="main__menu_new_downloads">New multi downloads</string>
+    <string name="main__menu_new_custom_download">New custom download</string>
+
+    <string name="main__btn_delete">Delete</string>
+    <string name="main__btn_move">Move</string>
+    <string name="main__btn_rename">Rename(Single File)</string>
 
 </resources>

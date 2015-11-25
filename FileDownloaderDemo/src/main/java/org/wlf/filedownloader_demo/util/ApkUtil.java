@@ -64,11 +64,9 @@ public class ApkUtil {
      * @return
      */
     public static boolean checkAppInstalled(Context context, String packageName) {
-
         if (TextUtils.isEmpty(packageName)) {
             return false;
         }
-
         try {
             context.getPackageManager().getApplicationInfo(packageName, PackageManager.GET_INSTRUMENTATION);
             return true;
@@ -76,5 +74,4 @@ public class ApkUtil {
             return false;
         }
     }
-
 }

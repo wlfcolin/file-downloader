@@ -116,7 +116,7 @@ public abstract class BaseContentDbHelper extends SQLiteOpenHelper {
      */
     public ContentDbDao getContentDbDao(String tableName) {
         if (!mContentDbDaoMap.containsKey(tableName)) {
-            throw new RuntimeException("unregistered database table:" + tableName);
+            throw new RuntimeException("unregistered database table:" + tableName + " in " + this.getClass().getSimpleName());
         }
         return mContentDbDaoMap.get(tableName);
     }

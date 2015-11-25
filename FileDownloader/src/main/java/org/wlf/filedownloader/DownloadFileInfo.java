@@ -18,7 +18,7 @@ import java.io.File;
  * @author wlf(Andy)
  * @email 411086563@qq.com
  */
-public class DownloadFileInfo {
+public class DownloadFileInfo extends BaseUrlFileInfo {
 
     /**
      * {@link DownloadFileInfo} database table info
@@ -104,37 +104,13 @@ public class DownloadFileInfo {
      */
     private Integer mId;
     /**
-     * file url
-     */
-    private String mUrl;
-    /**
      * downloadedSize
      */
     private int mDownloadedSize;
     /**
-     * File Size
-     */
-    private int mFileSize;
-    /**
-     * file eTag
-     */
-    private String mETag;
-    /**
-     * AcceptRangeType
-     */
-    private String mAcceptRangeType;
-    /**
-     * SaveFileDir
-     */
-    private String mFileDir;
-    /**
      * TempFileName
      */
     private String mTempFileName;
-    /**
-     * SaveFileName
-     */
-    private String mFileName;
     /**
      * download status，ref{@link Status}
      */
@@ -238,10 +214,12 @@ public class DownloadFileInfo {
         }
     }
 
+    // package use only
+
     /**
-     * update DownloadFileInfo
+     * update DownloadFileInfo with new DownloadFileInfo
      *
-     * @param downloadFileInfo DownloadFileInfo
+     * @param downloadFileInfo new DownloadFileInfo
      */
     void update(DownloadFileInfo downloadFileInfo) {
         if (downloadFileInfo.mId != null && downloadFileInfo.mId > 0) {
@@ -275,6 +253,8 @@ public class DownloadFileInfo {
             this.mStatus = downloadFileInfo.mStatus;
         }
     }
+
+    // package use only
 
     /**
      * get ContentValues for all fields
@@ -312,29 +292,15 @@ public class DownloadFileInfo {
         return super.hashCode();
     }
 
-    // setters
+    // setters,package use only
 
     /**
-     * 设置id
+     * set id
      *
      * @param id
      */
     void setId(Integer id) {
         mId = id;
-    }
-
-    /**
-     * set save file dir
-     */
-    void setFileDir(String fileDir) {
-        this.mFileDir = fileDir;
-    }
-
-    /**
-     * set file name
-     */
-    void setFileName(String fileName) {
-        this.mFileName = fileName;
     }
 
     /**
@@ -354,21 +320,12 @@ public class DownloadFileInfo {
     // getters
 
     /**
-     * get Is
+     * get id
      *
      * @return return null means id illegal
      */
     public Integer getId() {
         return mId;
-    }
-
-    /**
-     * get file url
-     *
-     * @return file url
-     */
-    public String getUrl() {
-        return mUrl;
     }
 
     /**
@@ -381,57 +338,12 @@ public class DownloadFileInfo {
     }
 
     /**
-     * get file size
-     *
-     * @return file size
-     */
-    public int getFileSize() {
-        return mFileSize;
-    }
-
-    /**
-     * get file ETag
-     *
-     * @return file ETag
-     */
-    public String getETag() {
-        return mETag;
-    }
-
-    /**
-     * get AcceptRangeType
-     *
-     * @return AcceptRangeType
-     */
-    public String getAcceptRangeType() {
-        return mAcceptRangeType;
-    }
-
-    /**
-     * get SaveFileDir
-     *
-     * @return SaveFileDir
-     */
-    public String getFileDir() {
-        return mFileDir;
-    }
-
-    /**
      * get TempFileName
      *
      * @return TempFileName
      */
     public String getTempFileName() {
         return mTempFileName;
-    }
-
-    /**
-     * get SaveFileName
-     *
-     * @return SaveFileName
-     */
-    public String getFileName() {
-        return mFileName;
     }
 
     /**
@@ -443,24 +355,10 @@ public class DownloadFileInfo {
         return mStatus;
     }
 
-    // other getter
+    // other getters
 
-    /**
-     * get TempFilePath
-     *
-     * @return TempFilePath
-     */
-    public String getTempFilePath() {
-        return getFileDir() + File.separator + mTempFileName;
-    }
-
-    /**
-     * get FilePath
-     *
-     * @return FilePath
-     */
+    @Override
     public String getFilePath() {
-        //        return getFileDir() + File.separator + mFileName;
         return getFilePath(false);
     }
 
@@ -471,16 +369,21 @@ public class DownloadFileInfo {
      * @return
      */
     public String getFilePath(boolean includeTempFilePath) {
-
         String filePath = getFileDir() + File.separator + mFileName;
-
         if (TextUtils.isEmpty(filePath) || !new File(filePath).exists()) {
             if (includeTempFilePath) {
                 filePath = getTempFilePath();
             }
         }
-
         return filePath;
     }
 
+    /**
+     * get TempFilePath
+     *
+     * @return TempFilePath
+     */
+    public String getTempFilePath() {
+        return getFileDir() + File.separator + mTempFileName;
+    }
 }

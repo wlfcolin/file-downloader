@@ -1,5 +1,5 @@
 <resources>
     <!-- width、height-->
-    <dimen name="main__item_layout_minHeight">100dp</dimen>
+    <dimen name="main__item_layout_minHeight">120dp</dimen>
     <!-- padding、margin-->
 </resources>

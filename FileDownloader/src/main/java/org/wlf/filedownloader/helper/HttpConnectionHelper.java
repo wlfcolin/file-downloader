@@ -67,7 +67,7 @@ public class HttpConnectionHelper {
         HttpURLConnection conn = (HttpURLConnection) new URL(encodedUrl).openConnection();
         conn.setConnectTimeout(connectTimeout);
         conn.setRequestProperty("Charset", charset);
-        conn.setRequestProperty("Accept-Encoding", "identity");// FIXME identity only
+        conn.setRequestProperty("Accept-Encoding", "identity");// FIXME now identity only
         // set range
         if (rangeStartPos > 0 && rangeEndPos > 0 && rangeEndPos > rangeStartPos) {
             conn.setRequestProperty("Range", "bytes=" + rangeStartPos + "-" + rangeEndPos);

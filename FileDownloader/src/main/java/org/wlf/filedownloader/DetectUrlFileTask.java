@@ -1,11 +1,7 @@
-package org.wlf.filedownloader.task;
+package org.wlf.filedownloader;
 
 import android.util.Log;
 
-import org.wlf.filedownloader.DetectUrlFileCacher;
-import org.wlf.filedownloader.DetectUrlFileInfo;
-import org.wlf.filedownloader.DownloadFileCacher;
-import org.wlf.filedownloader.DownloadFileInfo;
 import org.wlf.filedownloader.helper.HttpConnectionHelper;
 import org.wlf.filedownloader.listener.OnDetectUrlFileListener;
 import org.wlf.filedownloader.listener.OnDetectUrlFileListener.DetectUrlFileFailReason;
@@ -87,7 +83,7 @@ public class DetectUrlFileTask implements Runnable {
                     redirectCount++;
                 }
 
-                Log.d(TAG, "探测文件，重定向：" + redirectCount + "次" + "，最大重定向次数：" + MAX_REDIRECT_COUNT + "，url：" + mUrl);
+                Log.d(TAG, "DetectUrlFileTask.run 探测文件，重定向：" + redirectCount + "次" + "，最大重定向次数：" + MAX_REDIRECT_COUNT + "，url：" + mUrl);
 
                 if (redirectCount > MAX_REDIRECT_COUNT) {
                     // error over max redirect

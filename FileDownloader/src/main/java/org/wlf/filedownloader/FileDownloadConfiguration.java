@@ -53,12 +53,14 @@ public class FileDownloadConfiguration {
      */
     private FileDownloadConfiguration(Builder builder) {
         if (builder == null) {
-            throw new NullPointerException("builder can not empty!");
+            throw new NullPointerException("builder can not be empty!");
         }
         this.mFileDownloadDir = builder.mFileDownloadDir;
         this.mFileDownloadEngine = Executors.newFixedThreadPool(builder.mDownloadTaskSize);
         this.mSupportEngine = Executors.newSingleThreadExecutor();// default single thread
     }
+
+    // getters,package use only
 
     /**
      * get FileDownloadDir
@@ -126,18 +128,18 @@ public class FileDownloadConfiguration {
                 File file = new File(fileDownloadDir);
                 if (!file.exists()) {
 
-                    Log.i(TAG, "要设置的文件下载保存目录：" + fileDownloadDir + " 还不存在，需要创建！");
+                    Log.i(TAG, "configFileDownloadDir 要设置的文件下载保存目录：" + fileDownloadDir + " 还不存在，需要创建！");
 
                     boolean isCreateSuccess = file.mkdirs();
 
                     if (isCreateSuccess) {
-                        Log.i(TAG, "要设置的文件下载保存目录：" + fileDownloadDir + " 创建成功！");
+                        Log.i(TAG, "configFileDownloadDir 要设置的文件下载保存目录：" + fileDownloadDir + " 创建成功！");
                     } else {
-                        Log.w(TAG, "要设置的文件下载保存目录：" + fileDownloadDir + " 创建失败！");
+                        Log.i(TAG, "configFileDownloadDir 要设置的文件下载保存目录：" + fileDownloadDir + " 创建失败！");
                     }
 
                 } else {
-                    Log.i(TAG, "要设置的文件下载保存目录：" + fileDownloadDir + " 已存在，不需要创建！");
+                    Log.i(TAG, "configFileDownloadDir 要设置的文件下载保存目录：" + fileDownloadDir + " 已存在，不需要创建！");
                 }
                 this.mFileDownloadDir = fileDownloadDir;
             }
@@ -156,7 +158,7 @@ public class FileDownloadConfiguration {
             } else if (downloadTaskSize > MAX_DOWNLOAD_TASK_SIZE) {
                 this.mDownloadTaskSize = MAX_DOWNLOAD_TASK_SIZE;
             } else {
-                Log.w(TAG, "配置同时下载任务的数量失败，downloadTaskSize：" + downloadTaskSize);
+                Log.i(TAG, "configDownloadTaskSize 配置同时下载任务的数量失败，downloadTaskSize：" + downloadTaskSize);
             }
             return this;
         }

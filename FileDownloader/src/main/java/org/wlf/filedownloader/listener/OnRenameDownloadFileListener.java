@@ -116,10 +116,13 @@ public interface OnRenameDownloadFileListener {
          */
         public static final String TYPE_NEW_FILE_NAME_IS_EMPTY = OnRenameDownloadFileFailReason.class.getName() + "_TYPE_NEW_FILE_NAME_IS_EMPTY";
         /**
-         * file does not complete download
+         * file status error
          */
-        public static final String TYPE_FILE_DOES_NOT_COMPLETE_DOWNLOAD = OnRenameDownloadFileFailReason.class.getName() + "_TYPE_FILE_DOES_NOT_COMPLETE_DOWNLOAD";
-
+        public static final String TYPE_FILE_STATUS_ERROR = OnRenameDownloadFileFailReason.class.getName() + "_TYPE_FILE_STATUS_ERROR";
+        /**
+         * the new file has been exist
+         */
+        public static final String TYPE_NEW_FILE_HAS_BEEN_EXIST = OnRenameDownloadFileFailReason.class.getName() + "_TYPE_NEW_FILE_HAS_BEEN_EXIST";
 
         public OnRenameDownloadFileFailReason(String detailMessage, String type) {
             super(detailMessage, type);

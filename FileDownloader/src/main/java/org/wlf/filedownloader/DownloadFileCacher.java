@@ -8,6 +8,7 @@ import android.util.Log;
 
 import org.wlf.filedownloader.DownloadFileInfo.Table;
 import org.wlf.filedownloader.base.FailException;
+import org.wlf.filedownloader.base.Status;
 import org.wlf.filedownloader.db.ContentDbDao;
 import org.wlf.filedownloader.db_recoder.DownloadFileDbHelper;
 import org.wlf.filedownloader.db_recoder.DownloadFileDbRecorder;
@@ -36,12 +37,21 @@ import java.util.Set;
  */
 public class DownloadFileCacher extends DownloadFileDbRecorder {
 
+    private static final String TAG = DownloadFileCacher.class.getSimpleName();
+
     private DownloadFileDbHelper mDownloadFileDbHelper;
 
-    private Map<String, DownloadFileInfo> mDownloadFileInfoMap = new HashMap<String, DownloadFileInfo>();// memory cache
+    private Map<String, DownloadFileInfo> mDownloadFileInfoMap = new HashMap<String, DownloadFileInfo>();// download file memory cache
 
     private Object mModifyLock = new Object();// lock
 
+    // package use only
+
+    /**
+     * constructor of DownloadFileCacher
+     *
+     * @param context Context
+     */
     DownloadFileCacher(Context context) {
         mDownloadFileDbHelper = new DownloadFileDbHelper(context);
         initDownloadFileInfoMapFromDb();
@@ -50,17 +60,17 @@ public class DownloadFileCacher extends DownloadFileDbRecorder {
     @Override
     public void recordStatus(String url, int status, int increaseSize) throws DownloadStatusRecordException {
 
-        Log.e("wlf", "记录状态：status：" + status + "，increaseSize：" + +increaseSize + "，url：" + url);
+        Log.d(TAG, "recordStatus 记录状态：status：" + status + "，increaseSize：" + +increaseSize + "，url：" + url);
 
         DownloadFileInfo downloadFileInfo = getDownloadFile(url);
         if (downloadFileInfo != null) {
-            synchronized (mModifyLock) {// lock，FIXME 无法跟updateDownloadFile一起同步
+            synchronized (mModifyLock) {// lock
                 if (increaseSize > 0) {
                     downloadFileInfo.setDownloadedSize(downloadFileInfo.getDownloadedSize() + increaseSize);
                 }
                 downloadFileInfo.setStatus(status);
+                updateDownloadFileInternal(downloadFileInfo, false);
             }
-            updateDownloadFile(downloadFileInfo);
         }
     }
 
@@ -92,12 +102,13 @@ public class DownloadFileCacher extends DownloadFileDbRecorder {
                 return true;
             }
         }
-
         return false;
     }
 
-    @Override
-    public boolean updateDownloadFile(DownloadFileInfo downloadFileInfo) {
+    /**
+     * update an exist DownloadFile
+     */
+    private boolean updateDownloadFileInternal(DownloadFileInfo downloadFileInfo, boolean lockInternal) {
 
         if (downloadFileInfo == null) {
             return false;
@@ -115,7 +126,21 @@ public class DownloadFileCacher extends DownloadFileDbRecorder {
 
         String url = downloadFileInfo.getUrl();
 
-        synchronized (mModifyLock) {// lock
+        if (lockInternal) {// need internal lock
+            synchronized (mModifyLock) {// lock
+                int result = dao.update(values, DownloadFileInfo.Table.COLUMN_NAME_OF_FIELD_ID + "= ?", new String[]{downloadFileInfo.getId() + ""});
+                if (result == 1) {
+                    // succeed,update memory cache
+                    if (mDownloadFileInfoMap.containsKey(url)) {
+                        DownloadFileInfo downloadFileInfoInMap = mDownloadFileInfoMap.get(url);
+                        downloadFileInfoInMap.update(downloadFileInfo);
+                    } else {
+                        mDownloadFileInfoMap.put(url, downloadFileInfo);
+                    }
+                    return true;
+                }
+            }
+        } else {// not lock
             int result = dao.update(values, DownloadFileInfo.Table.COLUMN_NAME_OF_FIELD_ID + "= ?", new String[]{downloadFileInfo.getId() + ""});
             if (result == 1) {
                 // succeed,update memory cache
@@ -128,8 +153,12 @@ public class DownloadFileCacher extends DownloadFileDbRecorder {
                 return true;
             }
         }
-
         return false;
+    }
+
+    @Override
+    public boolean updateDownloadFile(DownloadFileInfo downloadFileInfo) {
+        return updateDownloadFileInternal(downloadFileInfo, true);
     }
 
     @Override
@@ -153,28 +182,32 @@ public class DownloadFileCacher extends DownloadFileDbRecorder {
                 mDownloadFileInfoMap.remove(url);
                 return true;
             } else {
-                // try delete by url
-                //TODO
+                // try to delete by url
+                result = dao.delete(Table.COLUMN_NAME_OF_FIELD_URL + "= ?", new String[]{url + ""});
+                if (result == 1) {
+                    // succeed,update memory cache
+                    mDownloadFileInfoMap.remove(url);
+                    return true;
+                }
             }
         }
-
         return false;
     }
 
     @Override
     public DownloadFileInfo getDownloadFile(String url) {
 
+        DownloadFileInfo downloadFileInfo = null;
+
         if (mDownloadFileInfoMap.get(url) != null) {
             // return memory cache
-            return mDownloadFileInfoMap.get(url);
+            downloadFileInfo = mDownloadFileInfoMap.get(url);
         } else {
             // find in database
             ContentDbDao dao = mDownloadFileDbHelper.getContentDbDao(DownloadFileInfo.Table.TABLE_NAME_OF_DOWNLOAD_FILE);
             if (dao == null) {
                 return null;
             }
-
-            DownloadFileInfo downloadFileInfo = null;
 
             Cursor cursor = dao.query(null, DownloadFileInfo.Table.COLUMN_NAME_OF_FIELD_URL + "= ?", new String[]{url}, null);
             if (cursor != null && cursor.moveToFirst()) {
@@ -195,12 +228,14 @@ public class DownloadFileCacher extends DownloadFileDbRecorder {
                 synchronized (mModifyLock) {// lock
                     // cache in memory
                     mDownloadFileInfoMap.put(downloadUrl, downloadFileInfo);
-                    return mDownloadFileInfoMap.get(url);
+                    downloadFileInfo = mDownloadFileInfoMap.get(url);
                 }
             }
-
-            return mDownloadFileInfoMap.get(url);
         }
+
+        checkFileStatus(downloadFileInfo);
+
+        return downloadFileInfo;
     }
 
     @Override
@@ -213,15 +248,24 @@ public class DownloadFileCacher extends DownloadFileDbRecorder {
 
         // if this time the memory cache is not empty,return the cache
         if (!MapUtil.isEmpty(mDownloadFileInfoMap)) {
-            return new ArrayList<DownloadFileInfo>(mDownloadFileInfoMap.values());
+            List<DownloadFileInfo> downloadFileInfos = new ArrayList<DownloadFileInfo>(mDownloadFileInfoMap.values());
+
+            // check status
+            if (!CollectionUtil.isEmpty(downloadFileInfos)) {
+                for (DownloadFileInfo downloadFileInfo : downloadFileInfos) {
+                    checkFileStatus(downloadFileInfo);
+                }
+            }
+            return downloadFileInfos;
         }
 
         // otherwise return empty list
         return new ArrayList<DownloadFileInfo>();
     }
 
+    // package use only
+
     /**
-     * /**
      * get DownloadFile by savePath
      *
      * @param savePath            the path of the file saved in
@@ -261,9 +305,9 @@ public class DownloadFileCacher extends DownloadFileDbRecorder {
 
         // find in memory cache
         if (downloadFileInfo != null) {
-            return downloadFileInfo;
+
         } else {
-            // find in database
+            // try to find in database
             ContentDbDao dao = mDownloadFileDbHelper.getContentDbDao(DownloadFileInfo.Table.TABLE_NAME_OF_DOWNLOAD_FILE);
             if (dao == null) {
                 return null;
@@ -311,12 +355,14 @@ public class DownloadFileCacher extends DownloadFileDbRecorder {
                 synchronized (mModifyLock) {// lock
                     // cache in memory
                     mDownloadFileInfoMap.put(url, downloadFileInfo);
-                    return mDownloadFileInfoMap.get(url);
+                    downloadFileInfo = mDownloadFileInfoMap.get(url);
                 }
             }
         }
 
-        return null;
+        checkFileStatus(downloadFileInfo);
+
+        return downloadFileInfo;
     }
 
     /**
@@ -352,7 +398,7 @@ public class DownloadFileCacher extends DownloadFileDbRecorder {
     }
 
     /**
-     * change database cursor to DownloadFiles
+     * get DownloadFiles by database cursor
      *
      * @param cursor database cursor
      * @return DownloadFiles
@@ -369,6 +415,8 @@ public class DownloadFileCacher extends DownloadFileDbRecorder {
         return downloadFileInfos;
     }
 
+    // package use only
+
     /**
      * release cacher
      */
@@ -379,6 +427,34 @@ public class DownloadFileCacher extends DownloadFileDbRecorder {
             // close the database
             if (mDownloadFileDbHelper != null) {
                 mDownloadFileDbHelper.close();
+            }
+        }
+    }
+
+    private void checkFileStatus(DownloadFileInfo downloadFileInfo) {
+        if (downloadFileInfo == null) {
+            return;
+        }
+
+        // check whether file exist
+        String filePath = null;
+        switch (downloadFileInfo.getStatus()) {
+            case Status.DOWNLOAD_STATUS_COMPLETED:
+                filePath = downloadFileInfo.getFilePath();
+                break;
+            case Status.DOWNLOAD_STATUS_PAUSED:
+            case Status.DOWNLOAD_STATUS_PREPARING:
+            case Status.DOWNLOAD_STATUS_ERROR:
+                filePath = downloadFileInfo.getTempFilePath();
+                break;
+        }
+
+        if (!TextUtils.isEmpty(filePath)) {
+            File file = new File(filePath);
+            if (!file.exists()) {
+                // file not exist
+                downloadFileInfo.setStatus(Status.DOWNLOAD_STATUS_FILE_NOT_EXIST);
+                updateDownloadFile(downloadFileInfo);
             }
         }
     }

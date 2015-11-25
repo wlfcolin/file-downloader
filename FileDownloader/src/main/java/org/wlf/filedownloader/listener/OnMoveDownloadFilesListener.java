@@ -96,6 +96,5 @@ public interface OnMoveDownloadFilesListener {
                 }
             });
         }
-
     }
 }

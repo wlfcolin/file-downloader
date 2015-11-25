@@ -60,6 +60,7 @@ public class UrlUtil {
         }
         if (needEncodeUrl != null) {
             needEncodeUrl = needEncodeUrl.replace("+", "%20");// replace space
+            // FIXME replace more
         }
 
         String encodedUrl = url.substring(0, start) + "/" + needEncodeUrl;

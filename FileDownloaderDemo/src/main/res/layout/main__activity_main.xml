@@ -1,11 +1,11 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent" >
+             android:layout_width="match_parent"
+             android:layout_height="match_parent">
 
     <ListView
         android:id="@+id/lvDownloadFileList"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="match_parent"/>
 
     <LinearLayout
         android:id="@+id/lnlyOperation"
@@ -14,27 +14,28 @@
         android:layout_gravity="bottom"
         android:background="@android:color/darker_gray"
         android:orientation="horizontal"
-        android:visibility="gone" >
+        android:visibility="gone">
 
         <Button
             android:id="@+id/btnDelete"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="删除" />
+            android:text="@string/main__btn_delete"/>
 
         <Button
             android:id="@+id/btnMove"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="移动" />
+            android:text="@string/main__btn_move"/>
 
         <Button
             android:id="@+id/btnRename"
-            android:layout_width="wrap_content"
+            android:layout_weight="1.3"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:text="重命名(单个)" />
+            android:text="@string/main__btn_rename"/>
     </LinearLayout>
 
 </FrameLayout>

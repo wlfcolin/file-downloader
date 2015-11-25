@@ -41,9 +41,9 @@ public abstract class BaseContentDbDao implements ContentDbDao, DatabaseCallback
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
-//            if (database != null) {
-//                database.close();
-//            }
+            //            if (database != null) {
+            //                database.close();
+            //            }
         }
         return id;
     }
@@ -58,9 +58,9 @@ public abstract class BaseContentDbDao implements ContentDbDao, DatabaseCallback
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
-//            if (database != null) {
-//                database.close();
-//            }
+            //            if (database != null) {
+            //                database.close();
+            //            }
         }
         return count;
     }
@@ -75,9 +75,9 @@ public abstract class BaseContentDbDao implements ContentDbDao, DatabaseCallback
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
-//            if (database != null) {
-//                database.close();
-//            }
+            //            if (database != null) {
+            //                database.close();
+            //            }
         }
         return count;
     }
@@ -92,10 +92,9 @@ public abstract class BaseContentDbDao implements ContentDbDao, DatabaseCallback
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
-            // for LoaderManager,it is not need to close here
-            // if (database != null) {
-            // database.close();
-            // }
+            //            if (database != null) {
+            //                database.close();
+            //            }
         }
         return cursor;
     }

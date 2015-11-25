@@ -1,9 +1,10 @@
 package org.wlf.filedownloader.db;
 
 import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteOpenHelper;
 
 /**
- * database callback
+ * database callback,ref{@link SQLiteOpenHelper}.onXXX
  *
  * @author wlf(Andy)
  * @email 411086563@qq.com

@@ -38,6 +38,7 @@ public class FailReason extends Exception {
     public FailReason(String type) {
         this.mType = type;
         if (!isTypeInit()) {
+            // init type with current object
             initType(this);
         }
     }
@@ -52,6 +53,7 @@ public class FailReason extends Exception {
         super(detailMessage);
         this.mType = type;
         if (!isTypeInit()) {
+            // init type with current object
             initType(this);
         }
     }
@@ -67,7 +69,7 @@ public class FailReason extends Exception {
         super(detailMessage, throwable);
         this.mType = type;
         if (!isTypeInit()) {
-            // 使用throwable来初始化type
+            // init type with throwable
             initType(throwable);
         }
     }
@@ -82,6 +84,7 @@ public class FailReason extends Exception {
         super(throwable);
         this.mType = type;
         if (!isTypeInit()) {
+            // init type with throwable
             initType(throwable);
         }
     }
@@ -94,6 +97,7 @@ public class FailReason extends Exception {
      */
     public FailReason(String detailMessage, Throwable throwable) {
         super(detailMessage, throwable);
+        // init type with throwable
         initType(throwable);
     }
 
@@ -104,6 +108,7 @@ public class FailReason extends Exception {
      */
     public FailReason(Throwable throwable) {
         super(throwable);
+        // init type with throwable
         initType(throwable);
     }
 

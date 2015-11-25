@@ -6,7 +6,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Detect net File
+ * detect url file
  * <br/>
  * 探测文件缓存器
  *
@@ -15,9 +15,9 @@ import java.util.Map;
  */
 public class DetectUrlFileCacher {
 
-    private Map<String, DetectUrlFileInfo> mDetectUrlFileInfoMap = new HashMap<String, DetectUrlFileInfo>();// 探测的文件信息（内存缓存）
+    private Map<String, DetectUrlFileInfo> mDetectUrlFileInfoMap = new HashMap<String, DetectUrlFileInfo>();// detect file memory cache
 
-    private Object mModifyLock = new Object();// lock
+    private Object mModifyLock = new Object();// modify lock
 
     /**
      * update DetectUrlFile
@@ -40,16 +40,18 @@ public class DetectUrlFileCacher {
         DetectUrlFileInfo urlFileInfo = mDetectUrlFileInfoMap.get(url);
         synchronized (mModifyLock) {// lock
             if (urlFileInfo != null) {
-                // update
+                // update memory cache
                 urlFileInfo.update(detectUrlFileInfo);
                 return true;
             } else {
-                // add
+                // add in memory cache
                 mDetectUrlFileInfoMap.put(url, detectUrlFileInfo);
                 return true;
             }
         }
     }
+
+    // package use only
 
     /**
      * get DetectUrlFile by url
@@ -61,11 +63,13 @@ public class DetectUrlFileCacher {
         return mDetectUrlFileInfoMap.get(url);
     }
 
+    // package use only
+
     /**
      * release cache
      */
     void release() {
-        synchronized (mModifyLock) {// 同步
+        synchronized (mModifyLock) {// lock
             mDetectUrlFileInfoMap.clear();
         }
     }

@@ -1,6 +1,8 @@
 <resources>
 
-    <string name="main__plaease_input_download_size">请输入要下载文件的地址</string>
+    <string name="app_name">文件下载管理器Demo</string>
+
+    <string name="main__please_input_download_size">请输入要下载文件的地址</string>
 
     <string name="main__dialog_btn_cancel">取消</string>
     <string name="main__dialog_btn_confirm">确认</string>
@@ -45,9 +47,9 @@
     <string name="main__download_error">下载出错</string>
     <string name="main__waiting">等待下载</string>
     <string name="main__open">打开</string>
-    <string name="main__uninstall">未安装</string>
+    <string name="main__not_install">未安装</string>
     <string name="main__download_completed">已下载完成</string>
-    <string name="main__file_not_exsit">文件不存在</string>
+    <string name="main__file_not_exist">文件不存在</string>
 
     <string name="main__can_not_download2">无法下载，请删除：</string>
     <string name="main__re_download"> 后重新下载</string>
@@ -60,4 +62,14 @@
     <string name="main__not_install_apk2">（无法启动）请安装Apk：</string>
     <string name="main__check_network">(请检查网络)</string>
     <string name="main__url_illegal">Url不合法</string>
+
+    <!-- menu -->
+    <string name="main__menu_new_download">新建单个下载</string>
+    <string name="main__menu_new_downloads">新建批量下载</string>
+    <string name="main__menu_new_custom_download">新建自定义保存路径和名称下载</string>
+
+    <string name="main__btn_delete">删除</string>
+    <string name="main__btn_move">移动</string>
+    <string name="main__btn_rename">重命名(单个)</string>
+
 </resources>

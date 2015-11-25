@@ -1,9 +1,8 @@
-package org.wlf.filedownloader.task;
+package org.wlf.filedownloader;
 
 import android.os.SystemClock;
 import android.util.Log;
 
-import org.wlf.filedownloader.DownloadFileInfo;
 import org.wlf.filedownloader.base.FailReason;
 import org.wlf.filedownloader.base.Status;
 import org.wlf.filedownloader.base.Stoppable;
@@ -75,7 +74,7 @@ public class FileDownloadTask implements Runnable, Stoppable, OnHttpDownloadList
     // 1.init task
     private void init() {
 
-        Log.i(TAG, "1、初始化下载任务，url：" + mTaskParamInfo.mUrl);
+        Log.i(TAG, "init 1、初始化下载任务，url：" + mTaskParamInfo.mUrl);
 
         // init Downloader
         Range range = new Range(mTaskParamInfo.mStartPosInTotal, mTaskParamInfo.mFileTotalSize);
@@ -143,7 +142,7 @@ public class FileDownloadTask implements Runnable, Stoppable, OnHttpDownloadList
 
         mLastDownloadingTime = -1;
 
-        Log.i(TAG, "2、任务开始执行，正在获取资源，url：：" + mTaskParamInfo.mUrl);
+        Log.i(TAG, "FileDownloadTask.run 2、任务开始执行，正在获取资源，url：：" + mTaskParamInfo.mUrl);
 
         boolean canNext = notifyStatusPreparing();
 
@@ -190,7 +189,7 @@ public class FileDownloadTask implements Runnable, Stoppable, OnHttpDownloadList
                 }
             }
 
-            Log.i(TAG, "7、任务结束执行，url：" + mTaskParamInfo.mUrl);
+            Log.i(TAG, "FileDownloadTask.run 7、任务结束执行，url：" + mTaskParamInfo.mUrl);
         }
     }
 
@@ -209,7 +208,7 @@ public class FileDownloadTask implements Runnable, Stoppable, OnHttpDownloadList
             return;
         }
 
-        Log.i(TAG, "3、已经连接资源，url：" + mTaskParamInfo.mUrl);
+        Log.i(TAG, "FileDownloadTask.run 3、已经连接资源，url：" + mTaskParamInfo.mUrl);
 
         boolean canNext = notifyStatusPrepared();
 
@@ -242,7 +241,7 @@ public class FileDownloadTask implements Runnable, Stoppable, OnHttpDownloadList
             return;
         }
 
-        Log.i(TAG, "4、准备下载，url：" + mTaskParamInfo.mUrl);
+        Log.i(TAG, "FileDownloadTask.run 4、准备下载，url：" + mTaskParamInfo.mUrl);
 
         boolean canNext = notifyStatusDownloading(0);
 
@@ -266,7 +265,7 @@ public class FileDownloadTask implements Runnable, Stoppable, OnHttpDownloadList
             return;
         }
 
-        Log.i(TAG, "5、下载中，url：" + mTaskParamInfo.mUrl);
+        Log.i(TAG, "FileDownloadTask.run 5、下载中，url：" + mTaskParamInfo.mUrl);
 
         boolean canNext = notifyStatusDownloading(increaseSize);
 
@@ -292,12 +291,12 @@ public class FileDownloadTask implements Runnable, Stoppable, OnHttpDownloadList
 
         if (!complete) {
 
-            Log.i(TAG, "6、暂停下载，url：" + mTaskParamInfo.mUrl);
+            Log.i(TAG, "FileDownloadTask.run 6、暂停下载，url：" + mTaskParamInfo.mUrl);
 
             notifyTaskFinish(Status.DOWNLOAD_STATUS_PAUSED, increaseSize, null);
         } else {
 
-            Log.i(TAG, "6、下载完成，url：" + mTaskParamInfo.mUrl);
+            Log.i(TAG, "FileDownloadTask.run 6、下载完成，url：" + mTaskParamInfo.mUrl);
 
             notifyTaskFinish(Status.DOWNLOAD_STATUS_COMPLETED, increaseSize, null);
         }
@@ -438,7 +437,7 @@ public class FileDownloadTask implements Runnable, Stoppable, OnHttpDownloadList
                                 notify = true;
                                 break;
                             case Status.DOWNLOAD_STATUS_ERROR:
-                                OnFileDownloadStatusListener.MainThreadHelper.onFileDownloadStatusFailed(getUrl(),getDownloadFile(), failReason, mOnFileDownloadStatusListener);
+                                OnFileDownloadStatusListener.MainThreadHelper.onFileDownloadStatusFailed(getUrl(), getDownloadFile(), failReason, mOnFileDownloadStatusListener);
                                 // notifyStopFailed
                                 notifyStopFailed(new OnStopDownloadFileTaskFailReason(failReason));
                                 break;
@@ -448,7 +447,7 @@ public class FileDownloadTask implements Runnable, Stoppable, OnHttpDownloadList
                 } catch (Exception e) {
                     e.printStackTrace();
                     // error
-                    OnFileDownloadStatusListener.MainThreadHelper.onFileDownloadStatusFailed(getUrl(),getDownloadFile(), new OnFileDownloadStatusFailReason(e), mOnFileDownloadStatusListener);
+                    OnFileDownloadStatusListener.MainThreadHelper.onFileDownloadStatusFailed(getUrl(), getDownloadFile(), new OnFileDownloadStatusFailReason(e), mOnFileDownloadStatusListener);
                     mIsNotifyTaskFinish = true;
                 } finally {
                     // if notify task finish,force stop if necessary
@@ -544,7 +543,6 @@ public class FileDownloadTask implements Runnable, Stoppable, OnHttpDownloadList
             }
             return false;
         }
-
         return true;
     }
 
@@ -566,7 +564,7 @@ public class FileDownloadTask implements Runnable, Stoppable, OnHttpDownloadList
     public void stop() {
         // if it is stopped,notify stop failed
         if (isStopped()) {
-            notifyStopFailed(new OnStopDownloadFileTaskFailReason("the task has been stopped!", OnStopDownloadFileTaskFailReason.TYPE_IS_STOPPED));
+            notifyStopFailed(new OnStopDownloadFileTaskFailReason("the task has been stopped!", OnStopDownloadFileTaskFailReason.TYPE_TASK_IS_STOPPED));
             return;
         }
         if (mSaver != null) {
@@ -650,7 +648,7 @@ public class FileDownloadTask implements Runnable, Stoppable, OnHttpDownloadList
         /**
          * the task has been stopped
          */
-        public static final String TYPE_IS_STOPPED = OnStopDownloadFileTaskFailReason.class.getName() + "_TYPE_IS_STOPPED";
+        public static final String TYPE_TASK_IS_STOPPED = OnStopDownloadFileTaskFailReason.class.getName() + "_TYPE_TASK_IS_STOPPED";
 
         public OnStopDownloadFileTaskFailReason(String detailMessage, String type) {
             super(detailMessage, type);

@@ -66,7 +66,7 @@ public class MainActivity extends Activity implements OnDetectUrlFileListener, O
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.main__activity_main);
 
         mLnlyOperation = (LinearLayout) findViewById(R.id.lnlyOperation);
         mBtnDelete = (Button) findViewById(R.id.btnDelete);
@@ -129,7 +129,7 @@ public class MainActivity extends Activity implements OnDetectUrlFileListener, O
         etUrl.setFocusable(true);
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle(getString(R.string.main__plaease_input_download_size)).setView(etUrl).setNegativeButton(getString(R.string.main__dialog_btn_cancel), null);
+        builder.setTitle(getString(R.string.main__please_input_download_size)).setView(etUrl).setNegativeButton(getString(R.string.main__dialog_btn_cancel), null);
         builder.setPositiveButton(getString(R.string.main__dialog_btn_confirm), new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int which) {
                 // file url
@@ -163,7 +163,7 @@ public class MainActivity extends Activity implements OnDetectUrlFileListener, O
         linearLayout.addView(etUrl3, params);
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle(getString(R.string.main__plaease_input_download_size)).setView(linearLayout).setNegativeButton(getString(R.string.main__dialog_btn_cancel), null);
+        builder.setTitle(getString(R.string.main__please_input_download_size)).setView(linearLayout).setNegativeButton(getString(R.string.main__dialog_btn_cancel), null);
         builder.setPositiveButton(getString(R.string.main__dialog_btn_confirm), new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int which) {
                 // file urls
@@ -190,7 +190,7 @@ public class MainActivity extends Activity implements OnDetectUrlFileListener, O
         etUrlCustom.setFocusable(true);
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle(getString(R.string.main__plaease_input_download_size)).setView(etUrlCustom).setNegativeButton(getString(R.string.main__dialog_btn_cancel), null);
+        builder.setTitle(getString(R.string.main__please_input_download_size)).setView(etUrlCustom).setNegativeButton(getString(R.string.main__dialog_btn_cancel), null);
         builder.setPositiveButton(getString(R.string.main__dialog_btn_confirm), new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int which) {
                 // file url
@@ -341,7 +341,7 @@ public class MainActivity extends Activity implements OnDetectUrlFileListener, O
                 }
                 // multi delete
                 else {
-                    Log.e("wlf_deletes","点击开始批量删除");
+                    Log.e("wlf_deletes", "点击开始批量删除");
                     mFileDownloadManager.delete(urls, true, new OnDeleteDownloadFilesListener() {
 
                         @Override
@@ -370,7 +370,7 @@ public class MainActivity extends Activity implements OnDetectUrlFileListener, O
             @Override
             public void onClick(View v) {
 
-                final String newDirPath = Environment.getDataDirectory().getAbsolutePath() + File.separator + getString(R.string.main__move_to_folder);
+                final String newDirPath = Environment.getExternalStorageDirectory().getAbsolutePath() + File.separator + getString(R.string.main__move_to_folder);
 
                 List<String> urls = new ArrayList<String>();
 
@@ -443,11 +443,11 @@ public class MainActivity extends Activity implements OnDetectUrlFileListener, O
                 }
 
                 if (urls.size() == 1) {
-                    mFileDownloadManager.rename(urls.get(0), getString(R.string.main__rename_file_name), new OnRenameDownloadFileListener() {
+                    mFileDownloadManager.rename(urls.get(0), getString(R.string.main__rename_file_name), false, new OnRenameDownloadFileListener() {
 
                         @Override
                         public void onRenameDownloadFilePrepared(DownloadFileInfo downloadFileNeedRename) {
-                            
+
                         }
 
                         @Override

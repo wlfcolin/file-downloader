@@ -33,7 +33,7 @@ public interface OnMoveDownloadFileListener {
     /**
      * move failed
      *
-     * @param downloadFileInfo download file needed to delete,may be null
+     * @param downloadFileInfo download file needed to move,may be null
      * @param failReason       fail reason
      */
     void onMoveDownloadFileFailed(DownloadFileInfo downloadFileInfo, OnMoveDownloadFileFailReason failReason);
@@ -53,6 +53,14 @@ public interface OnMoveDownloadFileListener {
          * original file not exist
          */
         public static final String TYPE_ORIGINAL_FILE_NOT_EXIST = OnMoveDownloadFileFailReason.class.getName() + "_TYPE_ORIGINAL_FILE_NOT_EXIST";
+        /**
+         * update record error
+         */
+        public static final String TYPE_UPDATE_RECORD_ERROR = OnMoveDownloadFileFailReason.class.getName() + "_TYPE_UPDATE_RECORD_ERROR";
+        /**
+         * file status error
+         */
+        public static final String TYPE_FILE_STATUS_ERROR = OnMoveDownloadFileFailReason.class.getName() + "_TYPE_FILE_STATUS_ERROR";
 
         public OnMoveDownloadFileFailReason(String detailMessage, String type) {
             super(detailMessage, type);
@@ -109,7 +117,7 @@ public interface OnMoveDownloadFileListener {
         /**
          * move failed
          *
-         * @param downloadFileInfo download file needed to delete,may be null
+         * @param downloadFileInfo download file needed to move,may be null
          * @param failReason       fail reason
          */
         public static void onMoveDownloadFileFailed(final DownloadFileInfo downloadFileInfo, final OnMoveDownloadFileFailReason failReason, final OnMoveDownloadFileListener onMoveDownloadFileListener) {

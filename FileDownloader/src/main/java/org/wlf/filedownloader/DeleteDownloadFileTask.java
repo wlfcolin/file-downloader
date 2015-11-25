@@ -1,9 +1,7 @@
-package org.wlf.filedownloader.task;
+package org.wlf.filedownloader;
 
 import android.util.Log;
 
-import org.wlf.filedownloader.DownloadFileCacher;
-import org.wlf.filedownloader.DownloadFileInfo;
 import org.wlf.filedownloader.listener.OnDeleteDownloadFileListener;
 import org.wlf.filedownloader.listener.OnDeleteDownloadFileListener.OnDeleteDownloadFileFailReason;
 
@@ -21,17 +19,17 @@ public class DeleteDownloadFileTask implements Runnable {
 
     private static final String TAG = DeleteDownloadFileTask.class.getSimpleName();
 
-    private String url;
-    private boolean deleteDownloadedFileInPath;
-    private DownloadFileCacher fileDownloadCacher;
+    private String mUrl;
+    private boolean mDeleteDownloadedFileInPath;
+    private DownloadFileCacher mFileDownloadCacher;
 
     private OnDeleteDownloadFileListener mOnDeleteDownloadFileListener;
 
     public DeleteDownloadFileTask(String url, boolean deleteDownloadedFileInPath, DownloadFileCacher fileDownloadCacher) {
         super();
-        this.url = url;
-        this.deleteDownloadedFileInPath = deleteDownloadedFileInPath;
-        this.fileDownloadCacher = fileDownloadCacher;
+        this.mUrl = url;
+        this.mDeleteDownloadedFileInPath = deleteDownloadedFileInPath;
+        this.mFileDownloadCacher = fileDownloadCacher;
     }
 
     public void setOnDeleteDownloadFileListener(OnDeleteDownloadFileListener onDeleteDownloadFileListener) {
@@ -41,20 +39,20 @@ public class DeleteDownloadFileTask implements Runnable {
     @Override
     public void run() {
 
-        DownloadFileInfo downloadFileInfo = fileDownloadCacher.getDownloadFile(url);
+        DownloadFileInfo downloadFileInfo = mFileDownloadCacher.getDownloadFile(mUrl);
 
-        // 1.Prepared
+        // 1.prepared
         OnDeleteDownloadFileListener.MainThreadHelper.onDeleteDownloadFilePrepared(downloadFileInfo, mOnDeleteDownloadFileListener);
 
         OnDeleteDownloadFileFailReason failReason = null;
 
         if (downloadFileInfo != null) {
             // delete in database record
-            boolean deleteResult = fileDownloadCacher.deleteDownloadFile(downloadFileInfo);
+            boolean deleteResult = mFileDownloadCacher.deleteDownloadFile(downloadFileInfo);
             if (deleteResult) {
-                Log.e("wlf__d", "数据库删除成功url：" + url);
+                Log.d(TAG, "DeleteDownloadFileTask.run 数据库删除成功url：" + mUrl);
                 // delete in path
-                if (deleteDownloadedFileInPath) {
+                if (mDeleteDownloadedFileInPath) {
                     File file = new File(downloadFileInfo.getFileDir(), downloadFileInfo.getFileName());
                     if (file != null) {
                         if (file.exists()) {
@@ -65,8 +63,8 @@ public class DeleteDownloadFileTask implements Runnable {
                     }
                 }
                 if (deleteResult) {
-                    Log.e("wlf__d", "数据库+文件删除成功url：" + url);
-                    // 2.delete Success
+                    Log.d(TAG, "DeleteDownloadFileTask.run 数据库+文件删除成功url：" + mUrl);
+                    // 2.delete success
                     OnDeleteDownloadFileListener.MainThreadHelper.onDeleteDownloadFileSuccess(downloadFileInfo, mOnDeleteDownloadFileListener);
                     return;
                 } else {
@@ -80,7 +78,7 @@ public class DeleteDownloadFileTask implements Runnable {
         }
 
         if (failReason != null) {
-            Log.e("wlf__d", "删除失败url：" + url + ",failReason:" + failReason.getType());
+            Log.d(TAG, "DeleteDownloadFileTask.run 删除失败url：" + mUrl + ",failReason:" + failReason.getType());
             // 2.delete failed
             OnDeleteDownloadFileListener.MainThreadHelper.onDeleteDownloadFileFailed(downloadFileInfo, failReason, mOnDeleteDownloadFileListener);
         }

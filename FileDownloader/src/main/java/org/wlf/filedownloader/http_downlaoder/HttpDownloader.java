@@ -99,7 +99,7 @@ public class HttpDownloader implements Download {
                 redirectCount++;
             }
 
-            Log.d(TAG, "1、准备下载，重定向：" + redirectCount + "次" + "，最大重定向次数：" + MAX_REDIRECT_COUNT + "，url：" + url);
+            Log.d(TAG, "download 1、准备下载，重定向：" + redirectCount + "次" + "，最大重定向次数：" + MAX_REDIRECT_COUNT + "，url：" + url);
 
             if (redirectCount > MAX_REDIRECT_COUNT) {
                 // error over max redirect
@@ -114,7 +114,7 @@ public class HttpDownloader implements Download {
                 // 2.check contentLength
                 int contentLength = conn.getContentLength();
 
-                Log.d(TAG, "2、得到服务器返回的资源contentLength：" + contentLength + "，传入的range：" + mRange.toString() + "，url：" + url);
+                Log.d(TAG, "download 2、得到服务器返回的资源contentLength：" + contentLength + "，传入的range：" + mRange.toString() + "，url：" + url);
 
                 if (contentLength <= 0) {
                     // error content length illegal
@@ -125,7 +125,7 @@ public class HttpDownloader implements Download {
                 if (!TextUtils.isEmpty(mETag)) {
                     String eTag = conn.getHeaderField("ETag");
 
-                    Log.d(TAG, "3、得到服务器返回的资源eTag：" + eTag + "，传入的eTag：" + mETag + "，url：" + url);
+                    Log.d(TAG, "download 3、得到服务器返回的资源eTag：" + eTag + "，传入的eTag：" + mETag + "，url：" + url);
 
                     if (TextUtils.isEmpty(eTag) || !mETag.equals(eTag)) {
                         // error eTag is not equal
@@ -135,7 +135,7 @@ public class HttpDownloader implements Download {
 
                 // range is illegal,that means need download whole file from range 0 to file size
                 if (!Range.isLegal(mRange) || (mRange != null && mRange.getLength() > contentLength)) {
-                    mRange = new Range(0, contentLength);// FIXME whether notify?
+                    mRange = new Range(0, contentLength);// FIXME whether need to notify range change?
                 }
                 // use range to continue download
                 else {
@@ -168,7 +168,7 @@ public class HttpDownloader implements Download {
                 // wrap serverInputStream
                 inputStream = new ContentLengthInputStream(serverInputStream, contentLength);
 
-                Log.d(TAG, "4、准备处理数据，获取服务器返回的资源长度为：" + contentLength + "，获取服务器返回的输入流长度为：" + inputStream.available() + "，需要处理的区域为：" + mRange.toString() + "，url：" + url);
+                Log.d(TAG, "download 4、准备处理数据，获取服务器返回的资源长度为：" + contentLength + "，获取服务器返回的输入流长度为：" + inputStream.available() + "，需要处理的区域为：" + mRange.toString() + "，url：" + url);
 
                 // notifyDownloadConnected
                 notifyDownloadConnected(inputStream, mRange.startPos);
@@ -205,7 +205,7 @@ public class HttpDownloader implements Download {
                 conn.disconnect();
             }
 
-            Log.d(TAG, "5、下载已结束" + "，url：" + url);
+            Log.d(TAG, "download 5、下载已结束" + "，url：" + url);
         }
 
     }

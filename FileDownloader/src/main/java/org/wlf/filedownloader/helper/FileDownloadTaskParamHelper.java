@@ -1,11 +1,12 @@
-package org.wlf.filedownloader.task;
+package org.wlf.filedownloader.helper;
 
 import org.wlf.filedownloader.DownloadFileInfo;
-import org.wlf.filedownloader.task.FileDownloadTask.FileDownloadTaskParam;
+import org.wlf.filedownloader.FileDownloadTask.FileDownloadTaskParam;
 
 /**
  * {@link FileDownloadTaskParam} helper
- * <br/>{@link FileDownloadTaskParam}帮助类
+ * <br/>
+ * {@link FileDownloadTaskParam}帮助类
  *
  * @author wlf(Andy)
  * @email 411086563@qq.com
