@@ -5,6 +5,7 @@ import android.os.Looper;
 
 import org.wlf.filedownloader.DownloadFileInfo;
 import org.wlf.filedownloader.base.FailReason;
+import org.wlf.filedownloader.http_downlaoder.HttpDownloader.HttpDownloadException;
 
 /**
  * OnFileDownloadStatusListener
@@ -234,6 +235,10 @@ public interface OnFileDownloadStatusListener {
          * download file error
          */
         public static final String TYPE_DOWNLOAD_FILE_ERROR = OnFileDownloadStatusFailReason.class.getName() + "_TYPE_DOWNLOAD_FILE_ERROR";
+        /**
+         * network timeout
+         */
+        public static final String TYPE_NETWORK_TIMEOUT = OnFileDownloadStatusFailReason.class.getName() + "_TYPE_NETWORK_TIMEOUT";
 
         public OnFileDownloadStatusFailReason(String detailMessage, String type) {
             super(detailMessage, type);
@@ -246,7 +251,17 @@ public interface OnFileDownloadStatusListener {
         @Override
         protected void onInitTypeWithThrowable(Throwable throwable) {
             super.onInitTypeWithThrowable(throwable);
-            // TODO
+            if (throwable instanceof HttpDownloadException || throwable.getCause() instanceof HttpDownloadException) {
+                HttpDownloadException exception = (HttpDownloadException) throwable;
+                String type = exception.getType();
+                if (HttpDownloadException.TYPE_NETWORK_TIMEOUT.equals(type)) {
+                    setType(TYPE_NETWORK_TIMEOUT);
+                } else if (HttpDownloadException.TYPE_NETWORK_DENIED.equals(type)) {
+                    setType(TYPE_NETWORK_DENIED);
+                }else{
+                    //.....
+                }
+            }
         }
 
     }

@@ -63,7 +63,8 @@
     <string name="main__not_install_apk2">Not install,please install apk:</string>
     <string name="main__check_network">(Check network)</string>
     <string name="main__url_illegal">Url illegal</string>
-
+    <string name="main__network_timeout">(Network timeout)</string>
+    
     <!-- menu -->
     <string name="main__menu_new_download">New single download</string>
     <string name="main__menu_new_downloads">New multi downloads</string>

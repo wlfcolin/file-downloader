@@ -443,8 +443,6 @@ public class DownloadFileCacher extends DownloadFileDbRecorder {
                 filePath = downloadFileInfo.getFilePath();
                 break;
             case Status.DOWNLOAD_STATUS_PAUSED:
-            case Status.DOWNLOAD_STATUS_PREPARING:
-            case Status.DOWNLOAD_STATUS_ERROR:
                 filePath = downloadFileInfo.getTempFilePath();
                 break;
         }

@@ -62,6 +62,7 @@
     <string name="main__not_install_apk2">（无法启动）请安装Apk：</string>
     <string name="main__check_network">(请检查网络)</string>
     <string name="main__url_illegal">Url不合法</string>
+    <string name="main__network_timeout">(网络超时)</string>
 
     <!-- menu -->
     <string name="main__menu_new_download">新建单个下载</string>

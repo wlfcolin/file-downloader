@@ -241,7 +241,8 @@ public class MainActivity extends Activity implements OnDetectUrlFileListener, O
         etFileName.setFocusable(true);
 
         final TextView tvFileSize = new TextView(MainActivity.this);
-        tvFileSize.setText(getString(R.string.main__file_size) + (fileSize / 1024f / 1024f) + " M");
+        float size = fileSize / 1024f / 1024f;
+        tvFileSize.setText(getString(R.string.main__file_size) + ((float) (Math.round(size * 100)) / 100) + "M");
 
         LinearLayout linearLayout = new LinearLayout(MainActivity.this);
         linearLayout.setOrientation(LinearLayout.VERTICAL);

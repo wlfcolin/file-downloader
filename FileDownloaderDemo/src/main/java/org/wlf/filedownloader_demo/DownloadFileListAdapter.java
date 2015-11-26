@@ -591,9 +591,14 @@ public class DownloadFileListAdapter extends BaseAdapter implements OnFileDownlo
                 } else if (OnFileDownloadStatusFailReason.TYPE_URL_ILLEGAL.equals(failReason.getType())) {
                     msg = cacheConvertView.getContext().getString(R.string.main__url_illegal);
                     showToast(msg);
+                }else if (OnFileDownloadStatusFailReason.TYPE_NETWORK_TIMEOUT.equals(failReason.getType())) {
+                    msg = cacheConvertView.getContext().getString(R.string.main__network_timeout);
+                    showToast(msg);
                 }
             }
 
+            tvText.setText(msg);
+            
             setBackgroundOnClickListener(lnlyDownloadItem, downloadFileInfo);
 
             Log.d(TAG, "onFileDownloadStatusFailed 出错回调，url：" + url + "，status(正常应该是" + Status.DOWNLOAD_STATUS_ERROR + ")：" + downloadFileInfo.getStatus());

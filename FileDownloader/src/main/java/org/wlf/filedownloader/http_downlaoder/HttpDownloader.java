@@ -9,8 +9,10 @@ import org.wlf.filedownloader.helper.HttpConnectionHelper;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.ConnectException;
 import java.net.HttpURLConnection;
 import java.net.SocketTimeoutException;
+import java.net.UnknownHostException;
 
 /**
  * http file download impl
@@ -181,9 +183,12 @@ public class HttpDownloader implements Download {
         } catch (Exception e) {
             e.printStackTrace();
             // network timeout
-            if (e instanceof SocketTimeoutException) {
+            if (e instanceof SocketTimeoutException || e.getCause() instanceof SocketTimeoutException) {
                 // error network timeout
                 throw new HttpDownloadException("network timeout!", e, HttpDownloadException.TYPE_NETWORK_TIMEOUT);
+            } else if (e instanceof ConnectException || e instanceof UnknownHostException) {
+                // error network denied
+                throw new HttpDownloadException("network denied!", e, HttpDownloadException.TYPE_NETWORK_DENIED);
             } else if (e instanceof HttpDownloadException) {
                 // HttpDownloadException
                 throw (HttpDownloadException) e;
@@ -248,6 +253,10 @@ public class HttpDownloader implements Download {
          * network timeout
          */
         public static final String TYPE_NETWORK_TIMEOUT = HttpDownloadException.class.getName() + "_TYPE_NETWORK_TIMEOUT";
+        /**
+         * network denied
+         */
+        public static final String TYPE_NETWORK_DENIED = HttpDownloadException.class.getName() + "_TYPE_NETWORK_DENIED";
 
         public HttpDownloadException(String detailMessage, String type) {
             super(detailMessage, type);
