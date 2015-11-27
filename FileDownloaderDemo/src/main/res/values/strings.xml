@@ -3,7 +3,8 @@
 
     <string name="app_name">File-Downloader Demo</string>
 
-    <string name="main__please_input_download_size">Please enter the url of the download file</string>
+    <string name="main__please_input_download_file">Please enter the url of the download file</string>
+    <string name="main__please_input_multi_download_files">Please enter multi urls of the download files</string>
 
     <string name="main__dialog_btn_cancel">Cancel</string>
     <string name="main__dialog_btn_confirm">Confirm</string>

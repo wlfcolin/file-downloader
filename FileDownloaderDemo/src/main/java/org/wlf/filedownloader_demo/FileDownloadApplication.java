@@ -37,13 +37,13 @@ public class FileDownloadApplication extends Application {
 
     // init FileDownloadManager
     private void initFileDownloadManager() {
-        // 1.init FileDownloadConfiguration.Builder
-        Builder config = new FileDownloadConfiguration.Builder(this);
-        // 2.config FileDownloadConfiguration.Builder
-        config.configFileDownloadDir(Environment.getExternalStorageDirectory().getAbsolutePath() + File.separator + "FileDownloader");// config download path
-        config.configDownloadTaskSize(3);// allow 3 download task at the same time
-        FileDownloadConfiguration configuration = config.build();// build FileDownloadConfiguration
-        // 3.init FileDownloadManager
+        // 1.create FileDownloadConfiguration.Builder
+        Builder builder = new FileDownloadConfiguration.Builder(this);
+        // 2.builder FileDownloadConfiguration.Builder
+        builder.configFileDownloadDir(Environment.getExternalStorageDirectory().getAbsolutePath() + File.separator + "FileDownloader");// builder the download path
+        builder.configDownloadTaskSize(3);// allow 3 download task at the same time
+        FileDownloadConfiguration configuration = builder.build();// build FileDownloadConfiguration with the builder
+        // 3.init FileDownloadManager with the configuration
         FileDownloadManager.getInstance(this).init(configuration);
     }
 

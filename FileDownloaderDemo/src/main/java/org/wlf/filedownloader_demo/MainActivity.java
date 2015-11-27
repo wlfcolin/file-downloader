@@ -125,11 +125,11 @@ public class MainActivity extends Activity implements OnDetectUrlFileListener, O
     private void showNewDownloadDialog() {
 
         final EditText etUrl = new EditText(this);
-        etUrl.setText("http://182.254.149.157/ftp/image/shop/product/儿童英语升华&￥.apk");
+        etUrl.setText("http://182.254.149.157/ftp/image/shop/product/儿童英语升华&￥.apk");// apk file, the url with special character
         etUrl.setFocusable(true);
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle(getString(R.string.main__please_input_download_size)).setView(etUrl).setNegativeButton(getString(R.string.main__dialog_btn_cancel), null);
+        builder.setTitle(getString(R.string.main__please_input_download_file)).setView(etUrl).setNegativeButton(getString(R.string.main__dialog_btn_cancel), null);
         builder.setPositiveButton(getString(R.string.main__dialog_btn_confirm), new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int which) {
                 // file url
@@ -144,15 +144,15 @@ public class MainActivity extends Activity implements OnDetectUrlFileListener, O
     private void showMultiNewDownloadDialog() {
 
         final EditText etUrl1 = new EditText(this);
-        etUrl1.setText("http://img13.360buyimg.com/n1/g14/M01/1B/1F/rBEhVlM03iwIAAAAAAFJnWsj5UAAAK8_gKFgkMAAUm1950.jpg");
+        etUrl1.setText("http://img13.360buyimg.com/n1/g14/M01/1B/1F/rBEhVlM03iwIAAAAAAFJnWsj5UAAAK8_gKFgkMAAUm1950.jpg");// web image file,jpg
         etUrl1.setFocusable(true);
 
         final EditText etUrl2 = new EditText(this);
-        etUrl2.setText("http://img10.360buyimg.com/n1/jfs/t853/355/1172323504/52399/1e48e004/557e4325N54137a0d.jpg");
+        etUrl2.setText("http://sqdd.myapp.com/myapp/qqteam/AndroidQQ/mobileqq_android.apk");// apk file,tencent qq
         etUrl2.setFocusable(true);
 
         final EditText etUrl3 = new EditText(this);
-        etUrl3.setText("http://img13.360buyimg.com/n1/jfs/t1144/281/125705764/55544/2c37837b/55000151Ne909045f.jpg");
+        etUrl3.setText("http://down.sandai.net/thunder7/Thunder_dl_7.9.41.5020.exe");// exe file,thunder
         etUrl3.setFocusable(true);
 
         LinearLayout linearLayout = new LinearLayout(this);
@@ -163,7 +163,7 @@ public class MainActivity extends Activity implements OnDetectUrlFileListener, O
         linearLayout.addView(etUrl3, params);
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle(getString(R.string.main__please_input_download_size)).setView(linearLayout).setNegativeButton(getString(R.string.main__dialog_btn_cancel), null);
+        builder.setTitle(getString(R.string.main__please_input_multi_download_files)).setView(linearLayout).setNegativeButton(getString(R.string.main__dialog_btn_cancel), null);
         builder.setPositiveButton(getString(R.string.main__dialog_btn_confirm), new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int which) {
                 // file urls
@@ -186,11 +186,11 @@ public class MainActivity extends Activity implements OnDetectUrlFileListener, O
     private void showCustomNewDownloadDialog() {
 
         final EditText etUrlCustom = new EditText(this);
-        etUrlCustom.setText("http://182.254.149.157/ftp/image/shop/product/儿童英语拓展篇HD_air.com.congcongbb.yingyue.mi_1000000.apk");
+        etUrlCustom.setText("http://182.254.149.157/ftp/image/shop/product/儿童英语拓展篇HD_air.com.congcongbb.yingyue.mi_1000000.apk");// apk file, the url with complex character
         etUrlCustom.setFocusable(true);
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle(getString(R.string.main__please_input_download_size)).setView(etUrlCustom).setNegativeButton(getString(R.string.main__dialog_btn_cancel), null);
+        builder.setTitle(getString(R.string.main__please_input_download_file)).setView(etUrlCustom).setNegativeButton(getString(R.string.main__dialog_btn_cancel), null);
         builder.setPositiveButton(getString(R.string.main__dialog_btn_confirm), new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int which) {
                 // file url
@@ -361,7 +361,7 @@ public class MainActivity extends Activity implements OnDetectUrlFileListener, O
                 // multi delete
                 else {
                     Log.e("wlf_deletes", "点击开始批量删除");
-                    mFileDownloadManager.delete(urls, true, new OnDeleteDownloadFilesListener() {
+                    mFileDownloadManager.delete(urls, deleteDownloadedFile, new OnDeleteDownloadFilesListener() {
 
                         @Override
                         public void onDeletingDownloadFiles(List<DownloadFileInfo> downloadFilesNeedDelete, List<DownloadFileInfo> downloadFilesDeleted, List<DownloadFileInfo> downloadFilesSkip, DownloadFileInfo downloadFileDeleting) {

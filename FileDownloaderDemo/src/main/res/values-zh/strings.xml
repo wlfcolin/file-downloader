@@ -2,7 +2,8 @@
 
     <string name="app_name">文件下载管理器Demo</string>
 
-    <string name="main__please_input_download_size">请输入要下载文件的地址</string>
+    <string name="main__please_input_download_file">请输入下载文件的地址</string>
+    <string name="main__please_input_multi_download_files">请输入批量下载文件的地址</string>
 
     <string name="main__dialog_btn_cancel">取消</string>
     <string name="main__dialog_btn_confirm">确认</string>
