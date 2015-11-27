@@ -101,7 +101,7 @@ public interface OnDeleteDownloadFileListener {
         private static final long serialVersionUID = 6959079784746889291L;
 
         /**
-         * the download file is not exist
+         * the download file record is not exist
          */
         public static final String TYPE_FILE_RECORD_IS_NOT_EXIST = OnDeleteDownloadFileFailReason.class.getName() + "_TYPE_FILE_RECORD_IS_NOT_EXIST";
 

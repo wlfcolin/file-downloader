@@ -20,7 +20,7 @@ public interface Save {
      *                        <p/>
      *                        |(0,totalStart)----|(startPosInTotal,inputStream start)---
      *                        |(inputStream.length,inputStream end)----|(fileTotalSize,totalEnd)
-     * @throws FailException any fail exception during saving data
+     * @throws Exception any fail exception during saving data
      */
-    void saveData(InputStream inputStream, int startPosInTotal) throws FailException;
+    void saveData(InputStream inputStream, int startPosInTotal) throws Exception;
 }

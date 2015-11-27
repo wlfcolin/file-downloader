@@ -59,10 +59,16 @@ public class DeleteDownloadFileTask implements Runnable {
                             deleteResult = file.delete();
                         } else {
                             // has been deleted in file path or not complete,look up the temp file
-                            file = new File(downloadFileInfo.getFilePath(),downloadFileInfo.getTempFileName());
-                            if(file.exists()){
+                            file = new File(downloadFileInfo.getFileDir(), downloadFileInfo.getTempFileName());
+                            if (file.exists()) {
                                 deleteResult = file.delete();
                             }
+                        }
+                    } else {
+                        // look up the temp file
+                        file = new File(downloadFileInfo.getFileDir(), downloadFileInfo.getTempFileName());
+                        if (file.exists()) {
+                            deleteResult = file.delete();
                         }
                     }
                 }

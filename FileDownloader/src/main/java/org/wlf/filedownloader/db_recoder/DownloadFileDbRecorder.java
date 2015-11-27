@@ -1,7 +1,6 @@
 package org.wlf.filedownloader.db_recoder;
 
 import org.wlf.filedownloader.DownloadFileInfo;
-import org.wlf.filedownloader.base.FailException;
 import org.wlf.filedownloader.base.Record;
 
 import java.util.List;
@@ -18,7 +17,7 @@ public abstract class DownloadFileDbRecorder implements Record {
 
     // for child to impl
     @Override
-    public abstract void recordStatus(String url, int status, int increaseSize) throws FailException;
+    public abstract void recordStatus(String url, int status, int increaseSize) throws Exception;
 
     /**
      * add new DownloadFile

@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
-import android.os.Environment;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.Menu;
@@ -12,8 +11,10 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.LinearLayout.LayoutParams;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -29,7 +30,6 @@ import org.wlf.filedownloader.listener.OnMoveDownloadFilesListener;
 import org.wlf.filedownloader.listener.OnRenameDownloadFileListener;
 import org.wlf.filedownloader_demo.DownloadFileListAdapter.OnItemSelectListener;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -310,6 +310,24 @@ public class MainActivity extends Activity implements OnDetectUrlFileListener, O
             @Override
             public void onClick(View v) {
 
+                AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+                builder.setTitle(getString(R.string.main__confirm_whether_delete_save_file));
+                builder.setNegativeButton(getString(R.string.main__confirm_no), new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        deleteDownloadFiles(false, selectDownloadFileInfos);
+                    }
+                });
+                builder.setPositiveButton(getString(R.string.main__confirm_yes), new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        deleteDownloadFiles(true, selectDownloadFileInfos);
+                    }
+                });
+                builder.show();
+            }
+
+            private void deleteDownloadFiles(boolean deleteDownloadedFile, List<DownloadFileInfo> selectDownloadFileInfos) {
+
                 List<String> urls = new ArrayList<String>();
 
                 for (DownloadFileInfo downloadFileInfo : selectDownloadFileInfos) {
@@ -321,7 +339,7 @@ public class MainActivity extends Activity implements OnDetectUrlFileListener, O
 
                 // single delete
                 if (urls.size() == 1) {
-                    mFileDownloadManager.delete(urls.get(0), true, new OnDeleteDownloadFileListener() {
+                    mFileDownloadManager.delete(urls.get(0), deleteDownloadedFile, new OnDeleteDownloadFileListener() {
                         @Override
                         public void onDeleteDownloadFileSuccess(DownloadFileInfo downloadFileDeleted) {
                             showToast(getString(R.string.main__delete_succeed));
@@ -371,62 +389,81 @@ public class MainActivity extends Activity implements OnDetectUrlFileListener, O
             @Override
             public void onClick(View v) {
 
-                final String newDirPath = Environment.getExternalStorageDirectory().getAbsolutePath() + File.separator + getString(R.string.main__move_to_folder);
+                String oldDirPath = FileDownloadManager.getInstance(MainActivity.this).getDownloadDir();
 
-                List<String> urls = new ArrayList<String>();
+                final EditText etFileDir = new EditText(MainActivity.this);
+                etFileDir.setText(oldDirPath);
+                etFileDir.setFocusable(true);
 
-                for (DownloadFileInfo downloadFileInfo : selectDownloadFileInfos) {
-                    if (downloadFileInfo == null) {
-                        continue;
+                LinearLayout linearLayout = new LinearLayout(MainActivity.this);
+                linearLayout.setOrientation(LinearLayout.VERTICAL);
+                LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+                linearLayout.addView(etFileDir, params);
+
+                AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+                builder.setTitle(getString(R.string.main__confirm_the_dir_path_move_to)).setView(linearLayout).setNegativeButton(getString(R.string.main__dialog_btn_cancel), null);
+                builder.setPositiveButton(getString(R.string.main__dialog_btn_confirm), new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        // move to file dir
+                        String newDirPath = etFileDir.getText().toString().trim();
+
+                        List<String> urls = new ArrayList<String>();
+
+                        for (DownloadFileInfo downloadFileInfo : selectDownloadFileInfos) {
+                            if (downloadFileInfo == null) {
+                                continue;
+                            }
+                            urls.add(downloadFileInfo.getUrl());
+                        }
+
+                        // single move
+                        if (urls.size() == 1) {
+                            mFileDownloadManager.move(urls.get(0), newDirPath, new OnMoveDownloadFileListener() {
+
+                                @Override
+                                public void onMoveDownloadFileSuccess(DownloadFileInfo downloadFileMoved) {
+                                    showToast(getString(R.string.main__move_succeed) + downloadFileMoved.getFilePath());
+                                    updateAdapter();
+                                }
+
+                                @Override
+                                public void onMoveDownloadFilePrepared(DownloadFileInfo downloadFileNeedToMove) {
+                                    showToast(getString(R.string.main__moving) + downloadFileNeedToMove.getFileName());
+                                }
+
+                                @Override
+                                public void onMoveDownloadFileFailed(DownloadFileInfo downloadFileInfo, OnMoveDownloadFileFailReason failReason) {
+                                    showToast(getString(R.string.main__move) + downloadFileInfo.getFileName() + getString(R.string.main__failed));
+                                    Log.e("wlf", "出错回调，移动" + downloadFileInfo.getFileName() + "失败");
+                                }
+                            });
+                        }
+                        // multi move
+                        else {
+                            mFileDownloadManager.move(urls, newDirPath, new OnMoveDownloadFilesListener() {
+
+                                @Override
+                                public void onMoveDownloadFilesPrepared(List<DownloadFileInfo> downloadFilesNeedMove) {
+                                    showToast(getString(R.string.main__need_move) + downloadFilesNeedMove.size());
+                                }
+
+                                @Override
+                                public void onMovingDownloadFiles(List<DownloadFileInfo> downloadFilesNeedMove, List<DownloadFileInfo> downloadFilesMoved, List<DownloadFileInfo> downloadFilesSkip, DownloadFileInfo downloadFileMoving) {
+                                    showToast(getString(R.string.main__moving) + downloadFileMoving.getFileName() + getString(R.string.main__progress) + (downloadFilesMoved.size() + downloadFilesSkip.size()) + getString(R.string.main__failed2) + downloadFilesSkip.size() + getString(R.string.main__skip_and_total_delete_division) + downloadFilesNeedMove.size());
+                                    updateAdapter();
+
+                                }
+
+                                @Override
+                                public void onMoveDownloadFilesCompleted(List<DownloadFileInfo> downloadFilesNeedMove, List<DownloadFileInfo> downloadFilesMoved) {
+                                    showToast(getString(R.string.main__move_finish) + downloadFilesMoved.size() + getString(R.string.main__failed3) + (downloadFilesNeedMove.size() - downloadFilesMoved.size()));
+                                }
+                            });
+                        }
+
                     }
-                    urls.add(downloadFileInfo.getUrl());
-                }
-
-                // single move
-                if (urls.size() == 1) {
-                    mFileDownloadManager.move(urls.get(0), newDirPath, new OnMoveDownloadFileListener() {
-
-                        @Override
-                        public void onMoveDownloadFileSuccess(DownloadFileInfo downloadFileMoved) {
-                            showToast(getString(R.string.main__move_succeed) + downloadFileMoved.getFilePath());
-                            updateAdapter();
-                        }
-
-                        @Override
-                        public void onMoveDownloadFilePrepared(DownloadFileInfo downloadFileNeedToMove) {
-                            showToast(getString(R.string.main__moving) + downloadFileNeedToMove.getFileName());
-                        }
-
-                        @Override
-                        public void onMoveDownloadFileFailed(DownloadFileInfo downloadFileInfo, OnMoveDownloadFileFailReason failReason) {
-                            showToast(getString(R.string.main__move) + downloadFileInfo.getFileName() + getString(R.string.main__failed));
-                            Log.e("wlf", "出错回调，移动" + downloadFileInfo.getFileName() + "失败");
-                        }
-                    });
-                }
-                // multi move
-                else {
-                    mFileDownloadManager.move(urls, newDirPath, new OnMoveDownloadFilesListener() {
-
-                        @Override
-                        public void onMoveDownloadFilesPrepared(List<DownloadFileInfo> downloadFilesNeedMove) {
-                            showToast(getString(R.string.main__need_move) + downloadFilesNeedMove.size());
-                        }
-
-                        @Override
-                        public void onMovingDownloadFiles(List<DownloadFileInfo> downloadFilesNeedMove, List<DownloadFileInfo> downloadFilesMoved, List<DownloadFileInfo> downloadFilesSkip, DownloadFileInfo downloadFileMoving) {
-                            showToast(getString(R.string.main__moving) + downloadFileMoving.getFileName() + getString(R.string.main__progress) + (downloadFilesMoved.size() + downloadFilesSkip.size()) + getString(R.string.main__failed2) + downloadFilesSkip.size() + getString(R.string.main__skip_and_total_delete_division) + downloadFilesNeedMove.size());
-                            updateAdapter();
-
-                        }
-
-                        @Override
-                        public void onMoveDownloadFilesCompleted(List<DownloadFileInfo> downloadFilesNeedMove, List<DownloadFileInfo> downloadFilesMoved) {
-                            showToast(getString(R.string.main__move_finish) + downloadFilesMoved.size() + getString(R.string.main__failed3) + (downloadFilesNeedMove.size() - downloadFilesMoved.size()));
-                        }
-                    });
-                }
-
+                });
+                builder.show();
             }
         });
 
@@ -434,35 +471,84 @@ public class MainActivity extends Activity implements OnDetectUrlFileListener, O
 
             @Override
             public void onClick(View v) {
-                List<String> urls = new ArrayList<String>();
+
+                final List<String> urls = new ArrayList<String>();
 
                 for (DownloadFileInfo downloadFileInfo : selectDownloadFileInfos) {
                     if (downloadFileInfo == null) {
                         continue;
                     }
+                    if (TextUtils.isEmpty(downloadFileInfo.getUrl())) {
+                        return;
+                    }
                     urls.add(downloadFileInfo.getUrl());
                 }
 
                 if (urls.size() == 1) {
-                    mFileDownloadManager.rename(urls.get(0), getString(R.string.main__rename_file_name), false, new OnRenameDownloadFileListener() {
 
-                        @Override
-                        public void onRenameDownloadFilePrepared(DownloadFileInfo downloadFileNeedRename) {
+                    DownloadFileInfo downloadFileInfoNeedToRename = null;
 
+                    for (DownloadFileInfo downloadFileInfo : selectDownloadFileInfos) {
+                        if (downloadFileInfo == null) {
+                            continue;
                         }
-
-                        @Override
-                        public void onRenameDownloadFileSuccess(DownloadFileInfo downloadFileRenamed) {
-                            showToast(getString(R.string.main__rename_succeed));
-                            updateAdapter();
+                        if (urls.get(0).equals(downloadFileInfo.getUrl())) {
+                            downloadFileInfoNeedToRename = downloadFileInfo;
+                            break;
                         }
+                    }
 
-                        @Override
-                        public void onRenameDownloadFileFailed(DownloadFileInfo downloadFileInfo, OnRenameDownloadFileFailReason failReason) {
-                            showToast(getString(R.string.main__rename_failed));
-                            Log.e("wlf", "出错回调，重命名失败");
+                    if (downloadFileInfoNeedToRename == null) {
+                        showToast(getString(R.string.main__can_not_rename));
+                        return;
+                    }
+
+                    String oldName = downloadFileInfoNeedToRename.getFileName();
+
+                    final EditText etFileName = new EditText(MainActivity.this);
+                    etFileName.setText(oldName);
+                    etFileName.setFocusable(true);
+
+                    final CheckBox cbIncludedSuffix = new CheckBox(MainActivity.this);
+                    cbIncludedSuffix.setChecked(true);
+                    cbIncludedSuffix.setText(getString(R.string.main__rename_included_suffix));
+
+                    LinearLayout linearLayout = new LinearLayout(MainActivity.this);
+                    linearLayout.setOrientation(LinearLayout.VERTICAL);
+                    LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+                    linearLayout.addView(etFileName, params);
+                    params = new LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+                    linearLayout.addView(cbIncludedSuffix, params);
+
+                    AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+                    builder.setTitle(getString(R.string.main__confirm_rename_info)).setView(linearLayout).setNegativeButton(getString(R.string.main__dialog_btn_cancel), null);
+                    builder.setPositiveButton(getString(R.string.main__dialog_btn_confirm), new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int which) {
+
+                            String newName = etFileName.getText().toString();
+
+                            mFileDownloadManager.rename(urls.get(0), newName, cbIncludedSuffix.isChecked(), new OnRenameDownloadFileListener() {
+
+                                @Override
+                                public void onRenameDownloadFilePrepared(DownloadFileInfo downloadFileNeedRename) {
+
+                                }
+
+                                @Override
+                                public void onRenameDownloadFileSuccess(DownloadFileInfo downloadFileRenamed) {
+                                    showToast(getString(R.string.main__rename_succeed));
+                                    updateAdapter();
+                                }
+
+                                @Override
+                                public void onRenameDownloadFileFailed(DownloadFileInfo downloadFileInfo, OnRenameDownloadFileFailReason failReason) {
+                                    showToast(getString(R.string.main__rename_failed));
+                                    Log.e("wlf", "出错回调，重命名失败");
+                                }
+                            });
                         }
                     });
+                    builder.show();
                 } else {
                     showToast(getString(R.string.main__rename_failed_note));
                 }

@@ -3,8 +3,6 @@ package org.wlf.filedownloader.listener;
 import android.os.Handler;
 import android.os.Looper;
 
-import org.wlf.filedownloader.base.FailReason;
-
 /**
  * OnDetectUrlFileListener
  * <br/>
@@ -102,26 +100,9 @@ public interface OnDetectUrlFileListener {
     /**
      * DetectUrlFileFailReason
      */
-    public static class DetectUrlFileFailReason extends FailReason {
+    public static class DetectUrlFileFailReason extends HttpFailReason {
 
         private static final long serialVersionUID = -6863373572721814857L;
-
-        /**
-         * URL illegal
-         */
-        public static final String TYPE_URL_ILLEGAL = DetectUrlFileFailReason.class.getName() + "_TYPE_URL_ILLEGAL";
-        /**
-         * url over redirect count
-         */
-        public static final String TYPE_URL_OVER_REDIRECT_COUNT = DetectUrlFileFailReason.class.getName() + "_TYPE_URL_OVER_REDIRECT_COUNT";
-        /**
-         * bad http response code,not 2XX
-         */
-        public static final String TYPE_BAD_HTTP_RESPONSE_CODE = DetectUrlFileFailReason.class.getName() + "_TYPE_BAD_HTTP_RESPONSE_CODE";
-        /**
-         * the file need to download does not exist
-         */
-        public static final String TYPE_HTTP_FILE_NOT_EXIST = DetectUrlFileFailReason.class.getName() + "_TYPE_HTTP_FILE_NOT_EXIST";
 
         public DetectUrlFileFailReason(String detailMessage, String type) {
             super(detailMessage, type);

@@ -389,6 +389,14 @@ public class FileDownloadManager {
     }
 
     /**
+     * get download file save dir
+     * @return
+     */
+    public String getDownloadDir() {
+        return mConfiguration.getFileDownloadDir();
+    }
+
+    /**
      * 释放资源
      */
     public void release() {

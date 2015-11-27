@@ -27,14 +27,12 @@
     <string name="main__delete_finish">删除完成，成功：</string>
     <string name="main__failed3">，失败：</string>
 
-    <string name="main__move_to_folder">测试移动文件夹</string>
     <string name="main__move_succeed">移动成功，新路径：</string>
     <string name="main__moving">正在移动：</string>
     <string name="main__move">移动</string>
     <string name="main__need_move">需要移动</string>
     <string name="main__move_finish">移动完成，成功：</string>
 
-    <string name="main__rename_file_name">测试新文件名</string>
     <string name="main__rename_succeed">重命名成功</string>
     <string name="main__rename_failed">重命名失败</string>
     <string name="main__rename_failed_note">只支持单个文件重命名</string>
@@ -64,6 +62,15 @@
     <string name="main__url_illegal">Url不合法</string>
     <string name="main__network_timeout">(网络超时)</string>
 
+    <string name="main__confirm_the_dir_path_move_to">请确认移动的文件夹路径</string>
+    <string name="main__can_not_rename">无法重命名</string>
+    <string name="main__rename_included_suffix">是否包含重命名后缀</string>
+    <string name="main__confirm_rename_info">请确认重命名信息</string>
+    <string name="main__confirm_whether_delete_save_file">是否删除保存文件？</string>
+
+    <string name="main__confirm_yes">是（彻底删除）</string>
+    <string name="main__confirm_no">否（保留下载的保存文件）</string>
+    
     <!-- menu -->
     <string name="main__menu_new_download">新建单个下载</string>
     <string name="main__menu_new_downloads">新建批量下载</string>

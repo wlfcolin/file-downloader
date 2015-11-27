@@ -28,14 +28,12 @@
     <string name="main__delete_finish">Delete finish,success:</string>
     <string name="main__failed3">,Failed:</string>
 
-    <string name="main__move_to_folder">New Folder(Move Test)</string>
     <string name="main__move_succeed">Move succeed,new Path:</string>
     <string name="main__moving">Moving:</string>
     <string name="main__move">Move</string>
     <string name="main__need_move">Need to move</string>
     <string name="main__move_finish">Move finish,success:</string>
 
-    <string name="main__rename_file_name">New File Name(Rename Test)</string>
     <string name="main__rename_succeed">Rename Succeed</string>
     <string name="main__rename_failed">Rename Failed</string>
     <string name="main__rename_failed_note">Only support single file to rename at the same time</string>
@@ -64,6 +62,15 @@
     <string name="main__check_network">(Check network)</string>
     <string name="main__url_illegal">Url illegal</string>
     <string name="main__network_timeout">(Network timeout)</string>
+
+    <string name="main__confirm_the_dir_path_move_to">Please confirm the dir path move to</string>
+    <string name="main__can_not_rename">can not rename</string>
+    <string name="main__rename_included_suffix">whether include file suffix</string>
+    <string name="main__confirm_rename_info">Please confirm rename info</string>
+    <string name="main__confirm_whether_delete_save_file">whether delete save file?</string>
+
+    <string name="main__confirm_yes">Yes</string>
+    <string name="main__confirm_no">No(Leave save file behind)</string>
     
     <!-- menu -->
     <string name="main__menu_new_download">New single download</string>

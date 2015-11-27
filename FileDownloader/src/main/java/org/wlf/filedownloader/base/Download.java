@@ -13,7 +13,7 @@ public interface Download {
     /**
      * download
      *
-     * @throws FailException any fail exception during download
+     * @throws Exception any fail exception during download
      */
-    void download() throws FailException;
+    void download() throws Exception;
 }

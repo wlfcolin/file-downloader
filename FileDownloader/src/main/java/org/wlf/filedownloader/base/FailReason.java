@@ -187,4 +187,28 @@ public class FailReason extends Exception {
         return mType;
     }
 
+
+    /**
+     * Returns the cause of original cause,the difference between {@link #getCause()} and {@link #getOriginalCause()} is,
+     * {@link #getCause()} may return the result including {@link FailReason} and it's child,{@link #getOriginalCause()}
+     * will never return {@link FailReason} and it's child
+     *
+     * @return Throwable this {@code Throwable}'s cause.
+     */
+    public Throwable getOriginalCause() {
+        return getOriginalCauseInternal(this);
+    }
+
+    // getOriginalCauseInternal
+    private Throwable getOriginalCauseInternal(Throwable throwable) {
+        if (throwable == null) {
+            return null;
+        }
+        Throwable cause = throwable.getCause();
+        if (cause instanceof FailReason) {
+            return getOriginalCauseInternal(cause);
+        } else {
+            return cause;
+        }
+    }
 }

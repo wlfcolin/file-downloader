@@ -16,7 +16,7 @@ public interface Record {
      * @param url          download url
      * @param status       record status，ref{@link Status}
      * @param increaseSize increased size since last record
-     * @throws FailException any fail exception during recording status
+     * @throws Exception any fail exception during recording status
      */
-    void recordStatus(String url, int status, int increaseSize) throws FailException;
+    void recordStatus(String url, int status, int increaseSize) throws Exception;
 }
