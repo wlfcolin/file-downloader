@@ -2,7 +2,7 @@
 
 this is a powerful http-file download tool, my goal is to make downloading http file easily.
 
-Usage:
+**Usage:**
 * 1.init FileDownloadManager in your application's onCreate() method
 ``` java
 // 1.create FileDownloadConfiguration.Builder
@@ -15,12 +15,12 @@ FileDownloadConfiguration configuration = builder.build();// build FileDownloadC
 FileDownloadManager.getInstance(this).init(configuration);
 ```
 
-2.create a new download
+* 2.create a new download
 ``` java
 mFileDownloadManager.start(url, mOnFileDownloadStatusListener);
 ```
 
-3.or create a custom new download
+* 3.or create a custom new download
 ``` java
 mFileDownloadManager.detect(url, new OnDetectUrlFileListener() {
     @Override
@@ -39,63 +39,63 @@ mFileDownloadManager.detect(url, new OnDetectUrlFileListener() {
 });
 ```
 
-3.continue a paused download
+* 3.continue a paused download
 ``` java
 mFileDownloadManager.start(url, mOnFileDownloadStatusListener);
 ```
 
-4.move download files to new dir path
+* 4.move download files to new dir path
 ``` java
 mFileDownloadManager.move(url, newDirPath, mOnMoveDownloadFileListener);// single file
 mFileDownloadManager.move(urls, newDirPath, mOnMoveDownloadFilesListener);// multi files
 ```
 
-5.delete download files
+* 5.delete download files
 ``` java
 mFileDownloadManager.delete(url, true, mOnDeleteDownloadFileListener);// single file
 mFileDownloadManager.delete(urls, true, mOnDeleteDownloadFilesListener);// multi files
 ```
 
-6.rename a download file
+* 6.rename a download file
 ``` java
 mFileDownloadManager.rename(url, newName, true, mOnRenameDownloadFileListener);
 ```
 
 ------------------------------------------------------------------------
-Some captures:
+**Some captures:**
 
-create downloads
+* create downloads
 ![image](https://github.com/wlfcolin/file-downloader/blob/master/capture/device-2015-11-27-160200.png)
 
-create a download which the url with special character
+* create a download which the url with special character
 ![image](https://github.com/wlfcolin/file-downloader/blob/master/capture/device-2015-11-27-160214.png)
 
-create multi downloads
+* create multi downloads
 ![image](https://github.com/wlfcolin/file-downloader/blob/master/capture/device-2015-11-27-160237.png)
 
-create a custom download which the url with complex character
+* create a custom download which the url with complex character
 ![image](https://github.com/wlfcolin/file-downloader/blob/master/capture/device-2015-11-27-160257.png)
 ![image](https://github.com/wlfcolin/file-downloader/blob/master/capture/device-2015-11-27-160324.png)
 
-the download ui
+* the download ui
 ![image](https://github.com/wlfcolin/file-downloader/blob/master/capture/device-2015-11-27-160424.png)
 
-delete multi downloads
+* delete multi downloads
 ![image](https://github.com/wlfcolin/file-downloader/blob/master/capture/device-2015-11-27-160450.png)
 
-move multi downloads
+* move multi downloads
 ![image](https://github.com/wlfcolin/file-downloader/blob/master/capture/device-2015-11-27-160508.png)
 
-rename a download
+* rename a download
 ![image](https://github.com/wlfcolin/file-downloader/blob/master/capture/device-2015-11-27-160538.png)
 ![image](https://github.com/wlfcolin/file-downloader/blob/master/capture/device-2015-11-27-160545.png)
 
-start(continue) a paused download
+* start(continue) a paused download
 ![image](https://github.com/wlfcolin/file-downloader/blob/master/capture/device-2015-11-27-160717.png)
 ![image](https://github.com/wlfcolin/file-downloader/blob/master/capture/device-2015-11-27-160749.png)
 
-the download file dir
+* the download file dir
 ![image](https://github.com/wlfcolin/file-downloader/blob/master/capture/device-2015-11-27-160808.png)
 
-the download file record
+* the download file record
 ![image](https://github.com/wlfcolin/file-downloader/blob/master/capture/device-2015-11-27-161739.png)
