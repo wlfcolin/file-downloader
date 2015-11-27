@@ -1,9 +1,18 @@
 <manifest package="org.wlf.filedownloader"
           xmlns:android="http://schemas.android.com/apk/res/android"
           android:versionCode="1"
-          android:versionName="1.0">
+          android:versionName="0.1.0">
 
     <uses-sdk
         android:minSdkVersion="8"
         android:targetSdkVersion="8"/>
+
+    <!-- network permissions -->
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
+    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE"/>
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <!-- write file permissions -->
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+    
 </manifest>

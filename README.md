@@ -7,10 +7,10 @@ this is a powerful http-file download tool, my goal is to make downloading http 
 ``` java
 // 1.create FileDownloadConfiguration.Builder
 Builder builder = new FileDownloadConfiguration.Builder(this);
-// 2.builder FileDownloadConfiguration.Builder
+// 2.config FileDownloadConfiguration.Builder
 builder.configFileDownloadDir(Environment.getExternalStorageDirectory().getAbsolutePath() + File.separator + "FileDownloader");// config the download path
 builder.configDownloadTaskSize(3);// allow 3 download task at the same time
-FileDownloadConfiguration configuration = builder.build();// config FileDownloadConfiguration with the builder
+FileDownloadConfiguration configuration = builder.build();// build FileDownloadConfiguration with the builder
 // 3.init FileDownloadManager with the configuration
 FileDownloadManager.getInstance(this).init(configuration);
 ```

@@ -15,4 +15,8 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
         }
     }
+
+    apply plugin: 'com.github.dcendents.android-maven'
+
+    apply from: "bintrayUpload.gradle"
 }
