@@ -3,7 +3,7 @@
 this is a powerful http-file download tool, my goal is to make downloading http file easily.
 
 Usage:
-1.init FileDownloadManager in your application's onCreate() method
+* 1.init FileDownloadManager in your application's onCreate() method
 ``` java
 // 1.create FileDownloadConfiguration.Builder
 Builder builder = new FileDownloadConfiguration.Builder(this);
