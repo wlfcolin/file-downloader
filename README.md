@@ -39,24 +39,24 @@ mFileDownloadManager.detect(url, new OnDetectUrlFileListener() {
 });
 ```
 
-* 3.continue a paused download
+* 4.continue a paused download
 ``` java
 mFileDownloadManager.start(url, mOnFileDownloadStatusListener);
 ```
 
-* 4.move download files to new dir path
+* 5.move download files to new dir path
 ``` java
 mFileDownloadManager.move(url, newDirPath, mOnMoveDownloadFileListener);// single file
 mFileDownloadManager.move(urls, newDirPath, mOnMoveDownloadFilesListener);// multi files
 ```
 
-* 5.delete download files
+* 6.delete download files
 ``` java
 mFileDownloadManager.delete(url, true, mOnDeleteDownloadFileListener);// single file
 mFileDownloadManager.delete(urls, true, mOnDeleteDownloadFilesListener);// multi files
 ```
 
-* 6.rename a download file
+* 7.rename a download file
 ``` java
 mFileDownloadManager.rename(url, newName, true, mOnRenameDownloadFileListener);
 ```
