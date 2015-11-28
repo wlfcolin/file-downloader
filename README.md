@@ -3,7 +3,11 @@
 this is a powerful http-file download tool, my goal is to make downloading http file easily.
 
 **Usage:**
-* 1.init FileDownloadManager in your application's onCreate() method
+* 1.cofig in module build.gradle
+``` java
+compile 'org.wlf:FileDownloader:0.1.0'
+``` 
+* 2.init FileDownloadManager in your application's onCreate() method
 ``` java
 // 1.create FileDownloadConfiguration.Builder
 Builder builder = new FileDownloadConfiguration.Builder(this);
@@ -15,12 +19,12 @@ FileDownloadConfiguration configuration = builder.build();// build FileDownloadC
 FileDownloadManager.getInstance(this).init(configuration);
 ```
 
-* 2.create a new download
+* 3.create a new download
 ``` java
 mFileDownloadManager.start(url, mOnFileDownloadStatusListener);
 ```
 
-* 3.or create a custom new download
+* 4.or create a custom new download
 ``` java
 mFileDownloadManager.detect(url, new OnDetectUrlFileListener() {
     @Override
@@ -39,24 +43,24 @@ mFileDownloadManager.detect(url, new OnDetectUrlFileListener() {
 });
 ```
 
-* 4.continue a paused download
+* 5.continue a paused download
 ``` java
 mFileDownloadManager.start(url, mOnFileDownloadStatusListener);
 ```
 
-* 5.move download files to new dir path
+* 6.move download files to new dir path
 ``` java
 mFileDownloadManager.move(url, newDirPath, mOnMoveDownloadFileListener);// single file
 mFileDownloadManager.move(urls, newDirPath, mOnMoveDownloadFilesListener);// multi files
 ```
 
-* 6.delete download files
+* 7.delete download files
 ``` java
 mFileDownloadManager.delete(url, true, mOnDeleteDownloadFileListener);// single file
 mFileDownloadManager.delete(urls, true, mOnDeleteDownloadFilesListener);// multi files
 ```
 
-* 7.rename a download file
+* 8.rename a download file
 ``` java
 mFileDownloadManager.rename(url, newName, true, mOnRenameDownloadFileListener);
 ```
