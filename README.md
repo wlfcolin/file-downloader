@@ -3,10 +3,11 @@
 this is a powerful http-file download tool, my goal is to make downloading http file easily.
 
 **Usage:**
-* 1.add in dependencies of your module's build.gradle's(Gradle:)
+* 1.add in dependencies of your module's build.gradle(Gradle:)
 ``` java
 compile 'org.wlf:FileDownloader:0.1.0'
 ``` 
+
 * 2.init FileDownloadManager in your application's onCreate() method
 ``` java
 // 1.create FileDownloadConfiguration.Builder
