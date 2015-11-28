@@ -3,7 +3,7 @@
 this is a powerful http-file download tool, my goal is to make downloading http file easily.
 
 **Usage:**
-* 1.cofig in module build.gradle
+* 1.add in module build.gradle(Gradle:)
 ``` java
 compile 'org.wlf:FileDownloader:0.1.0'
 ``` 
