@@ -4,7 +4,6 @@
 /.idea/libraries
 .DS_Store
 /build
-/captures
 
 # Android generated
 bin/
