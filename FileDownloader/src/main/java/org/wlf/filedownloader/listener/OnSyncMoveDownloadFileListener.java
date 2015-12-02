@@ -15,7 +15,7 @@ public abstract class OnSyncMoveDownloadFileListener implements OnMoveDownloadFi
      * @param downloadFileMoved download file moved
      * @return true means the caller hopes to continue the operation,otherwise the caller may get in trouble itself,the file-downloader will rollback the operation
      */
-    boolean onDoSyncMoveDownloadFile(DownloadFileInfo downloadFileMoved) {
+    public boolean onDoSyncMoveDownloadFile(DownloadFileInfo downloadFileMoved) {
         return true;
     }
 }

@@ -3,6 +3,7 @@ package org.wlf.filedownloader;
 import org.wlf.filedownloader.base.Status;
 import org.wlf.filedownloader.listener.OnMoveDownloadFileListener;
 import org.wlf.filedownloader.listener.OnMoveDownloadFileListener.OnMoveDownloadFileFailReason;
+import org.wlf.filedownloader.listener.OnSyncMoveDownloadFileListener;
 import org.wlf.filedownloader.util.FileUtil;
 
 import java.io.File;
@@ -90,24 +91,37 @@ public class MoveDownloadFileTask implements Runnable {
 
         boolean moveResult = false;
 
-        if (oldFile != null && newFile != null) {
-            moveResult = oldFile.renameTo(newFile);
+        String oldDirPath = downloadFileInfo.getFileDir();
+
+        // change record in database
+        downloadFileInfo.setFileDir(mNewDirPath);
+        moveResult = mFileDownloadCacher.updateDownloadFile(downloadFileInfo);
+        if (moveResult) {
+            // record changed
+            if (mOnMoveDownloadFileListener instanceof OnSyncMoveDownloadFileListener) {//OnSyncMoveDownloadFileListener,that means the caller hopes to sync something
+                moveResult = ((OnSyncMoveDownloadFileListener) mOnMoveDownloadFileListener).onDoSyncMoveDownloadFile(downloadFileInfo);
+            }
+            if (!moveResult) {// rollback,sync with the caller FIXME,use transaction to control the update is better
+                downloadFileInfo.setFileDir(oldDirPath);
+                mFileDownloadCacher.updateDownloadFile(downloadFileInfo);
+            }
         }
 
-        if (moveResult) {
-            // record in database
-            downloadFileInfo.setFileDir(mNewDirPath);
-            moveResult = mFileDownloadCacher.updateDownloadFile(downloadFileInfo);
+        if (moveResult) {// move in the file system
+            moveResult = oldFile.renameTo(newFile);
             if (moveResult) {
                 // move success
                 OnMoveDownloadFileListener.MainThreadHelper.onMoveDownloadFileSuccess(downloadFileInfo, mOnMoveDownloadFileListener);
             } else {
-                // move failed
+                // move in the file system failed,rollback in database FIXME,use transaction to control the update is better
+                downloadFileInfo.setFileDir(oldDirPath);
+                mFileDownloadCacher.updateDownloadFile(downloadFileInfo);
                 OnMoveDownloadFileListener.MainThreadHelper.onMoveDownloadFileFailed(downloadFileInfo, new OnMoveDownloadFileFailReason("update record error!", OnMoveDownloadFileFailReason.TYPE_UPDATE_RECORD_ERROR), mOnMoveDownloadFileListener);
             }
         } else {
             // move failed
             OnMoveDownloadFileListener.MainThreadHelper.onMoveDownloadFileFailed(downloadFileInfo, null, mOnMoveDownloadFileListener);
         }
+
     }
 }
