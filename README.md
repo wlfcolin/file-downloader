@@ -76,38 +76,38 @@ mFileDownloadManager.rename(url, newName, true, mOnRenameDownloadFileListener);
 ------------------------------------------------------------------------
 **Some captures:**
 
-* create downloads
+* create downloads                          
 ![image](https://github.com/wlfcolin/file-downloader/blob/master/capture/device-2015-11-27-160200.png)
 
 * create a download which the url with special character
 ![image](https://github.com/wlfcolin/file-downloader/blob/master/capture/device-2015-11-27-160214.png)
 
-* create multi downloads
+* create multi downloads                          
 ![image](https://github.com/wlfcolin/file-downloader/blob/master/capture/device-2015-11-27-160237.png)
 
 * create a custom download which the url with complex character
 ![image](https://github.com/wlfcolin/file-downloader/blob/master/capture/device-2015-11-27-160257.png)
 ![image](https://github.com/wlfcolin/file-downloader/blob/master/capture/device-2015-11-27-160324.png)
 
-* the download ui
+* the download ui                              
 ![image](https://github.com/wlfcolin/file-downloader/blob/master/capture/device-2015-11-27-160424.png)
 
-* delete multi downloads
+* delete multi downloads                     
 ![image](https://github.com/wlfcolin/file-downloader/blob/master/capture/device-2015-11-27-160450.png)
 
-* move multi downloads
+* move multi downloads                    
 ![image](https://github.com/wlfcolin/file-downloader/blob/master/capture/device-2015-11-27-160508.png)
 
-* rename a download
+* rename a download                        
 ![image](https://github.com/wlfcolin/file-downloader/blob/master/capture/device-2015-11-27-160538.png)
 ![image](https://github.com/wlfcolin/file-downloader/blob/master/capture/device-2015-11-27-160545.png)
 
-* start(continue) a paused download
+* start(continue) a paused download              
 ![image](https://github.com/wlfcolin/file-downloader/blob/master/capture/device-2015-11-27-160717.png)
 ![image](https://github.com/wlfcolin/file-downloader/blob/master/capture/device-2015-11-27-160749.png)
 
-* the download file dir
+* the download file dir                    
 ![image](https://github.com/wlfcolin/file-downloader/blob/master/capture/device-2015-11-27-160808.png)
 
-* the download file record
+* the download file record                   
 ![image](https://github.com/wlfcolin/file-downloader/blob/master/capture/device-2015-11-27-161739.png)
