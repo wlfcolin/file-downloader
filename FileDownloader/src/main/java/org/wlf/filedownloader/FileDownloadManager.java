@@ -21,6 +21,7 @@ import org.wlf.filedownloader.listener.OnMoveDownloadFileListener.OnMoveDownload
 import org.wlf.filedownloader.listener.OnMoveDownloadFilesListener;
 import org.wlf.filedownloader.listener.OnRenameDownloadFileListener;
 import org.wlf.filedownloader.listener.OnRenameDownloadFileListener.OnRenameDownloadFileFailReason;
+import org.wlf.filedownloader.listener.OnSyncMoveDownloadFileListener;
 import org.wlf.filedownloader.util.CollectionUtil;
 import org.wlf.filedownloader.util.UrlUtil;
 
@@ -390,6 +391,7 @@ public class FileDownloadManager {
 
     /**
      * get download file save dir
+     *
      * @return
      */
     public String getDownloadDir() {
@@ -845,7 +847,8 @@ public class FileDownloadManager {
      *
      * @param url                        file url
      * @param newDirPath                 new dir path
-     * @param onMoveDownloadFileListener MoveDownloadFileListener
+     * @param onMoveDownloadFileListener use {@link OnMoveDownloadFileListener} for default,or use {@link OnSyncMoveDownloadFileListener} for do some custom sync with file-downloader,
+     *                                   if custom sync failed,the file-downloader will rollback the operation
      */
     public void move(final String url, final String newDirPath, final OnMoveDownloadFileListener onMoveDownloadFileListener) {
 
@@ -1255,6 +1258,8 @@ public class FileDownloadManager {
 
                         Log.d(TAG, "MoveDownloadFilesTask.run onMoveDownloadFileSuccess,移动成功，回调onMoveDownloadFilesCompleted");
 
+                        //TODO
+                        
                         onMoveDownloadFilesCompleted();
                     }
                 }
@@ -1287,7 +1292,6 @@ public class FileDownloadManager {
                 }
             };
 
-
             // move every single one
             for (int i = 0; i < mDownloadFilesNeedMove.size(); i++) {
 
@@ -1304,10 +1308,10 @@ public class FileDownloadManager {
                     Log.d(TAG, "MoveDownloadFilesTask.run task has been sopped,任务已经被取消，无法继续移动，回调onMoveDownloadFilesCompleted");
 
                     onMoveDownloadFilesCompleted();
+                }else {
+                    // moving
+                    move(url, mNewDirPath, onMoveDownloadFileListener);
                 }
-
-                // moving
-                move(url, mNewDirPath, onMoveDownloadFileListener);
             }
         }
 

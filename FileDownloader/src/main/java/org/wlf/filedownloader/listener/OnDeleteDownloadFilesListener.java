@@ -8,7 +8,7 @@ import org.wlf.filedownloader.DownloadFileInfo;
 import java.util.List;
 
 /**
- * multi DeleteDownloadFile Listener
+ * multi DeleteDownloadFiles Listener
  * <br/>
  * 批量删除下载文件监听器
  *
