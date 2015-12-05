@@ -1,0 +1,27 @@
+<resources>
+
+    <string name="app_name">文件下载管理器Demo2</string>
+
+    <string name="main__can_not_download2">无法下载，请删除：</string>
+    <string name="main__re_download"> 后重新下载</string>
+    <string name="main__whether_re_download">文件不存在，是否重新下载</string>
+    <string name="main__dialog_btn_cancel">取消</string>
+    <string name="main__dialog_btn_confirm">确认</string>
+
+
+    <string name="main__download_finish">下载已完成</string>
+
+    <string name="main__download_failed">下载失败！</string>
+
+    <string name="main__download_fail_type">失败类型：</string>
+
+    <string name="main__download_fail_reason">失败原因：</string>
+
+    <string name="main__waiting">等待下载</string>
+    <string name="main__paused">已暂停</string>
+    <string name="main__preparing">正在连接资源</string>
+    <string name="main__prepared">已连接资源</string>
+
+    <string name="main__delete_succeed">删除成功</string>
+
+</resources>

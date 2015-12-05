@@ -1,2 +1,2 @@
-include ':FileDownloader'
+include ':FileDownloader', ':FileDownloaderDemo2'
 include ':FileDownloaderDemo'

@@ -1,0 +1,27 @@
+<resources>
+    <string name="app_name">FileDownloader Demo2</string>
+
+    <string name="main__can_not_download2">Can not download,please delete the file:</string>
+
+    <string name="main__re_download"> re-download</string>
+
+    <string name="main__whether_re_download">File not exist,whether re-download</string>
+
+    <string name="main__dialog_btn_cancel">Cancel</string>
+    <string name="main__dialog_btn_confirm">Confirm</string>
+
+    <string name="main__download_finish">Download finish</string>
+
+    <string name="main__download_failed">Download Failed!</string>
+
+    <string name="main__download_fail_type">Fail type:</string>
+
+    <string name="main__download_fail_reason">Fail reason:</string>
+
+    <string name="main__waiting">Waiting</string>
+    <string name="main__paused">Paused</string>
+    <string name="main__preparing">Preparing</string>
+    <string name="main__prepared">Prepared</string>
+
+    <string name="main__delete_succeed">Delete success</string>
+</resources>

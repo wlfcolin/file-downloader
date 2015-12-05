@@ -1,0 +1,58 @@
+<LinearLayout
+    android:id="@+id/lnlyDownloadItem"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:padding="10dp">
+
+    <LinearLayout
+        android:id="@+id/lnlyBarProgress"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@android:drawable/btn_default"
+        android:orientation="horizontal">
+
+        <me.tedyin.circleprogressbarlib.CircleProgressBar
+            android:id="@+id/barProgress"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            app:cpbBackgroundColor="#9000"
+            app:cpbForegroundColor="#0b90cf"
+            app:cpbMaxAngle="360"
+            app:cpbNeedAnim="false"
+            app:cpbNeedShowText="true"
+            app:cpbProgressTextColor="#ffaabb"
+            app:cpbStartAngle="-90"
+            app:cpbStrokeWidth="10"
+            app:cpbWholeBackgroundColor="#ff5ca5c3"/>
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/tvText"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_gravity="center_vertical"
+        android:layout_marginLeft="10dp"
+        android:layout_weight="1"
+        android:gravity="center_vertical"
+        android:textColor="@android:color/black"/>
+
+    <LinearLayout
+        android:id="@+id/lnlyDelete"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:background="@android:drawable/btn_default"
+        android:gravity="center"
+        android:orientation="horizontal">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="center"
+            android:gravity="center"
+            android:text="删除"/>
+    </LinearLayout>
+</LinearLayout>
