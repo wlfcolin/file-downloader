@@ -72,7 +72,8 @@ public abstract class BaseContentProvider extends ContentProvider {
         // use none for multi database row match
         URI_MATCHER.addURI(mAuthority, tableName, ROWS);
 
-        return !TextUtils.isEmpty(mAuthority) && !TextUtils.isEmpty(tableName) && mContentDbDaoImpl.getTableIdFieldName() != null;
+        return !TextUtils.isEmpty(mAuthority) && !TextUtils.isEmpty(tableName) && mContentDbDaoImpl
+                .getTableIdFieldName() != null;
     }
 
     @Override
@@ -90,7 +91,8 @@ public abstract class BaseContentProvider extends ContentProvider {
 
     @Override
     public Uri insert(Uri uri, ContentValues values) {
-        // insert by Uri using ContentResolver.insert(Uri url, ContentValues values) in any component such as Activity,Service
+        // insert by Uri using ContentResolver.insert(Uri url, ContentValues values) in any component such as 
+        // Activity,Service
         Uri resultUri = null;
         try {
             int flag = URI_MATCHER.match(uri);
@@ -132,7 +134,8 @@ public abstract class BaseContentProvider extends ContentProvider {
 
     @Override
     public int update(Uri uri, ContentValues values, String selection, String[] selectionArgs) {
-        // update by Uri using ContentResolver.update(Uri, ContentValues, String, String[]) in any component such as Activity,Service
+        // update by Uri using ContentResolver.update(Uri, ContentValues, String, String[]) in any component such as 
+        // Activity,Service
         int count = -1;
         try {
             int flag = URI_MATCHER.match(uri);
@@ -155,7 +158,8 @@ public abstract class BaseContentProvider extends ContentProvider {
 
     @Override
     public Cursor query(Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder) {
-        // update by Uri using ContentResolver.query(Uri, String[], String, String[], String) in any component such as Activity,Service
+        // update by Uri using ContentResolver.query(Uri, String[], String, String[], String) in any component such 
+        // as Activity,Service
         Cursor cursor = null;
         try {
             int flag = URI_MATCHER.match(uri);

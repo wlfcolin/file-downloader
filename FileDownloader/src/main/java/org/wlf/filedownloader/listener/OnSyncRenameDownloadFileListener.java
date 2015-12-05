@@ -12,7 +12,8 @@ public abstract class OnSyncRenameDownloadFileListener implements OnRenameDownlo
      * sync rename(for example,the caller will need to do it's own database record)
      *
      * @param downloadFileDeleted download file deleted
-     * @return true means the caller hopes to continue the operation,otherwise the caller may get in trouble itself,the file-downloader will rollback the operation
+     * @return true means the caller hopes to continue the operation,otherwise the caller may get in trouble itself,
+     * the file-downloader will rollback the operation
      */
     boolean onDoSyncRenameDownloadFile(DownloadFileInfo downloadFileDeleted) {
         return true;

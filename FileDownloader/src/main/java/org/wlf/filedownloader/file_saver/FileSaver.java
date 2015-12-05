@@ -120,6 +120,9 @@ public class FileSaver implements Save, Stoppable {
             long percentSize = (long) (needHandleSize / 100f);
 
             while (!mIsStopped && (offset = inputStream.read(buffer, start, mBufferSizeWriteToFile)) != -1) {
+                if (!tempFile.exists()) {
+                    throw new FileSaveException("temp file not exist!", FileSaveException.TYPE_FILE_DOES_NOT_EXIST);
+                }
                 // write file
                 randomAccessFile.write(buffer, start, offset);
                 // increaseSize
@@ -139,7 +142,9 @@ public class FileSaver implements Save, Stoppable {
                         // need notify callback
                         if (dTime >= DownloadNoticeStrategy.NOTICE_BY_TIME.getValue()) {
                             // 2.saving
-                            Log.d(TAG, "saveData 2、正在写文件缓存，已处理：" + handledSize + "，总共需要处理：" + needHandleSize + "，完成（百分比）：" + ((float) handledSize / needHandleSize * 100 / 100) + "%" + "，url：" + url);
+                            Log.d(TAG, "saveData 2、正在写文件缓存，已处理：" + handledSize + "，总共需要处理：" + needHandleSize +
+                                    "，完成（百分比）：" + ((float) handledSize / needHandleSize * 100 / 100) + "%" + "，url：" 
+                                    + url);
 
                             if (mOnFileSaveListener != null) {
                                 mOnFileSaveListener.onSavingData(cachedIncreaseSizeForNotify, needHandleSize);
@@ -150,7 +155,9 @@ public class FileSaver implements Save, Stoppable {
                             // need notify callback
                             if (cachedIncreaseSizeForNotify >= maxNotifySize) {
                                 // 2.saving
-                                Log.d(TAG, "saveData 2、正在写文件缓存，已处理：" + handledSize + "，总共需要处理：" + needHandleSize + "，完成（百分比）：" + ((float) handledSize / needHandleSize * 100 / 100) + "%" + "，url：" + url);
+                                Log.d(TAG, "saveData 2、正在写文件缓存，已处理：" + handledSize + "，总共需要处理：" + needHandleSize +
+                                        "，完成（百分比）：" + ((float) handledSize / needHandleSize * 100 / 100) + "%" +
+                                        "，url：" + url);
 
                                 if (mOnFileSaveListener != null) {
                                     mOnFileSaveListener.onSavingData(cachedIncreaseSizeForNotify, needHandleSize);
@@ -164,7 +171,9 @@ public class FileSaver implements Save, Stoppable {
                         // need notify callback
                         if (cachedIncreaseSizeForNotify >= mDownloadNoticeStrategy.getValue()) {
                             // 2.saving
-                            Log.d(TAG, "saveData 2、正在写文件缓存，已处理：" + handledSize + "，总共需要处理：" + needHandleSize + "，完成（百分比）：" + ((float) handledSize / needHandleSize * 100 / 100) + "%" + "，url：" + url);
+                            Log.d(TAG, "saveData 2、正在写文件缓存，已处理：" + handledSize + "，总共需要处理：" + needHandleSize +
+                                    "，完成（百分比）：" + ((float) handledSize / needHandleSize * 100 / 100) + "%" + "，url：" 
+                                    + url);
 
                             if (mOnFileSaveListener != null) {
                                 mOnFileSaveListener.onSavingData(cachedIncreaseSizeForNotify, needHandleSize);
@@ -177,7 +186,9 @@ public class FileSaver implements Save, Stoppable {
                         // need notify callback
                         if (dTime >= mDownloadNoticeStrategy.getValue()) {
                             // 2.saving
-                            Log.d(TAG, "saveData 2、正在写文件缓存，已处理：" + handledSize + "，总共需要处理：" + needHandleSize + "，完成（百分比）：" + ((float) handledSize / needHandleSize * 100 / 100) + "%" + "，url：" + url);
+                            Log.d(TAG, "saveData 2、正在写文件缓存，已处理：" + handledSize + "，总共需要处理：" + needHandleSize +
+                                    "，完成（百分比）：" + ((float) handledSize / needHandleSize * 100 / 100) + "%" + "，url：" 
+                                    + url);
 
                             if (mOnFileSaveListener != null) {
                                 mOnFileSaveListener.onSavingData(cachedIncreaseSizeForNotify, needHandleSize);
@@ -192,7 +203,8 @@ public class FileSaver implements Save, Stoppable {
             // the file has been written finish，notify remain cachedIncreaseSize to callback
             if (cachedIncreaseSizeForNotify > 0) {
                 // 2、saving
-                Log.d(TAG, "saveData 2、正在写文件缓存，已处理：" + handledSize + "，总共需要处理：" + needHandleSize + "，完成（百分比）：" + ((float) handledSize / needHandleSize * 100 / 100) + "%" + "，url：" + url);
+                Log.d(TAG, "saveData 2、正在写文件缓存，已处理：" + handledSize + "，总共需要处理：" + needHandleSize + "，完成（百分比）：" + (
+                        (float) handledSize / needHandleSize * 100 / 100) + "%" + "，url：" + url);
 
                 if (mOnFileSaveListener != null) {
                     mOnFileSaveListener.onSavingData(cachedIncreaseSizeForNotify, needHandleSize);
@@ -208,7 +220,8 @@ public class FileSaver implements Save, Stoppable {
                 }
                 boolean isCompleted = tempFile.renameTo(saveFile);
                 if (!isCompleted) {
-                    throw new FileSaveException("rename temp file:" + tempFile.getAbsolutePath() + " failed!", FileSaveException.TYPE_RENAME_TEMP_FILE_ERROR);
+                    throw new FileSaveException("rename temp file:" + tempFile.getAbsolutePath() + " failed!", 
+                            FileSaveException.TYPE_RENAME_TEMP_FILE_ERROR);
                 }
 
                 Log.d(TAG, "saveData 3、文件保存完成，路径：" + saveFile.getAbsolutePath() + "，url：" + url);
@@ -283,7 +296,8 @@ public class FileSaver implements Save, Stoppable {
         // if stopped,throw FileSaveException
         if (isStopped()) {
             Log.d(TAG, "checkIsStop --已经处理完了/强制停止了，不能再处理数据！");
-            throw new FileSaveException("the file saver is stopped,can not handle data any more!", FileSaveException.TYPE_SAVER_IS_STOPPED);
+            throw new FileSaveException("the file saver is stopped,can not handle data any more!", FileSaveException
+                    .TYPE_SAVER_IS_STOPPED);
         }
     }
 
@@ -313,11 +327,18 @@ public class FileSaver implements Save, Stoppable {
         /**
          * rename temp file failed
          */
-        public static final String TYPE_RENAME_TEMP_FILE_ERROR = FileSaveException.class.getName() + "_TYPE_RENAME_TEMP_FILE_ERROR";
+        public static final String TYPE_RENAME_TEMP_FILE_ERROR = FileSaveException.class.getName() + 
+                "_TYPE_RENAME_TEMP_FILE_ERROR";
         /**
          * the file saver is stopped
          */
         public static final String TYPE_SAVER_IS_STOPPED = FileSaveException.class.getName() + "_TYPE_SAVER_IS_STOPPED";
+
+        /**
+         * the file does not exist
+         */
+        public static final String TYPE_FILE_DOES_NOT_EXIST = FileSaveException.class.getName() + 
+                "_TYPE_FILE_DOES_NOT_EXIST";
 
         public FileSaveException(String detailMessage, String type) {
             super(detailMessage, type);

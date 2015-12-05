@@ -6,7 +6,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * detect url file
+ * DetectUrlFile Cacher
  * <br/>
  * 探测文件缓存器
  *
@@ -15,7 +15,8 @@ import java.util.Map;
  */
 public class DetectUrlFileCacher {
 
-    private Map<String, DetectUrlFileInfo> mDetectUrlFileInfoMap = new HashMap<String, DetectUrlFileInfo>();// detect file memory cache
+    // detect file memory cache
+    private Map<String, DetectUrlFileInfo> mDetectUrlFileInfoMap = new HashMap<String, DetectUrlFileInfo>();
 
     private Object mModifyLock = new Object();// modify lock
 

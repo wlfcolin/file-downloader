@@ -16,9 +16,11 @@ public abstract class OnSyncDeleteDownloadFilesListener implements OnDeleteDownl
      *
      * @param downloadFilesNeedDelete download files needed to delete
      * @param downloadFilesDeleted    download files deleted
-     * @return true means the caller hopes to continue the operation,otherwise the caller may get in trouble itself,the file-downloader will rollback the operation
+     * @return true means the caller hopes to continue the operation,otherwise the caller may get in trouble itself,
+     * the file-downloader will rollback the operation
      */
-    boolean onDoSyncDeleteDownloadFiles(List<DownloadFileInfo> downloadFilesNeedDelete, List<DownloadFileInfo> downloadFilesDeleted) {
+    boolean onDoSyncDeleteDownloadFiles(List<DownloadFileInfo> downloadFilesNeedDelete, List<DownloadFileInfo> 
+            downloadFilesDeleted) {
         return true;
     }
 }

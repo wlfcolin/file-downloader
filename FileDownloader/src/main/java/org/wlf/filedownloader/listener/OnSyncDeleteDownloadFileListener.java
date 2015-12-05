@@ -13,7 +13,8 @@ public abstract class OnSyncDeleteDownloadFileListener implements OnDeleteDownlo
      * sync delete(for example,the caller will need to do it's own database record)
      *
      * @param downloadFileDeleted download file deleted
-     * @return true means the caller hopes to continue the operation,otherwise the caller may get in trouble itself,the file-downloader will rollback the operation
+     * @return true means the caller hopes to continue the operation,otherwise the caller may get in trouble itself,
+     * the file-downloader will rollback the operation
      */
     boolean onDoSyncDeleteDownloadFile(DownloadFileInfo downloadFileDeleted) {
         return true;

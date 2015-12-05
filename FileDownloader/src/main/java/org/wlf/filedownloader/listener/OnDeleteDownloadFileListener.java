@@ -48,7 +48,8 @@ public interface OnDeleteDownloadFileListener {
          *
          * @param downloadFileNeedDelete download file needed to delete
          */
-        public static void onDeleteDownloadFilePrepared(final DownloadFileInfo downloadFileNeedDelete, final OnDeleteDownloadFileListener onDeleteDownloadFileListener) {
+        public static void onDeleteDownloadFilePrepared(final DownloadFileInfo downloadFileNeedDelete, final 
+        OnDeleteDownloadFileListener onDeleteDownloadFileListener) {
             final Handler handler = new Handler(Looper.getMainLooper());
             handler.post(new Runnable() {
                 @Override
@@ -64,7 +65,8 @@ public interface OnDeleteDownloadFileListener {
          *
          * @param downloadFileDeleted download file deleted
          */
-        public static void onDeleteDownloadFileSuccess(final DownloadFileInfo downloadFileDeleted, final OnDeleteDownloadFileListener onDeleteDownloadFileListener) {
+        public static void onDeleteDownloadFileSuccess(final DownloadFileInfo downloadFileDeleted, final 
+        OnDeleteDownloadFileListener onDeleteDownloadFileListener) {
             final Handler handler = new Handler(Looper.getMainLooper());
             handler.post(new Runnable() {
                 @Override
@@ -81,7 +83,8 @@ public interface OnDeleteDownloadFileListener {
          * @param downloadFileInfo download file needed to delete,may be null
          * @param failReason       fail reason
          */
-        public static void onDeleteDownloadFileFailed(final DownloadFileInfo downloadFileInfo, final OnDeleteDownloadFileFailReason failReason, final OnDeleteDownloadFileListener onDeleteDownloadFileListener) {
+        public static void onDeleteDownloadFileFailed(final DownloadFileInfo downloadFileInfo, final 
+        OnDeleteDownloadFileFailReason failReason, final OnDeleteDownloadFileListener onDeleteDownloadFileListener) {
             final Handler handler = new Handler(Looper.getMainLooper());
             handler.post(new Runnable() {
                 @Override
@@ -103,7 +106,8 @@ public interface OnDeleteDownloadFileListener {
         /**
          * the download file record is not exist
          */
-        public static final String TYPE_FILE_RECORD_IS_NOT_EXIST = OnDeleteDownloadFileFailReason.class.getName() + "_TYPE_FILE_RECORD_IS_NOT_EXIST";
+        public static final String TYPE_FILE_RECORD_IS_NOT_EXIST = OnDeleteDownloadFileFailReason.class.getName() + 
+                "_TYPE_FILE_RECORD_IS_NOT_EXIST";
 
         public OnDeleteDownloadFileFailReason(String detailMessage, String type) {
             super(detailMessage, type);

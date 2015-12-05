@@ -54,13 +54,15 @@ public class FileDownloadTask implements Runnable, Stoppable, OnHttpDownloadList
 
     private boolean mIsNotifyTaskFinish;// whether task is finish
 
-    public FileDownloadTask(FileDownloadTaskParam taskParamInfo, DownloadFileDbRecorder recorder) {
+    public FileDownloadTask(FileDownloadTaskParam taskParamInfo, DownloadFileDbRecorder recorder, 
+                            OnFileDownloadStatusListener onFileDownloadStatusListener) {
         super();
         this.mTaskParamInfo = taskParamInfo;
 
         init();
 
         this.mRecorder = recorder;
+        this.mOnFileDownloadStatusListener = onFileDownloadStatusListener;
 
         // check whether the task can execute
         if (!checkTaskCanExecute()) {
@@ -78,23 +80,16 @@ public class FileDownloadTask implements Runnable, Stoppable, OnHttpDownloadList
 
         // init Downloader
         Range range = new Range(mTaskParamInfo.mStartPosInTotal, mTaskParamInfo.mFileTotalSize);
-        mDownloader = new HttpDownloader(mTaskParamInfo.mUrl, range, mTaskParamInfo.mAcceptRangeType, mTaskParamInfo.mETag);
+        mDownloader = new HttpDownloader(mTaskParamInfo.mUrl, range, mTaskParamInfo.mAcceptRangeType, mTaskParamInfo
+                .mETag);
         mDownloader.setOnHttpDownloadListener(this);
 
         // init Saver
-        mSaver = new FileSaver(mTaskParamInfo.mUrl, mTaskParamInfo.mTempFilePath, mTaskParamInfo.mFilePath, mTaskParamInfo.mFileTotalSize);
+        mSaver = new FileSaver(mTaskParamInfo.mUrl, mTaskParamInfo.mTempFilePath, mTaskParamInfo.mFilePath, 
+                mTaskParamInfo.mFileTotalSize);
         mSaver.setOnFileSaveListener(this);
     }
-
-    /**
-     * set FileDownloadStatusListener
-     *
-     * @param onFileDownloadStatusListener FileDownloadStatusListener
-     */
-    public void setOnFileDownloadStatusListener(OnFileDownloadStatusListener onFileDownloadStatusListener) {
-        this.mOnFileDownloadStatusListener = onFileDownloadStatusListener;
-    }
-
+    
     /**
      * set StopFileDownloadTaskListener
      *
@@ -175,11 +170,13 @@ public class FileDownloadTask implements Runnable, Stoppable, OnHttpDownloadList
                             notifyTaskFinish(Status.DOWNLOAD_STATUS_PAUSED, 0, null);
                         } else {
                             //error download
-                            failReason = new OnFileDownloadStatusFailReason("download size error!", OnFileDownloadStatusFailReason.TYPE_DOWNLOAD_FILE_ERROR);
+                            failReason = new OnFileDownloadStatusFailReason("download size error!", 
+                                    OnFileDownloadStatusFailReason.TYPE_DOWNLOAD_FILE_ERROR);
                         }
                     } else {
                         //error download,null pointer
-                        failReason = new OnFileDownloadStatusFailReason("DownloadFile is null!", OnFileDownloadStatusFailReason.TYPE_NULL_POINTER);
+                        failReason = new OnFileDownloadStatusFailReason("DownloadFile is null!", 
+                                OnFileDownloadStatusFailReason.TYPE_NULL_POINTER);
                     }
                 }
 
@@ -303,16 +300,20 @@ public class FileDownloadTask implements Runnable, Stoppable, OnHttpDownloadList
     }
 
     /**
-     * notify waiting status to callback
+     * notify waiting status to caller
      *
      * @return true means can go on,otherwise need to stop all the operations that will occur
      */
     private boolean notifyStatusWaiting() {
         try {
+
             mRecorder.recordStatus(mTaskParamInfo.mUrl, Status.DOWNLOAD_STATUS_WAITING, 0);
             if (mOnFileDownloadStatusListener != null) {
-                OnFileDownloadStatusListener.MainThreadHelper.onFileDownloadStatusWaiting(getDownloadFile(), mOnFileDownloadStatusListener);
+                OnFileDownloadStatusListener.MainThreadHelper.onFileDownloadStatusWaiting(getDownloadFile(), 
+                        mOnFileDownloadStatusListener);
             }
+
+            Log.e(TAG, "记录等待状态成功，url：" + mTaskParamInfo.mUrl);
             return true;
         } catch (Exception e) {
             e.printStackTrace();
@@ -330,7 +331,8 @@ public class FileDownloadTask implements Runnable, Stoppable, OnHttpDownloadList
         try {
             mRecorder.recordStatus(mTaskParamInfo.mUrl, Status.DOWNLOAD_STATUS_PREPARING, 0);
             if (mOnFileDownloadStatusListener != null) {
-                OnFileDownloadStatusListener.MainThreadHelper.onFileDownloadStatusPreparing(getDownloadFile(), mOnFileDownloadStatusListener);
+                OnFileDownloadStatusListener.MainThreadHelper.onFileDownloadStatusPreparing(getDownloadFile(), 
+                        mOnFileDownloadStatusListener);
             }
             return true;
         } catch (Exception e) {
@@ -349,7 +351,8 @@ public class FileDownloadTask implements Runnable, Stoppable, OnHttpDownloadList
         try {
             mRecorder.recordStatus(mTaskParamInfo.mUrl, Status.DOWNLOAD_STATUS_PREPARED, 0);
             if (mOnFileDownloadStatusListener != null) {
-                OnFileDownloadStatusListener.MainThreadHelper.onFileDownloadStatusPrepared(getDownloadFile(), mOnFileDownloadStatusListener);
+                OnFileDownloadStatusListener.MainThreadHelper.onFileDownloadStatusPrepared(getDownloadFile(), 
+                        mOnFileDownloadStatusListener);
             }
             return true;
         } catch (Exception e) {
@@ -372,7 +375,8 @@ public class FileDownloadTask implements Runnable, Stoppable, OnHttpDownloadList
             if (downloadFileInfo == null) {
                 // if error,make sure the increaseSize is zero
                 increaseSize = 0;
-                notifyTaskFinish(Status.DOWNLOAD_STATUS_ERROR, increaseSize, new OnFileDownloadStatusFailReason("DownloadFile is null!", OnFileDownloadStatusFailReason.TYPE_NULL_POINTER));
+                notifyTaskFinish(Status.DOWNLOAD_STATUS_ERROR, increaseSize, new OnFileDownloadStatusFailReason
+                        ("DownloadFile is null!", OnFileDownloadStatusFailReason.TYPE_NULL_POINTER));
                 return false;
             }
 
@@ -395,7 +399,8 @@ public class FileDownloadTask implements Runnable, Stoppable, OnHttpDownloadList
                 }
                 mLastDownloadingTime = curDownloadingTime;
 
-                OnFileDownloadStatusListener.MainThreadHelper.onFileDownloadStatusDownloading(downloadFileInfo, (float) downloadSpeed, remainingTime, mOnFileDownloadStatusListener);
+                OnFileDownloadStatusListener.MainThreadHelper.onFileDownloadStatusDownloading(downloadFileInfo, 
+                        (float) downloadSpeed, remainingTime, mOnFileDownloadStatusListener);
             }
             return true;
         } catch (Exception e) {
@@ -425,19 +430,22 @@ public class FileDownloadTask implements Runnable, Stoppable, OnHttpDownloadList
                     if (mOnFileDownloadStatusListener != null) {
                         switch (status) {
                             case Status.DOWNLOAD_STATUS_PAUSED:
-                                OnFileDownloadStatusListener.MainThreadHelper.onFileDownloadStatusPaused(getDownloadFile(), mOnFileDownloadStatusListener);
+                                OnFileDownloadStatusListener.MainThreadHelper.onFileDownloadStatusPaused
+                                        (getDownloadFile(), mOnFileDownloadStatusListener);
                                 // notifyStopSucceed
                                 notifyStopSucceed();
                                 notify = true;
                                 break;
                             case Status.DOWNLOAD_STATUS_COMPLETED:
-                                OnFileDownloadStatusListener.MainThreadHelper.onFileDownloadStatusCompleted(getDownloadFile(), mOnFileDownloadStatusListener);
+                                OnFileDownloadStatusListener.MainThreadHelper.onFileDownloadStatusCompleted
+                                        (getDownloadFile(), mOnFileDownloadStatusListener);
                                 // notifyStopSucceed
                                 notifyStopSucceed();
                                 notify = true;
                                 break;
                             case Status.DOWNLOAD_STATUS_ERROR:
-                                OnFileDownloadStatusListener.MainThreadHelper.onFileDownloadStatusFailed(getUrl(), getDownloadFile(), failReason, mOnFileDownloadStatusListener);
+                                OnFileDownloadStatusListener.MainThreadHelper.onFileDownloadStatusFailed(getUrl(), 
+                                        getDownloadFile(), failReason, mOnFileDownloadStatusListener);
                                 // notifyStopFailed
                                 notifyStopFailed(new OnStopDownloadFileTaskFailReason(failReason));
                                 break;
@@ -447,7 +455,8 @@ public class FileDownloadTask implements Runnable, Stoppable, OnHttpDownloadList
                 } catch (Exception e) {
                     e.printStackTrace();
                     // error
-                    OnFileDownloadStatusListener.MainThreadHelper.onFileDownloadStatusFailed(getUrl(), getDownloadFile(), new OnFileDownloadStatusFailReason(e), mOnFileDownloadStatusListener);
+                    OnFileDownloadStatusListener.MainThreadHelper.onFileDownloadStatusFailed(getUrl(), 
+                            getDownloadFile(), new OnFileDownloadStatusFailReason(e), mOnFileDownloadStatusListener);
                     mIsNotifyTaskFinish = true;
                 } finally {
                     // if notify task finish,force stop if necessary
@@ -502,19 +511,24 @@ public class FileDownloadTask implements Runnable, Stoppable, OnHttpDownloadList
 
         if (mTaskParamInfo == null) {
             // error param is null pointer
-            failReason = new OnFileDownloadStatusFailReason("init param is null pointer!", OnFileDownloadStatusFailReason.TYPE_NULL_POINTER);
+            failReason = new OnFileDownloadStatusFailReason("init param is null pointer!", 
+                    OnFileDownloadStatusFailReason.TYPE_NULL_POINTER);
         }
         if (failReason == null && !UrlUtil.isUrl(mTaskParamInfo.mUrl)) {
             // error url illegal
-            failReason = new OnFileDownloadStatusFailReason("url illegal!", OnFileDownloadStatusFailReason.TYPE_URL_ILLEGAL);
+            failReason = new OnFileDownloadStatusFailReason("url illegal!", OnFileDownloadStatusFailReason
+                    .TYPE_URL_ILLEGAL);
         }
         if (failReason == null && !FileUtil.isFilePath(mTaskParamInfo.mFilePath)) {
             // error saveDir illegal
-            failReason = new OnFileDownloadStatusFailReason("saveDir illegal!", OnFileDownloadStatusFailReason.TYPE_FILE_SAVE_PATH_ILLEGAL);
+            failReason = new OnFileDownloadStatusFailReason("saveDir illegal!", OnFileDownloadStatusFailReason
+                    .TYPE_FILE_SAVE_PATH_ILLEGAL);
         }
-        if (failReason == null && (!FileUtil.canWrite(mTaskParamInfo.mTempFilePath) || !FileUtil.canWrite(mTaskParamInfo.mFilePath))) {
+        if (failReason == null && (!FileUtil.canWrite(mTaskParamInfo.mTempFilePath) || !FileUtil.canWrite
+                (mTaskParamInfo.mFilePath))) {
             // error savePath can not write
-            failReason = new OnFileDownloadStatusFailReason("savePath can not write!", OnFileDownloadStatusFailReason.TYPE_STORAGE_SPACE_CAN_NOT_WRITE);
+            failReason = new OnFileDownloadStatusFailReason("savePath can not write!", OnFileDownloadStatusFailReason
+                    .TYPE_STORAGE_SPACE_CAN_NOT_WRITE);
         }
         if (failReason == null) {
             try {
@@ -529,7 +543,8 @@ public class FileDownloadTask implements Runnable, Stoppable, OnHttpDownloadList
                 long needDownloadSize = mTaskParamInfo.mFileTotalSize - mTaskParamInfo.mStartPosInTotal;
                 if (freeSize == -1 || needDownloadSize > freeSize) {
                     // error storage space is full
-                    failReason = new OnFileDownloadStatusFailReason("storage space is full!", OnFileDownloadStatusFailReason.TYPE_STORAGE_SPACE_IS_FULL);
+                    failReason = new OnFileDownloadStatusFailReason("storage space is full!", 
+                            OnFileDownloadStatusFailReason.TYPE_STORAGE_SPACE_IS_FULL);
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -564,7 +579,8 @@ public class FileDownloadTask implements Runnable, Stoppable, OnHttpDownloadList
     public void stop() {
         // if it is stopped,notify stop failed
         if (isStopped()) {
-            notifyStopFailed(new OnStopDownloadFileTaskFailReason("the task has been stopped!", OnStopDownloadFileTaskFailReason.TYPE_TASK_IS_STOPPED));
+            notifyStopFailed(new OnStopDownloadFileTaskFailReason("the task has been stopped!", 
+                    OnStopDownloadFileTaskFailReason.TYPE_TASK_IS_STOPPED));
             return;
         }
         if (mSaver != null) {
@@ -605,7 +621,8 @@ public class FileDownloadTask implements Runnable, Stoppable, OnHttpDownloadList
          */
         private String mFilePath;
 
-        public FileDownloadTaskParam(String url, int startPosInTotal, int fileTotalSize, String eTag, String acceptRangeType, String tempFilePath, String filePath) {
+        public FileDownloadTaskParam(String url, int startPosInTotal, int fileTotalSize, String eTag, String 
+                acceptRangeType, String tempFilePath, String filePath) {
             super();
             this.mUrl = url;
             this.mStartPosInTotal = startPosInTotal;
@@ -648,7 +665,8 @@ public class FileDownloadTask implements Runnable, Stoppable, OnHttpDownloadList
         /**
          * the task has been stopped
          */
-        public static final String TYPE_TASK_IS_STOPPED = OnStopDownloadFileTaskFailReason.class.getName() + "_TYPE_TASK_IS_STOPPED";
+        public static final String TYPE_TASK_IS_STOPPED = OnStopDownloadFileTaskFailReason.class.getName() + 
+                "_TYPE_TASK_IS_STOPPED";
 
         public OnStopDownloadFileTaskFailReason(String detailMessage, String type) {
             super(detailMessage, type);

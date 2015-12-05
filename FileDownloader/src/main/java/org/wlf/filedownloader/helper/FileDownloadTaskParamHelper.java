@@ -22,6 +22,8 @@ public class FileDownloadTaskParamHelper {
             return null;
         }
 
-        return new FileDownloadTaskParam(downloadFileInfo.getUrl(), downloadFileInfo.getDownloadedSize(), downloadFileInfo.getFileSize(), downloadFileInfo.getETag(), downloadFileInfo.getAcceptRangeType(), downloadFileInfo.getTempFilePath(), downloadFileInfo.getFilePath());
+        return new FileDownloadTaskParam(downloadFileInfo.getUrl(), downloadFileInfo.getDownloadedSize(), 
+                downloadFileInfo.getFileSize(), downloadFileInfo.getETag(), downloadFileInfo.getAcceptRangeType(), 
+                downloadFileInfo.getTempFilePath(), downloadFileInfo.getFilePath());
     }
 }

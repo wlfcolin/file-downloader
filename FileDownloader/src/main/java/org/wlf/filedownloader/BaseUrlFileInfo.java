@@ -3,7 +3,7 @@ package org.wlf.filedownloader;
 import java.io.File;
 
 /**
- * base url file info
+ * BaseUrlFile Info
  *
  * @author wlf(Andy)
  * @datetime 2015-11-25 09:58 GMT+8
@@ -12,7 +12,7 @@ import java.io.File;
 public abstract class BaseUrlFileInfo {
 
     /**
-     * Support Range of bytes
+     * support range of bytes
      */
     public static final String RANGE_TYPE_BYTES = "bytes";
 
@@ -29,15 +29,15 @@ public abstract class BaseUrlFileInfo {
      */
     protected String mETag;
     /**
-     * AcceptRangeType
+     * accept range type
      */
     protected String mAcceptRangeType;
     /**
-     * SaveFileDir
+     * save file dir
      */
     protected String mFileDir;
     /**
-     * SaveFileName
+     * save file name
      */
     protected String mFileName;
 
@@ -78,45 +78,45 @@ public abstract class BaseUrlFileInfo {
     }
 
     /**
-     * get file ETag
+     * get file eTag
      *
-     * @return file ETag
+     * @return file eTag
      */
     public String getETag() {
         return mETag;
     }
 
     /**
-     * get AcceptRangeType
+     * get accept range type
      *
-     * @return AcceptRangeType
+     * @return accept range type
      */
     public String getAcceptRangeType() {
         return mAcceptRangeType;
     }
 
     /**
-     * get SaveFileDir
+     * get save file dir
      *
-     * @return SaveFileDir
+     * @return save file dir
      */
     public String getFileDir() {
         return mFileDir;
     }
 
     /**
-     * get SaveFileName
+     * get save file name
      *
-     * @return SaveFileName
+     * @return save file name
      */
     public String getFileName() {
         return mFileName;
     }
 
     /**
-     * get FilePath
+     * get file path
      *
-     * @return FilePath
+     * @return file path
      */
     public String getFilePath() {
         return getFileDir() + File.separator + mFileName;

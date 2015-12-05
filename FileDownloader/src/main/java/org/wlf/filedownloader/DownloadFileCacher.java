@@ -41,7 +41,8 @@ public class DownloadFileCacher extends DownloadFileDbRecorder {
 
     private DownloadFileDbHelper mDownloadFileDbHelper;
 
-    private Map<String, DownloadFileInfo> mDownloadFileInfoMap = new HashMap<String, DownloadFileInfo>();// download file memory cache
+    // download file memory cache
+    private Map<String, DownloadFileInfo> mDownloadFileInfoMap = new HashMap<String, DownloadFileInfo>();
 
     private Object mModifyLock = new Object();// lock
 
@@ -128,7 +129,8 @@ public class DownloadFileCacher extends DownloadFileDbRecorder {
 
         if (lockInternal) {// need internal lock
             synchronized (mModifyLock) {// lock
-                int result = dao.update(values, DownloadFileInfo.Table.COLUMN_NAME_OF_FIELD_ID + "= ?", new String[]{downloadFileInfo.getId() + ""});
+                int result = dao.update(values, DownloadFileInfo.Table.COLUMN_NAME_OF_FIELD_ID + "= ?", new 
+                        String[]{downloadFileInfo.getId() + ""});
                 if (result == 1) {
                     // succeed,update memory cache
                     if (mDownloadFileInfoMap.containsKey(url)) {
@@ -141,7 +143,8 @@ public class DownloadFileCacher extends DownloadFileDbRecorder {
                 }
             }
         } else {// not lock
-            int result = dao.update(values, DownloadFileInfo.Table.COLUMN_NAME_OF_FIELD_ID + "= ?", new String[]{downloadFileInfo.getId() + ""});
+            int result = dao.update(values, DownloadFileInfo.Table.COLUMN_NAME_OF_FIELD_ID + "= ?", new 
+                    String[]{downloadFileInfo.getId() + ""});
             if (result == 1) {
                 // succeed,update memory cache
                 if (mDownloadFileInfoMap.containsKey(url)) {
@@ -176,7 +179,8 @@ public class DownloadFileCacher extends DownloadFileDbRecorder {
         String url = downloadFileInfo.getUrl();
 
         synchronized (mModifyLock) {// lock
-            int result = dao.delete(DownloadFileInfo.Table.COLUMN_NAME_OF_FIELD_ID + "= ?", new String[]{downloadFileInfo.getId() + ""});
+            int result = dao.delete(DownloadFileInfo.Table.COLUMN_NAME_OF_FIELD_ID + "= ?", new 
+                    String[]{downloadFileInfo.getId() + ""});
             if (result == 1) {
                 // succeed,update memory cache
                 mDownloadFileInfoMap.remove(url);
@@ -204,12 +208,14 @@ public class DownloadFileCacher extends DownloadFileDbRecorder {
             downloadFileInfo = mDownloadFileInfoMap.get(url);
         } else {
             // find in database
-            ContentDbDao dao = mDownloadFileDbHelper.getContentDbDao(DownloadFileInfo.Table.TABLE_NAME_OF_DOWNLOAD_FILE);
+            ContentDbDao dao = mDownloadFileDbHelper.getContentDbDao(DownloadFileInfo.Table
+                    .TABLE_NAME_OF_DOWNLOAD_FILE);
             if (dao == null) {
                 return null;
             }
 
-            Cursor cursor = dao.query(null, DownloadFileInfo.Table.COLUMN_NAME_OF_FIELD_URL + "= ?", new String[]{url}, null);
+            Cursor cursor = dao.query(null, DownloadFileInfo.Table.COLUMN_NAME_OF_FIELD_URL + "= ?", new 
+                    String[]{url}, null);
             if (cursor != null && cursor.moveToFirst()) {
                 downloadFileInfo = new DownloadFileInfo(cursor);
             }
@@ -269,7 +275,8 @@ public class DownloadFileCacher extends DownloadFileDbRecorder {
      * get DownloadFile by savePath
      *
      * @param savePath            the path of the file saved in
-     * @param includeTempFilePath true means try use the savePath as temp file savePath if can not get DownloadFile by savePath
+     * @param includeTempFilePath true means try use the savePath as temp file savePath if can not get DownloadFile
+     *                            by savePath
      * @return DownloadFile
      */
     DownloadFileInfo getDownloadFileBySavePath(String savePath, boolean includeTempFilePath) {
@@ -308,7 +315,8 @@ public class DownloadFileCacher extends DownloadFileDbRecorder {
 
         } else {
             // try to find in database
-            ContentDbDao dao = mDownloadFileDbHelper.getContentDbDao(DownloadFileInfo.Table.TABLE_NAME_OF_DOWNLOAD_FILE);
+            ContentDbDao dao = mDownloadFileDbHelper.getContentDbDao(DownloadFileInfo.Table
+                    .TABLE_NAME_OF_DOWNLOAD_FILE);
             if (dao == null) {
                 return null;
             }
@@ -321,7 +329,9 @@ public class DownloadFileCacher extends DownloadFileDbRecorder {
             String fileSaveDir = savePath.substring(0, separatorIndex);
             String fileSaveName = savePath.substring(separatorIndex + 1, savePath.length());
 
-            Cursor cursor = dao.query(null, DownloadFileInfo.Table.COLUMN_NAME_OF_FIELD_FILE_DIR + "= ? AND " + DownloadFileInfo.Table.COLUMN_NAME_OF_FIELD_FILE_NAME + "= ?", new String[]{fileSaveDir, fileSaveName}, null);
+            Cursor cursor = dao.query(null, DownloadFileInfo.Table.COLUMN_NAME_OF_FIELD_FILE_DIR + "= ? AND " +
+                    DownloadFileInfo.Table.COLUMN_NAME_OF_FIELD_FILE_NAME + "= ?", new String[]{fileSaveDir, 
+                    fileSaveName}, null);
             if (cursor != null && cursor.moveToFirst()) {
                 downloadFileInfo = new DownloadFileInfo(cursor);
             }
@@ -334,7 +344,9 @@ public class DownloadFileCacher extends DownloadFileDbRecorder {
             if (downloadFileInfo == null) {
                 if (includeTempFilePath) {
                     // try use temp file to query
-                    cursor = dao.query(null, DownloadFileInfo.Table.COLUMN_NAME_OF_FIELD_FILE_DIR + "= ? AND " + Table.COLUMN_NAME_OF_FIELD_TEMP_FILE_NAME + "= ?", new String[]{fileSaveDir, fileSaveName}, null);
+                    cursor = dao.query(null, DownloadFileInfo.Table.COLUMN_NAME_OF_FIELD_FILE_DIR + "= ? AND " +
+                            Table.COLUMN_NAME_OF_FIELD_TEMP_FILE_NAME + "= ?", new String[]{fileSaveDir, 
+                            fileSaveName}, null);
                     if (cursor != null && cursor.moveToFirst()) {
                         downloadFileInfo = new DownloadFileInfo(cursor);
                     }
@@ -449,10 +461,12 @@ public class DownloadFileCacher extends DownloadFileDbRecorder {
 
         if (!TextUtils.isEmpty(filePath)) {
             File file = new File(filePath);
-            if (!file.exists()) {
-                // file not exist
-                downloadFileInfo.setStatus(Status.DOWNLOAD_STATUS_FILE_NOT_EXIST);
-                updateDownloadFile(downloadFileInfo);
+            if (!file.exists() && downloadFileInfo.getDownloadedSize() > 0) {
+                synchronized (mModifyLock) {
+                    // file not exist
+                    downloadFileInfo.setStatus(Status.DOWNLOAD_STATUS_FILE_NOT_EXIST);
+                    updateDownloadFileInternal(downloadFileInfo, false);
+                }
             }
         }
     }

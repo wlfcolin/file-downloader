@@ -189,7 +189,8 @@ public class FailReason extends Exception {
 
 
     /**
-     * Returns the cause of original cause,the difference between {@link #getCause()} and {@link #getOriginalCause()} is,
+     * Returns the cause of original cause,the difference between {@link #getCause()} and {@link #getOriginalCause()}
+     * is,
      * {@link #getCause()} may return the result including {@link FailReason} and it's child,{@link #getOriginalCause()}
      * will never return {@link FailReason} and it's child
      *

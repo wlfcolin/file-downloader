@@ -65,7 +65,8 @@ public class ContentRangeInfo {
         }
 
         // create ContentRangeInfo
-        if (!TextUtils.isEmpty(contentType) && !TextUtils.isEmpty(rangeStartPos) && !TextUtils.isEmpty(rangeEndPos) && !TextUtils.isEmpty(totalLength)) {
+        if (!TextUtils.isEmpty(contentType) && !TextUtils.isEmpty(rangeStartPos) && !TextUtils.isEmpty(rangeEndPos) 
+                && !TextUtils.isEmpty(totalLength)) {
             try {
                 int startPos = Integer.parseInt(rangeStartPos);
                 int endPos = Integer.parseInt(rangeEndPos);

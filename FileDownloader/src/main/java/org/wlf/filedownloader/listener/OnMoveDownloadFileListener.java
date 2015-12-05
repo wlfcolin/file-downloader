@@ -48,19 +48,23 @@ public interface OnMoveDownloadFileListener {
         /**
          * target file exist
          */
-        public static final String TYPE_TARGET_FILE_EXIST = OnMoveDownloadFileFailReason.class.getName() + "_TYPE_TARGET_FILE_EXIST";
+        public static final String TYPE_TARGET_FILE_EXIST = OnMoveDownloadFileFailReason.class.getName() + 
+                "_TYPE_TARGET_FILE_EXIST";
         /**
          * original file not exist
          */
-        public static final String TYPE_ORIGINAL_FILE_NOT_EXIST = OnMoveDownloadFileFailReason.class.getName() + "_TYPE_ORIGINAL_FILE_NOT_EXIST";
+        public static final String TYPE_ORIGINAL_FILE_NOT_EXIST = OnMoveDownloadFileFailReason.class.getName() + 
+                "_TYPE_ORIGINAL_FILE_NOT_EXIST";
         /**
          * update record error
          */
-        public static final String TYPE_UPDATE_RECORD_ERROR = OnMoveDownloadFileFailReason.class.getName() + "_TYPE_UPDATE_RECORD_ERROR";
+        public static final String TYPE_UPDATE_RECORD_ERROR = OnMoveDownloadFileFailReason.class.getName() + 
+                "_TYPE_UPDATE_RECORD_ERROR";
         /**
          * file status error
          */
-        public static final String TYPE_FILE_STATUS_ERROR = OnMoveDownloadFileFailReason.class.getName() + "_TYPE_FILE_STATUS_ERROR";
+        public static final String TYPE_FILE_STATUS_ERROR = OnMoveDownloadFileFailReason.class.getName() + 
+                "_TYPE_FILE_STATUS_ERROR";
 
         public OnMoveDownloadFileFailReason(String detailMessage, String type) {
             super(detailMessage, type);
@@ -87,7 +91,8 @@ public interface OnMoveDownloadFileListener {
          *
          * @param downloadFileNeedToMove download file needed to move
          */
-        public static void onMoveDownloadFilePrepared(final DownloadFileInfo downloadFileNeedToMove, final OnMoveDownloadFileListener onMoveDownloadFileListener) {
+        public static void onMoveDownloadFilePrepared(final DownloadFileInfo downloadFileNeedToMove, final 
+        OnMoveDownloadFileListener onMoveDownloadFileListener) {
             final Handler handler = new Handler(Looper.getMainLooper());
             handler.post(new Runnable() {
                 @Override
@@ -103,7 +108,8 @@ public interface OnMoveDownloadFileListener {
          *
          * @param downloadFileMoved download file moved
          */
-        public static void onMoveDownloadFileSuccess(final DownloadFileInfo downloadFileMoved, final OnMoveDownloadFileListener onMoveDownloadFileListener) {
+        public static void onMoveDownloadFileSuccess(final DownloadFileInfo downloadFileMoved, final 
+        OnMoveDownloadFileListener onMoveDownloadFileListener) {
             final Handler handler = new Handler(Looper.getMainLooper());
             handler.post(new Runnable() {
                 @Override
@@ -120,7 +126,8 @@ public interface OnMoveDownloadFileListener {
          * @param downloadFileInfo download file needed to move,may be null
          * @param failReason       fail reason
          */
-        public static void onMoveDownloadFileFailed(final DownloadFileInfo downloadFileInfo, final OnMoveDownloadFileFailReason failReason, final OnMoveDownloadFileListener onMoveDownloadFileListener) {
+        public static void onMoveDownloadFileFailed(final DownloadFileInfo downloadFileInfo, final 
+        OnMoveDownloadFileFailReason failReason, final OnMoveDownloadFileListener onMoveDownloadFileListener) {
             final Handler handler = new Handler(Looper.getMainLooper());
             handler.post(new Runnable() {
                 @Override

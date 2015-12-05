@@ -9,6 +9,7 @@ import java.net.UnknownHostException;
 
 /**
  * HttpFailReason
+ *
  * @author wlf(Andy)
  * @datetime 2015-11-27 11:55 GMT+8
  * @email 411086563@qq.com
@@ -33,11 +34,13 @@ public class HttpFailReason extends FailReason {
     /**
      * url over redirect count
      */
-    public static final String TYPE_URL_OVER_REDIRECT_COUNT = HttpFailReason.class.getName() + "_TYPE_URL_OVER_REDIRECT_COUNT";
+    public static final String TYPE_URL_OVER_REDIRECT_COUNT = HttpFailReason.class.getName() + 
+            "_TYPE_URL_OVER_REDIRECT_COUNT";
     /**
      * bad http response code,not 2XX
      */
-    public static final String TYPE_BAD_HTTP_RESPONSE_CODE = HttpFailReason.class.getName() + "_TYPE_BAD_HTTP_RESPONSE_CODE";
+    public static final String TYPE_BAD_HTTP_RESPONSE_CODE = HttpFailReason.class.getName() + 
+            "_TYPE_BAD_HTTP_RESPONSE_CODE";
     /**
      * the file need to download does not exist
      */
@@ -54,42 +57,42 @@ public class HttpFailReason extends FailReason {
     @Override
     protected void onInitTypeWithThrowable(Throwable throwable) {
         super.onInitTypeWithThrowable(throwable);
-        if(isTypeInit()){
+        if (isTypeInit()) {
             return;
         }
-        
-        if(throwable instanceof FailReason){
+
+        if (throwable instanceof FailReason) {
             FailReason failReason = (FailReason) throwable;
             setTypeByOriginalClassInstanceType(failReason.getOriginalCause());
-            if(isTypeInit()){
+            if (isTypeInit()) {
                 return;
             }
-            
+
             // HttpDownloadException
-            if(throwable instanceof HttpDownloadException){
+            if (throwable instanceof HttpDownloadException) {
                 HttpDownloadException httpDownloadException = (HttpDownloadException) throwable;
                 String type = httpDownloadException.getType();
                 if (HttpDownloadException.TYPE_NETWORK_TIMEOUT.equals(type)) {
                     setType(TYPE_NETWORK_TIMEOUT);
                 } else if (HttpDownloadException.TYPE_NETWORK_DENIED.equals(type)) {
                     setType(TYPE_NETWORK_DENIED);
-                }else{
+                } else {
                     //....
                 }
             }
-            
+
             // FileSaveException
-            
+
             // DownloadStatusRecordException
-        }else{
+        } else {
             setTypeByOriginalClassInstanceType(throwable);
         }
     }
-    
-    private void setTypeByOriginalClassInstanceType(Throwable throwable){
-        if(throwable instanceof SocketTimeoutException){
+
+    private void setTypeByOriginalClassInstanceType(Throwable throwable) {
+        if (throwable instanceof SocketTimeoutException) {
             setType(TYPE_NETWORK_TIMEOUT);
-        }else if(throwable instanceof ConnectException || throwable instanceof UnknownHostException){
+        } else if (throwable instanceof ConnectException || throwable instanceof UnknownHostException) {
             setType(TYPE_NETWORK_DENIED);
         }
     }

@@ -13,7 +13,8 @@ public abstract class OnSyncMoveDownloadFileListener implements OnMoveDownloadFi
      * sync move(for example,the caller will need to do it's own database record)
      *
      * @param downloadFileMoved download file moved
-     * @return true means the caller hopes to continue the operation,otherwise the caller may get in trouble itself,the file-downloader will rollback the operation
+     * @return true means the caller hopes to continue the operation,otherwise the caller may get in trouble itself,
+     * the file-downloader will rollback the operation
      */
     public boolean onDoSyncMoveDownloadFile(DownloadFileInfo downloadFileMoved) {
         return true;

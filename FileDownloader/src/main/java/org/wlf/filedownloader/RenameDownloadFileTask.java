@@ -29,7 +29,8 @@ public class RenameDownloadFileTask implements Runnable {
 
     private OnRenameDownloadFileListener mOnRenameDownloadFileListener;
 
-    public RenameDownloadFileTask(String url, String newFileName, boolean includedSuffix, DownloadFileCacher fileDownloadCacher) {
+    public RenameDownloadFileTask(String url, String newFileName, boolean includedSuffix, DownloadFileCacher 
+            fileDownloadCacher) {
         super();
         this.mUrl = url;
         this.mNewFileName = newFileName;
@@ -47,7 +48,8 @@ public class RenameDownloadFileTask implements Runnable {
         DownloadFileInfo downloadFileInfo = mFileDownloadCacher.getDownloadFile(mUrl);
 
         // 1.prepared
-        OnRenameDownloadFileListener.MainThreadHelper.onRenameDownloadFilePrepared(downloadFileInfo, mOnRenameDownloadFileListener);
+        OnRenameDownloadFileListener.MainThreadHelper.onRenameDownloadFilePrepared(downloadFileInfo, 
+                mOnRenameDownloadFileListener);
 
         if (downloadFileInfo != null) {
 
@@ -74,21 +76,25 @@ public class RenameDownloadFileTask implements Runnable {
                 case Status.DOWNLOAD_STATUS_COMPLETED:
                     try {
                         if (!file.exists()) {
-                            throw new OnRenameDownloadFileFailReason("the original file not exist!", OnRenameDownloadFileFailReason.TYPE_ORIGINAL_FILE_NOT_EXIST);
+                            throw new OnRenameDownloadFileFailReason("the original file not exist!", 
+                                    OnRenameDownloadFileFailReason.TYPE_ORIGINAL_FILE_NOT_EXIST);
                         }
 
                         if (TextUtils.isEmpty(mNewFileName)) {
-                            throw new OnRenameDownloadFileFailReason("new file name is empty!", OnRenameDownloadFileFailReason.TYPE_NEW_FILE_NAME_IS_EMPTY);
+                            throw new OnRenameDownloadFileFailReason("new file name is empty!", 
+                                    OnRenameDownloadFileFailReason.TYPE_NEW_FILE_NAME_IS_EMPTY);
                         }
 
                         if (checkNewFileExist(newFile)) {
-                            throw new OnRenameDownloadFileFailReason("the new file has been exist!", OnRenameDownloadFileFailReason.TYPE_NEW_FILE_HAS_BEEN_EXIST);
+                            throw new OnRenameDownloadFileFailReason("the new file has been exist!", 
+                                    OnRenameDownloadFileFailReason.TYPE_NEW_FILE_HAS_BEEN_EXIST);
                         }
 
                         boolean isSucceed = file.renameTo(newFile);
 
                         if (!isSucceed) {
-                            throw new OnRenameDownloadFileFailReason("rename file failed!", OnRenameDownloadFileFailReason.TYPE_UNKNOWN);
+                            throw new OnRenameDownloadFileFailReason("rename file failed!", 
+                                    OnRenameDownloadFileFailReason.TYPE_UNKNOWN);
                         }
 
                         // success,write to db
@@ -96,10 +102,12 @@ public class RenameDownloadFileTask implements Runnable {
                         boolean updateResult = mFileDownloadCacher.updateDownloadFile(downloadFileInfo);
                         if (updateResult) {
                             // 2.rename success
-                            OnRenameDownloadFileListener.MainThreadHelper.onRenameDownloadFileSuccess(downloadFileInfo, mOnRenameDownloadFileListener);
+                            OnRenameDownloadFileListener.MainThreadHelper.onRenameDownloadFileSuccess
+                                    (downloadFileInfo, mOnRenameDownloadFileListener);
                             return;
                         } else {
-                            throw new OnRenameDownloadFileFailReason("rename file failed!", OnRenameDownloadFileFailReason.TYPE_UNKNOWN);
+                            throw new OnRenameDownloadFileFailReason("rename file failed!", 
+                                    OnRenameDownloadFileFailReason.TYPE_UNKNOWN);
                         }
                     } catch (Exception e) {
                         e.printStackTrace();
@@ -113,7 +121,8 @@ public class RenameDownloadFileTask implements Runnable {
                         }
 
                         // failed
-                        OnRenameDownloadFileListener.MainThreadHelper.onRenameDownloadFileFailed(downloadFileInfo, failReason, mOnRenameDownloadFileListener);
+                        OnRenameDownloadFileListener.MainThreadHelper.onRenameDownloadFileFailed(downloadFileInfo, 
+                                failReason, mOnRenameDownloadFileListener);
                     }
                     break;
                 // rename db record
@@ -121,7 +130,10 @@ public class RenameDownloadFileTask implements Runnable {
 
                     if (checkNewFileExist(newFile)) {
                         // failed
-                        OnRenameDownloadFileListener.MainThreadHelper.onRenameDownloadFileFailed(downloadFileInfo, new OnRenameDownloadFileFailReason("the new file has been exist!", OnRenameDownloadFileFailReason.TYPE_NEW_FILE_HAS_BEEN_EXIST), mOnRenameDownloadFileListener);
+                        OnRenameDownloadFileListener.MainThreadHelper.onRenameDownloadFileFailed(downloadFileInfo, 
+                                new OnRenameDownloadFileFailReason("the new file has been exist!", 
+                                        OnRenameDownloadFileFailReason.TYPE_NEW_FILE_HAS_BEEN_EXIST), 
+                                mOnRenameDownloadFileListener);
                         return;
                     }
 
@@ -130,21 +142,28 @@ public class RenameDownloadFileTask implements Runnable {
                     boolean updateResult = mFileDownloadCacher.updateDownloadFile(downloadFileInfo);
                     if (updateResult) {
                         // 2.rename success
-                        OnRenameDownloadFileListener.MainThreadHelper.onRenameDownloadFileSuccess(downloadFileInfo, mOnRenameDownloadFileListener);
+                        OnRenameDownloadFileListener.MainThreadHelper.onRenameDownloadFileSuccess(downloadFileInfo, 
+                                mOnRenameDownloadFileListener);
                         return;
                     } else {
                         // failed
-                        OnRenameDownloadFileListener.MainThreadHelper.onRenameDownloadFileFailed(downloadFileInfo, new OnRenameDownloadFileFailReason("rename file failed!", OnRenameDownloadFileFailReason.TYPE_UNKNOWN), mOnRenameDownloadFileListener);
+                        OnRenameDownloadFileListener.MainThreadHelper.onRenameDownloadFileFailed(downloadFileInfo, 
+                                new OnRenameDownloadFileFailReason("rename file failed!", 
+                                        OnRenameDownloadFileFailReason.TYPE_UNKNOWN), mOnRenameDownloadFileListener);
                     }
                     break;
                 default:
                     // status error
-                    OnRenameDownloadFileListener.MainThreadHelper.onRenameDownloadFileFailed(downloadFileInfo, new OnRenameDownloadFileFailReason("DownloadFile status error!", OnRenameDownloadFileFailReason.TYPE_FILE_STATUS_ERROR), mOnRenameDownloadFileListener);
+                    OnRenameDownloadFileListener.MainThreadHelper.onRenameDownloadFileFailed(downloadFileInfo, new 
+                            OnRenameDownloadFileFailReason("DownloadFile status error!", 
+                            OnRenameDownloadFileFailReason.TYPE_FILE_STATUS_ERROR), mOnRenameDownloadFileListener);
                     return;
             }
         } else {
             // failed
-            OnRenameDownloadFileListener.MainThreadHelper.onRenameDownloadFileFailed(downloadFileInfo, new OnRenameDownloadFileFailReason("the download file is not exist!", OnRenameDownloadFileFailReason.TYPE_FILE_RECORD_IS_NOT_EXIST), mOnRenameDownloadFileListener);
+            OnRenameDownloadFileListener.MainThreadHelper.onRenameDownloadFileFailed(downloadFileInfo, new 
+                    OnRenameDownloadFileFailReason("the download file is not exist!", OnRenameDownloadFileFailReason
+                    .TYPE_FILE_RECORD_IS_NOT_EXIST), mOnRenameDownloadFileListener);
         }
     }
 

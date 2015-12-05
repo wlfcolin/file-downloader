@@ -32,7 +32,8 @@ public interface OnDeleteDownloadFilesListener {
      * @param downloadFilesSkip       download files skipped
      * @param downloadFileDeleting    download file deleting
      */
-    void onDeletingDownloadFiles(List<DownloadFileInfo> downloadFilesNeedDelete, List<DownloadFileInfo> downloadFilesDeleted, List<DownloadFileInfo> downloadFilesSkip, DownloadFileInfo downloadFileDeleting);
+    void onDeletingDownloadFiles(List<DownloadFileInfo> downloadFilesNeedDelete, List<DownloadFileInfo> 
+            downloadFilesDeleted, List<DownloadFileInfo> downloadFilesSkip, DownloadFileInfo downloadFileDeleting);
 
     /**
      * delete multi completed
@@ -40,7 +41,8 @@ public interface OnDeleteDownloadFilesListener {
      * @param downloadFilesNeedDelete download files needed to delete
      * @param downloadFilesDeleted    download files deleted
      */
-    void onDeleteDownloadFilesCompleted(List<DownloadFileInfo> downloadFilesNeedDelete, List<DownloadFileInfo> downloadFilesDeleted);
+    void onDeleteDownloadFilesCompleted(List<DownloadFileInfo> downloadFilesNeedDelete, List<DownloadFileInfo> 
+            downloadFilesDeleted);
 
     /**
      * Callback helper for main thread
@@ -52,7 +54,8 @@ public interface OnDeleteDownloadFilesListener {
          *
          * @param downloadFilesNeedDelete download files needed to delete
          */
-        public static void onDeleteDownloadFilePrepared(final List<DownloadFileInfo> downloadFilesNeedDelete, final OnDeleteDownloadFilesListener onDeleteDownloadFilesListener) {
+        public static void onDeleteDownloadFilePrepared(final List<DownloadFileInfo> downloadFilesNeedDelete, final 
+        OnDeleteDownloadFilesListener onDeleteDownloadFilesListener) {
             final Handler handler = new Handler(Looper.getMainLooper());
             handler.post(new Runnable() {
                 @Override
@@ -71,12 +74,15 @@ public interface OnDeleteDownloadFilesListener {
          * @param downloadFilesSkip       download files skipped
          * @param downloadFileDeleting    download file deleting
          */
-        public static void onDeletingDownloadFiles(final List<DownloadFileInfo> downloadFilesNeedDelete, final List<DownloadFileInfo> downloadFilesDeleted, final List<DownloadFileInfo> downloadFilesSkip, final DownloadFileInfo downloadFileDeleting, final OnDeleteDownloadFilesListener onDeleteDownloadFilesListener) {
+        public static void onDeletingDownloadFiles(final List<DownloadFileInfo> downloadFilesNeedDelete, final 
+        List<DownloadFileInfo> downloadFilesDeleted, final List<DownloadFileInfo> downloadFilesSkip, final 
+        DownloadFileInfo downloadFileDeleting, final OnDeleteDownloadFilesListener onDeleteDownloadFilesListener) {
             final Handler handler = new Handler(Looper.getMainLooper());
             handler.post(new Runnable() {
                 @Override
                 public void run() {
-                    onDeleteDownloadFilesListener.onDeletingDownloadFiles(downloadFilesNeedDelete, downloadFilesDeleted, downloadFilesSkip, downloadFileDeleting);
+                    onDeleteDownloadFilesListener.onDeletingDownloadFiles(downloadFilesNeedDelete, 
+                            downloadFilesDeleted, downloadFilesSkip, downloadFileDeleting);
                     handler.removeCallbacksAndMessages(null);
                 }
             });
@@ -88,12 +94,15 @@ public interface OnDeleteDownloadFilesListener {
          * @param downloadFilesNeedDelete download files needed to delete
          * @param downloadFilesDeleted    download files deleted
          */
-        public static void onDeleteDownloadFilesCompleted(final List<DownloadFileInfo> downloadFilesNeedDelete, final List<DownloadFileInfo> downloadFilesDeleted, final OnDeleteDownloadFilesListener onDeleteDownloadFilesListener) {
+        public static void onDeleteDownloadFilesCompleted(final List<DownloadFileInfo> downloadFilesNeedDelete, final
+        List<DownloadFileInfo> downloadFilesDeleted, final OnDeleteDownloadFilesListener 
+                onDeleteDownloadFilesListener) {
             final Handler handler = new Handler(Looper.getMainLooper());
             handler.post(new Runnable() {
                 @Override
                 public void run() {
-                    onDeleteDownloadFilesListener.onDeleteDownloadFilesCompleted(downloadFilesNeedDelete, downloadFilesDeleted);
+                    onDeleteDownloadFilesListener.onDeleteDownloadFilesCompleted(downloadFilesNeedDelete, 
+                            downloadFilesDeleted);
                     handler.removeCallbacksAndMessages(null);
                 }
             });

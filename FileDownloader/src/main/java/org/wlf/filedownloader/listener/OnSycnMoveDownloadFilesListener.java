@@ -16,9 +16,11 @@ public abstract class OnSycnMoveDownloadFilesListener implements OnMoveDownloadF
      *
      * @param downloadFilesNeedMove download files needed to move
      * @param downloadFilesMoved    download files moved
-     * @return true means the caller hopes to continue the operation,otherwise the caller may get in trouble itself,the file-downloader will rollback the operation
+     * @return true means the caller hopes to continue the operation,otherwise the caller may get in trouble itself,
+     * the file-downloader will rollback the operation
      */
-    public boolean onDoSyncMoveDownloadFiles(List<DownloadFileInfo> downloadFilesNeedMove, List<DownloadFileInfo> downloadFilesMoved) {
+    public boolean onDoSyncMoveDownloadFiles(List<DownloadFileInfo> downloadFilesNeedMove, List<DownloadFileInfo> 
+            downloadFilesMoved) {
         return true;
     }
 }

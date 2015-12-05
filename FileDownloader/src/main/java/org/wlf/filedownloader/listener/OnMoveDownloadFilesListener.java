@@ -30,7 +30,8 @@ public interface OnMoveDownloadFilesListener {
      * @param downloadFilesSkip     download files skipped
      * @param downloadFileMoving    download file moving
      */
-    void onMovingDownloadFiles(List<DownloadFileInfo> downloadFilesNeedMove, List<DownloadFileInfo> downloadFilesMoved, List<DownloadFileInfo> downloadFilesSkip, DownloadFileInfo downloadFileMoving);
+    void onMovingDownloadFiles(List<DownloadFileInfo> downloadFilesNeedMove, List<DownloadFileInfo> 
+            downloadFilesMoved, List<DownloadFileInfo> downloadFilesSkip, DownloadFileInfo downloadFileMoving);
 
     /**
      * move multi completed
@@ -38,7 +39,8 @@ public interface OnMoveDownloadFilesListener {
      * @param downloadFilesNeedMove download files needed to move
      * @param downloadFilesMoved    download files moved
      */
-    void onMoveDownloadFilesCompleted(List<DownloadFileInfo> downloadFilesNeedMove, List<DownloadFileInfo> downloadFilesMoved);
+    void onMoveDownloadFilesCompleted(List<DownloadFileInfo> downloadFilesNeedMove, List<DownloadFileInfo> 
+            downloadFilesMoved);
 
     /**
      * Callback helper for main thread
@@ -50,7 +52,8 @@ public interface OnMoveDownloadFilesListener {
          *
          * @param downloadFilesNeedMove download files needed to move
          */
-        public static void onMoveDownloadFilesPrepared(final List<DownloadFileInfo> downloadFilesNeedMove, final OnMoveDownloadFilesListener onMoveDownloadFilesListener) {
+        public static void onMoveDownloadFilesPrepared(final List<DownloadFileInfo> downloadFilesNeedMove, final 
+        OnMoveDownloadFilesListener onMoveDownloadFilesListener) {
             final Handler handler = new Handler(Looper.getMainLooper());
             handler.post(new Runnable() {
                 @Override
@@ -69,12 +72,15 @@ public interface OnMoveDownloadFilesListener {
          * @param downloadFilesSkip     download files skipped
          * @param downloadFileMoving    download file moving
          */
-        public static void onMovingDownloadFiles(final List<DownloadFileInfo> downloadFilesNeedMove, final List<DownloadFileInfo> downloadFilesMoved, final List<DownloadFileInfo> downloadFilesSkip, final DownloadFileInfo downloadFileMoving, final OnMoveDownloadFilesListener onMoveDownloadFilesListener) {
+        public static void onMovingDownloadFiles(final List<DownloadFileInfo> downloadFilesNeedMove, final 
+        List<DownloadFileInfo> downloadFilesMoved, final List<DownloadFileInfo> downloadFilesSkip, final 
+        DownloadFileInfo downloadFileMoving, final OnMoveDownloadFilesListener onMoveDownloadFilesListener) {
             final Handler handler = new Handler(Looper.getMainLooper());
             handler.post(new Runnable() {
                 @Override
                 public void run() {
-                    onMoveDownloadFilesListener.onMovingDownloadFiles(downloadFilesNeedMove, downloadFilesMoved, downloadFilesSkip, downloadFileMoving);
+                    onMoveDownloadFilesListener.onMovingDownloadFiles(downloadFilesNeedMove, downloadFilesMoved, 
+                            downloadFilesSkip, downloadFileMoving);
                     handler.removeCallbacksAndMessages(null);
                 }
             });
@@ -86,7 +92,8 @@ public interface OnMoveDownloadFilesListener {
          * @param downloadFilesNeedMove download files needed to move
          * @param downloadFilesMoved    download files moved
          */
-        public static void onMoveDownloadFilesCompleted(final List<DownloadFileInfo> downloadFilesNeedMove, final List<DownloadFileInfo> downloadFilesMoved, final OnMoveDownloadFilesListener onMoveDownloadFilesListener) {
+        public static void onMoveDownloadFilesCompleted(final List<DownloadFileInfo> downloadFilesNeedMove, final 
+        List<DownloadFileInfo> downloadFilesMoved, final OnMoveDownloadFilesListener onMoveDownloadFilesListener) {
             final Handler handler = new Handler(Looper.getMainLooper());
             handler.post(new Runnable() {
                 @Override

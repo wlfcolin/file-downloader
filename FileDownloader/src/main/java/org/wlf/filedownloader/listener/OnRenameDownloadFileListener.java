@@ -49,7 +49,8 @@ public interface OnRenameDownloadFileListener {
          *
          * @param downloadFileNeedRename download file needed to rename
          */
-        public static void onRenameDownloadFilePrepared(final DownloadFileInfo downloadFileNeedRename, final OnRenameDownloadFileListener onRenameDownloadFileListener) {
+        public static void onRenameDownloadFilePrepared(final DownloadFileInfo downloadFileNeedRename, final 
+        OnRenameDownloadFileListener onRenameDownloadFileListener) {
             final Handler handler = new Handler(Looper.getMainLooper());
             handler.post(new Runnable() {
                 @Override
@@ -65,7 +66,8 @@ public interface OnRenameDownloadFileListener {
          *
          * @param downloadFileRenamed download files renamed
          */
-        public static void onRenameDownloadFileSuccess(final DownloadFileInfo downloadFileRenamed, final OnRenameDownloadFileListener onRenameDownloadFileListener) {
+        public static void onRenameDownloadFileSuccess(final DownloadFileInfo downloadFileRenamed, final 
+        OnRenameDownloadFileListener onRenameDownloadFileListener) {
             final Handler handler = new Handler(Looper.getMainLooper());
             handler.post(new Runnable() {
                 @Override
@@ -82,7 +84,8 @@ public interface OnRenameDownloadFileListener {
          * @param downloadFileInfo download files needed to rename
          * @param failReason       fail reason
          */
-        public static void onRenameDownloadFileFailed(final DownloadFileInfo downloadFileInfo, final OnRenameDownloadFileFailReason failReason, final OnRenameDownloadFileListener onRenameDownloadFileListener) {
+        public static void onRenameDownloadFileFailed(final DownloadFileInfo downloadFileInfo, final 
+        OnRenameDownloadFileFailReason failReason, final OnRenameDownloadFileListener onRenameDownloadFileListener) {
             final Handler handler = new Handler(Looper.getMainLooper());
             handler.post(new Runnable() {
                 @Override
@@ -106,23 +109,28 @@ public interface OnRenameDownloadFileListener {
         /**
          * the download file is not exist
          */
-        public static final String TYPE_FILE_RECORD_IS_NOT_EXIST = OnRenameDownloadFileFailReason.class.getName() + "_TYPE_FILE_RECORD_IS_NOT_EXIST";
+        public static final String TYPE_FILE_RECORD_IS_NOT_EXIST = OnRenameDownloadFileFailReason.class.getName() + 
+                "_TYPE_FILE_RECORD_IS_NOT_EXIST";
         /**
          * original file not exist
          */
-        public static final String TYPE_ORIGINAL_FILE_NOT_EXIST = OnRenameDownloadFileFailReason.class.getName() + "_TYPE_ORIGINAL_FILE_NOT_EXIST";
+        public static final String TYPE_ORIGINAL_FILE_NOT_EXIST = OnRenameDownloadFileFailReason.class.getName() + 
+                "_TYPE_ORIGINAL_FILE_NOT_EXIST";
         /**
          * new file name is empty
          */
-        public static final String TYPE_NEW_FILE_NAME_IS_EMPTY = OnRenameDownloadFileFailReason.class.getName() + "_TYPE_NEW_FILE_NAME_IS_EMPTY";
+        public static final String TYPE_NEW_FILE_NAME_IS_EMPTY = OnRenameDownloadFileFailReason.class.getName() + 
+                "_TYPE_NEW_FILE_NAME_IS_EMPTY";
         /**
          * file status error
          */
-        public static final String TYPE_FILE_STATUS_ERROR = OnRenameDownloadFileFailReason.class.getName() + "_TYPE_FILE_STATUS_ERROR";
+        public static final String TYPE_FILE_STATUS_ERROR = OnRenameDownloadFileFailReason.class.getName() + 
+                "_TYPE_FILE_STATUS_ERROR";
         /**
          * the new file has been exist
          */
-        public static final String TYPE_NEW_FILE_HAS_BEEN_EXIST = OnRenameDownloadFileFailReason.class.getName() + "_TYPE_NEW_FILE_HAS_BEEN_EXIST";
+        public static final String TYPE_NEW_FILE_HAS_BEEN_EXIST = OnRenameDownloadFileFailReason.class.getName() + 
+                "_TYPE_NEW_FILE_HAS_BEEN_EXIST";
 
         public OnRenameDownloadFileFailReason(String detailMessage, String type) {
             super(detailMessage, type);

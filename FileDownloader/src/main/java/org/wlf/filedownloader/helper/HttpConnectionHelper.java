@@ -21,14 +21,16 @@ public class HttpConnectionHelper {
     /**
      * create Detect http file Connection
      */
-    public static HttpURLConnection createDetectConnection(String url, int connectTimeout, String charset) throws Exception {
+    public static HttpURLConnection createDetectConnection(String url, int connectTimeout, String charset) throws 
+            Exception {
         return createHttpUrlConnection(url, connectTimeout, charset, -1, -1);
     }
 
     /**
      * create download http file Connection
      */
-    public static HttpURLConnection createDownloadFileConnection(String url, int connectTimeout, String charset, Range range) throws Exception {
+    public static HttpURLConnection createDownloadFileConnection(String url, int connectTimeout, String charset, 
+                                                                 Range range) throws Exception {
 
         int rangeStartPos = -1;
         int rangeEndPos = -1;
@@ -52,7 +54,8 @@ public class HttpConnectionHelper {
      * @return HttpURLConnection
      * @throws Exception any exception during connect
      */
-    public static HttpURLConnection createHttpUrlConnection(String url, int connectTimeout, String charset, int rangeStartPos, int rangeEndPos) throws Exception {
+    public static HttpURLConnection createHttpUrlConnection(String url, int connectTimeout, String charset, int 
+            rangeStartPos, int rangeEndPos) throws Exception {
 
         // up 4.0 can use if necessary
         // StrictMode.setThreadPolicy(new

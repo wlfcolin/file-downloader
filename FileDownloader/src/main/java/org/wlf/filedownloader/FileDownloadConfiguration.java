@@ -108,7 +108,8 @@ public class FileDownloadConfiguration {
             this.mContext = context.getApplicationContext();
             // default: /sdcard/Android/data/{package_name}/files/file_downloader
             try {
-                mFileDownloadDir = this.mContext.getExternalFilesDir(null).getAbsolutePath() + File.separator + "file_downloader";
+                mFileDownloadDir = this.mContext.getExternalFilesDir(null).getAbsolutePath() + File.separator + 
+                        "file_downloader";
             } catch (Exception e) {
                 // if there is not sdcard,use /data/data/{package_name}/files/file_downloader for the default
                 e.printStackTrace();
@@ -120,7 +121,8 @@ public class FileDownloadConfiguration {
         /**
          * configFileDownloadDir
          *
-         * @param fileDownloadDir FileDownloadDir,if use sdcard,please add permission:  android.permission.WRITE_EXTERNAL_STORAGE
+         * @param fileDownloadDir FileDownloadDir,if use sdcard,please add permission:  android.permission
+         *                        .WRITE_EXTERNAL_STORAGE
          * @return the builder
          */
         public Builder configFileDownloadDir(String fileDownloadDir) {
@@ -149,7 +151,8 @@ public class FileDownloadConfiguration {
         /**
          * config DownloadTaskSize at the same time
          *
-         * @param downloadTaskSize DownloadTaskSize at the same time,please set 1 to {@link #MAX_DOWNLOAD_TASK_SIZE},if not set,default is {@link #DEFAULT_DOWNLOAD_TASK_SIZE}
+         * @param downloadTaskSize DownloadTaskSize at the same time,please set 1 to {@link #MAX_DOWNLOAD_TASK_SIZE},
+         *                         if not set,default is {@link #DEFAULT_DOWNLOAD_TASK_SIZE}
          * @return the builder
          */
         public Builder configDownloadTaskSize(int downloadTaskSize) {

@@ -97,7 +97,8 @@ public class HttpDownloader implements Download {
 
             int redirectCount = 0;
             while (conn != null && conn.getResponseCode() / 100 == 3 && redirectCount < MAX_REDIRECT_COUNT) {
-                conn = HttpConnectionHelper.createDownloadFileConnection(conn.getHeaderField("Location"), mConnectTimeout, CHARSET, mRange);
+                conn = HttpConnectionHelper.createDownloadFileConnection(conn.getHeaderField("Location"), 
+                        mConnectTimeout, CHARSET, mRange);
                 redirectCount++;
             }
 
@@ -105,7 +106,8 @@ public class HttpDownloader implements Download {
 
             if (redirectCount > MAX_REDIRECT_COUNT) {
                 // error over max redirect
-                throw new HttpDownloadException("over max redirect:" + MAX_REDIRECT_COUNT + "!", HttpDownloadException.TYPE_REDIRECT_COUNT_OVER_LIMITS);
+                throw new HttpDownloadException("over max redirect:" + MAX_REDIRECT_COUNT + "!", 
+                        HttpDownloadException.TYPE_REDIRECT_COUNT_OVER_LIMITS);
             }
 
             // 1.check ResponseCode
@@ -116,11 +118,13 @@ public class HttpDownloader implements Download {
                 // 2.check contentLength
                 int contentLength = conn.getContentLength();
 
-                Log.d(TAG, "download 2、得到服务器返回的资源contentLength：" + contentLength + "，传入的range：" + mRange.toString() + "，url：" + url);
+                Log.d(TAG, "download 2、得到服务器返回的资源contentLength：" + contentLength + "，传入的range：" + mRange.toString() +
+                        "，url：" + url);
 
                 if (contentLength <= 0) {
                     // error content length illegal
-                    throw new HttpDownloadException("content length illegal,get url file failed!", HttpDownloadException.TYPE_RESOURCES_SIZE_ILLEGAL);
+                    throw new HttpDownloadException("content length illegal,get url file failed!", 
+                            HttpDownloadException.TYPE_RESOURCES_SIZE_ILLEGAL);
                 }
 
                 // 3.check eTag(whether file is changed)
@@ -131,7 +135,8 @@ public class HttpDownloader implements Download {
 
                     if (TextUtils.isEmpty(eTag) || !mETag.equals(eTag)) {
                         // error eTag is not equal
-                        throw new HttpDownloadException("eTag is not equal,please re-download!", HttpDownloadException.TYPE_ETAG_CHANGED);
+                        throw new HttpDownloadException("eTag is not equal,please re-download!", 
+                                HttpDownloadException.TYPE_ETAG_CHANGED);
                     }
                 }
 
@@ -151,7 +156,8 @@ public class HttpDownloader implements Download {
                         ContentRangeInfo contentRangeInfo = ContentRangeInfo.getContentRangeInfo(contentRange);
                         if (contentRangeInfo != null) {
                             Range serverResponseRange = new Range(contentRangeInfo.startPos, contentRangeInfo.endPos);
-                            if (mRange.equals(serverResponseRange) && mAcceptRangeType.equals(contentRangeInfo.contentType) && serverResponseRange.getLength() == contentLength) {
+                            if (mRange.equals(serverResponseRange) && mAcceptRangeType.equals(contentRangeInfo
+                                    .contentType) && serverResponseRange.getLength() == contentLength) {
                                 // range validate pass
                                 isRangeValidateSucceed = true;
                             }
@@ -159,7 +165,8 @@ public class HttpDownloader implements Download {
 
                         if (!isRangeValidateSucceed) {
                             // error contentRange validate failed
-                            throw new HttpDownloadException("contentRange validate failed!", HttpDownloadException.TYPE_CONTENT_RANGE_VALIDATE_FAIL);
+                            throw new HttpDownloadException("contentRange validate failed!", HttpDownloadException
+                                    .TYPE_CONTENT_RANGE_VALIDATE_FAIL);
                         }
                     }
                 }
@@ -170,7 +177,8 @@ public class HttpDownloader implements Download {
                 // wrap serverInputStream
                 inputStream = new ContentLengthInputStream(serverInputStream, contentLength);
 
-                Log.d(TAG, "download 4、准备处理数据，获取服务器返回的资源长度为：" + contentLength + "，获取服务器返回的输入流长度为：" + inputStream.available() + "，需要处理的区域为：" + mRange.toString() + "，url：" + url);
+                Log.d(TAG, "download 4、准备处理数据，获取服务器返回的资源长度为：" + contentLength + "，获取服务器返回的输入流长度为：" + inputStream
+                        .available() + "，需要处理的区域为：" + mRange.toString() + "，url：" + url);
 
                 // notifyDownloadConnected
                 notifyDownloadConnected(inputStream, mRange.startPos);
@@ -178,7 +186,8 @@ public class HttpDownloader implements Download {
             // ResponseCode error
             else {
                 // error ResponseCode error
-                throw new HttpDownloadException("ResponseCode:" + responseCode + " error,can not read data!", HttpDownloadException.TYPE_RESPONSE_CODE_ERROR);
+                throw new HttpDownloadException("ResponseCode:" + responseCode + " error,can not read data!", 
+                        HttpDownloadException.TYPE_RESPONSE_CODE_ERROR);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -232,11 +241,13 @@ public class HttpDownloader implements Download {
         /**
          * http redirect count over limits
          */
-        public static final String TYPE_REDIRECT_COUNT_OVER_LIMITS = HttpDownloadException.class.getName() + "_TYPE_REDIRECT_COUNT_OVER_LIMITS";
+        public static final String TYPE_REDIRECT_COUNT_OVER_LIMITS = HttpDownloadException.class.getName() + 
+                "_TYPE_REDIRECT_COUNT_OVER_LIMITS";
         /**
          * resources size illegal
          */
-        public static final String TYPE_RESOURCES_SIZE_ILLEGAL = HttpDownloadException.class.getName() + "_TYPE_RESOURCES_SIZE_ILLEGAL";
+        public static final String TYPE_RESOURCES_SIZE_ILLEGAL = HttpDownloadException.class.getName() + 
+                "_TYPE_RESOURCES_SIZE_ILLEGAL";
         /**
          * eTag is not equal
          */
@@ -244,15 +255,18 @@ public class HttpDownloader implements Download {
         /**
          * contentRange validate fail
          */
-        public static final String TYPE_CONTENT_RANGE_VALIDATE_FAIL = HttpDownloadException.class.getName() + "_TYPE_CONTENT_RANGE_VALIDATE_FAIL";
+        public static final String TYPE_CONTENT_RANGE_VALIDATE_FAIL = HttpDownloadException.class.getName() + 
+                "_TYPE_CONTENT_RANGE_VALIDATE_FAIL";
         /**
          * ResponseCode error,can not read data
          */
-        public static final String TYPE_RESPONSE_CODE_ERROR = HttpDownloadException.class.getName() + "_TYPE_RESPONSE_CODE_ERROR";
+        public static final String TYPE_RESPONSE_CODE_ERROR = HttpDownloadException.class.getName() + 
+                "_TYPE_RESPONSE_CODE_ERROR";
         /**
          * network timeout
          */
-        public static final String TYPE_NETWORK_TIMEOUT = HttpDownloadException.class.getName() + "_TYPE_NETWORK_TIMEOUT";
+        public static final String TYPE_NETWORK_TIMEOUT = HttpDownloadException.class.getName() + 
+                "_TYPE_NETWORK_TIMEOUT";
         /**
          * network denied
          */

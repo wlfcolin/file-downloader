@@ -12,7 +12,7 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 
 /**
- * DetectUrlFileTask
+ * DetectUrlFile Task
  * <br/>
  * 探测网络文件任务
  *
@@ -33,7 +33,8 @@ public class DetectUrlFileTask implements Runnable {
     private DownloadFileCacher mDownloadFileCacher;
     private OnDetectUrlFileListener mOnDetectUrlFileListener;
 
-    public DetectUrlFileTask(String url, String downloadSaveDir, DetectUrlFileCacher detectUrlFileCacher, DownloadFileCacher downloadFileCacher) {
+    public DetectUrlFileTask(String url, String downloadSaveDir, DetectUrlFileCacher detectUrlFileCacher, 
+                             DownloadFileCacher downloadFileCacher) {
         super();
         this.mUrl = url;
         this.mDownloadSaveDir = downloadSaveDir;
@@ -83,11 +84,13 @@ public class DetectUrlFileTask implements Runnable {
                     redirectCount++;
                 }
 
-                Log.d(TAG, "DetectUrlFileTask.run 探测文件，重定向：" + redirectCount + "次" + "，最大重定向次数：" + MAX_REDIRECT_COUNT + "，url：" + mUrl);
+                Log.d(TAG, "DetectUrlFileTask.run 探测文件，重定向：" + redirectCount + "次" + "，最大重定向次数：" + MAX_REDIRECT_COUNT
+                        + "，url：" + mUrl);
 
                 if (redirectCount > MAX_REDIRECT_COUNT) {
                     // error over max redirect
-                    failReason = new DetectUrlFileFailReason("over max redirect:" + MAX_REDIRECT_COUNT + "!", DetectUrlFileFailReason.TYPE_URL_OVER_REDIRECT_COUNT);
+                    failReason = new DetectUrlFileFailReason("over max redirect:" + MAX_REDIRECT_COUNT + "!", 
+                            DetectUrlFileFailReason.TYPE_URL_OVER_REDIRECT_COUNT);
                 } else {
                     switch (conn.getResponseCode()) {
                         // http ok
@@ -101,24 +104,28 @@ public class DetectUrlFileTask implements Runnable {
                             // get acceptRangeType,bytes usually if supported range transmission
                             String acceptRangeType = conn.getHeaderField("Accept-Ranges");
 
-                            DetectUrlFileInfo detectUrlFileInfo = new DetectUrlFileInfo(mUrl, fileSize, eTag, acceptRangeType, mDownloadSaveDir, fileName);
+                            DetectUrlFileInfo detectUrlFileInfo = new DetectUrlFileInfo(mUrl, fileSize, eTag, 
+                                    acceptRangeType, mDownloadSaveDir, fileName);
                             // add to memory cache
                             mDetectUrlFileCacher.addOrUpdateDetectUrlFile(detectUrlFileInfo);
 
                             // 2.need to create download file
                             if (mOnDetectUrlFileListener != null) {
-                                OnDetectUrlFileListener.MainThreadHelper.onDetectNewDownloadFile(mUrl, fileName, mDownloadSaveDir, fileSize, mOnDetectUrlFileListener);
+                                OnDetectUrlFileListener.MainThreadHelper.onDetectNewDownloadFile(mUrl, fileName, 
+                                        mDownloadSaveDir, fileSize, mOnDetectUrlFileListener);
                             }
                             break;
                         // 404 not found
                         case HttpURLConnection.HTTP_NOT_FOUND:
                             // error url file does not exist
-                            failReason = new DetectUrlFileFailReason("url file does not exist!", DetectUrlFileFailReason.TYPE_HTTP_FILE_NOT_EXIST);
+                            failReason = new DetectUrlFileFailReason("url file does not exist!", 
+                                    DetectUrlFileFailReason.TYPE_HTTP_FILE_NOT_EXIST);
                             break;
                         // other,ResponseCode error
                         default:
                             // error ResponseCode error
-                            failReason = new DetectUrlFileFailReason("ResponseCode:" + conn.getResponseCode() + " error,can not read data!", DetectUrlFileFailReason.TYPE_BAD_HTTP_RESPONSE_CODE);
+                            failReason = new DetectUrlFileFailReason("ResponseCode:" + conn.getResponseCode() + " " +
+                                    "error,can not read data!", DetectUrlFileFailReason.TYPE_BAD_HTTP_RESPONSE_CODE);
                             break;
                     }
                 }
@@ -140,7 +147,8 @@ public class DetectUrlFileTask implements Runnable {
             // error occur
             if (failReason != null) {
                 if (mOnDetectUrlFileListener != null) {
-                    OnDetectUrlFileListener.MainThreadHelper.onDetectUrlFileFailed(mUrl, failReason, mOnDetectUrlFileListener);
+                    OnDetectUrlFileListener.MainThreadHelper.onDetectUrlFileFailed(mUrl, failReason, 
+                            mOnDetectUrlFileListener);
                 }
             }
         }

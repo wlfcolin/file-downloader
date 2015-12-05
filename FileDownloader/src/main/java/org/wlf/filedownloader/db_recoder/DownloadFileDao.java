@@ -17,7 +17,8 @@ import org.wlf.filedownloader.db.BaseContentDbDao;
 public class DownloadFileDao extends BaseContentDbDao {
 
     public DownloadFileDao(SQLiteOpenHelper dbHelper) {
-        super(dbHelper, DownloadFileInfo.Table.TABLE_NAME_OF_DOWNLOAD_FILE, DownloadFileInfo.Table.COLUMN_NAME_OF_FIELD_ID);
+        super(dbHelper, DownloadFileInfo.Table.TABLE_NAME_OF_DOWNLOAD_FILE, DownloadFileInfo.Table
+                .COLUMN_NAME_OF_FIELD_ID);
     }
 
     @Override

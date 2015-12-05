@@ -6,7 +6,7 @@ import org.wlf.filedownloader.util.FileUtil;
 import org.wlf.filedownloader.util.UrlUtil;
 
 /**
- * DetectUrlFileInfo
+ * DetectUrlFile Info
  * <br/>
  * 探测到的网络文件信息
  *
@@ -29,7 +29,8 @@ public class DetectUrlFileInfo extends BaseUrlFileInfo {
      * @param fileDir         file dir
      * @param fileName        file name
      */
-    public DetectUrlFileInfo(String url, int fileSize, String eTag, String acceptRangeType, String fileDir, String fileName) {
+    public DetectUrlFileInfo(String url, int fileSize, String eTag, String acceptRangeType, String fileDir, String 
+            fileName) {
         super();
         this.mUrl = url;
         this.mFileSize = fileSize;
