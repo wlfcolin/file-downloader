@@ -832,7 +832,7 @@ public class FileDownloadManager {
     /**
      * restart download
      */
-    public void reStartInternal(String url) {
+    private void reStartInternal(String url) {
         // update downloaded size if need
         DownloadFileInfo downloadFileInfo = getDownloadFile(url);
         if (downloadFileInfo != null) {
