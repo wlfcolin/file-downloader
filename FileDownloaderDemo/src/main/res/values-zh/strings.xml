@@ -53,7 +53,7 @@
     <string name="main__can_not_download2">无法下载，请删除：</string>
     <string name="main__re_download"> 后重新下载</string>
     <string name="main__start_download">开始/继续下载：</string>
-    <string name="main__whether_re_download">是否重新下载</string>
+    <string name="main__whether_re_download">文件不存在，是否重新下载</string>
     <string name="main__re_download2">重新下载</string>
     <string name="main__paused_download">暂停下载：</string>
     <string name="main__not_install_apk">（无法启动）请安装Apk：</string>

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="app_name">File-Downloader Demo</string>
+    <string name="app_name">FileDownloader Demo</string>
 
     <string name="main__please_input_download_file">Please enter the url of the download file</string>
     <string name="main__please_input_multi_download_files">Please enter multi urls of the download files</string>
@@ -54,7 +54,7 @@
     <string name="main__can_not_download2">Can not download,please delete the file:</string>
     <string name="main__re_download"> re-download</string>
     <string name="main__start_download">Start/Continue download:</string>
-    <string name="main__whether_re_download">Whether re-download</string>
+    <string name="main__whether_re_download">File not exist,whether re-download</string>
     <string name="main__re_download2">re-download</string>
     <string name="main__paused_download">Paused download:</string>
     <string name="main__not_install_apk">Not install,please install apk:</string>

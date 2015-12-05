@@ -17,7 +17,7 @@ public class TimeUtil {
      * @return String of formatted in HH:mm:ss
      */
     public static String seconds2HH_mm_ss(long seconds) {
-        
+
         long h = 0;
         long m = 0;
         long s = 0;
