@@ -7,7 +7,7 @@ import org.wlf.filedownloader.DownloadFileInfo;
 import org.wlf.filedownloader.base.FailReason;
 
 /**
- * OnMoveDownloadFileListener
+ * listener for moving download file
  * <br/>
  * 移动下载文件监听接口
  *

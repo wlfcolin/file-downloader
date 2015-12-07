@@ -7,7 +7,7 @@ import org.wlf.filedownloader.DownloadFileInfo;
 import org.wlf.filedownloader.base.FailReason;
 
 /**
- * OnDeleteDownloadFileListener
+ * listener for deleting download file
  * <br/>
  * 删除下载文件监听器
  *

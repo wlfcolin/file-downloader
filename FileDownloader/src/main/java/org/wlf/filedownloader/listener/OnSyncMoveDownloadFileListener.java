@@ -3,11 +3,13 @@ package org.wlf.filedownloader.listener;
 import org.wlf.filedownloader.DownloadFileInfo;
 
 /**
+ * an interface that can sync with caller when mving download file
+ *
  * @author wlf(Andy)
  * @datetime 2015-12-01 18:21 GMT+8
  * @email 411086563@qq.com
  */
-public abstract class OnSyncMoveDownloadFileListener implements OnMoveDownloadFileListener {
+public interface OnSyncMoveDownloadFileListener extends OnMoveDownloadFileListener {
 
     /**
      * sync move(for example,the caller will need to do it's own database record)
@@ -16,7 +18,5 @@ public abstract class OnSyncMoveDownloadFileListener implements OnMoveDownloadFi
      * @return true means the caller hopes to continue the operation,otherwise the caller may get in trouble itself,
      * the file-downloader will rollback the operation
      */
-    public boolean onDoSyncMoveDownloadFile(DownloadFileInfo downloadFileMoved) {
-        return true;
-    }
+    boolean onDoSyncMoveDownloadFile(DownloadFileInfo downloadFileMoved);
 }

@@ -5,11 +5,13 @@ import org.wlf.filedownloader.DownloadFileInfo;
 import java.util.List;
 
 /**
+ * an interface that can sync with caller when deleting multi download files
+ *
  * @author wlf(Andy)
  * @datetime 2015-12-01 17:56 GMT+8
  * @email 411086563@qq.com
  */
-public abstract class OnSyncDeleteDownloadFilesListener implements OnDeleteDownloadFilesListener {
+public interface OnSyncDeleteDownloadFilesListener extends OnDeleteDownloadFilesListener {
 
     /**
      * sync delete(for example,the caller will need to do it's own database record)
@@ -20,7 +22,5 @@ public abstract class OnSyncDeleteDownloadFilesListener implements OnDeleteDownl
      * the file-downloader will rollback the operation
      */
     boolean onDoSyncDeleteDownloadFiles(List<DownloadFileInfo> downloadFilesNeedDelete, List<DownloadFileInfo> 
-            downloadFilesDeleted) {
-        return true;
-    }
+            downloadFilesDeleted);
 }

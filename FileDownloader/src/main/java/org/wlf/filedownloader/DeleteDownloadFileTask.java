@@ -4,6 +4,7 @@ import android.util.Log;
 
 import org.wlf.filedownloader.listener.OnDeleteDownloadFileListener;
 import org.wlf.filedownloader.listener.OnDeleteDownloadFileListener.OnDeleteDownloadFileFailReason;
+import org.wlf.filedownloader.listener.OnSyncDeleteDownloadFileListener;
 
 import java.io.File;
 
@@ -52,36 +53,54 @@ public class DeleteDownloadFileTask implements Runnable {
             // delete in database record
             boolean deleteResult = mFileDownloadCacher.deleteDownloadFile(downloadFileInfo);
             if (deleteResult) {
+
                 Log.d(TAG, "DeleteDownloadFileTask.run 数据库删除成功url：" + mUrl);
+
+                if (mOnDeleteDownloadFileListener instanceof OnSyncDeleteDownloadFileListener) {
+                    // OnSyncMoveDownloadFileListener,that means the caller hopes to sync something
+                    deleteResult = ((OnSyncDeleteDownloadFileListener) mOnDeleteDownloadFileListener)
+                            .onDoSyncDeleteDownloadFile(downloadFileInfo);
+                }
+
+                if (!deleteResult) {
+                    // rollback,sync with the caller FIXME,use transaction to control the update is better
+                    mFileDownloadCacher.addDownloadFile(downloadFileInfo);
+                }
+
                 // delete in path
-                if (mDeleteDownloadedFileInPath) {
-                    File file = new File(downloadFileInfo.getFileDir(), downloadFileInfo.getFileName());
-                    if (file != null) {
-                        if (file.exists()) {
-                            deleteResult = file.delete();
+                if (deleteResult) {
+                    if (mDeleteDownloadedFileInPath) {
+                        File file = new File(downloadFileInfo.getFileDir(), downloadFileInfo.getFileName());
+                        if (file != null) {
+                            if (file.exists()) {
+                                deleteResult = file.delete();
+                            } else {
+                                // has been deleted in file path or not complete,look up the temp file
+                                file = new File(downloadFileInfo.getFileDir(), downloadFileInfo.getTempFileName());
+                                if (file.exists()) {
+                                    deleteResult = file.delete();
+                                }
+                            }
                         } else {
-                            // has been deleted in file path or not complete,look up the temp file
+                            // look up the temp file
                             file = new File(downloadFileInfo.getFileDir(), downloadFileInfo.getTempFileName());
                             if (file.exists()) {
                                 deleteResult = file.delete();
                             }
                         }
-                    } else {
-                        // look up the temp file
-                        file = new File(downloadFileInfo.getFileDir(), downloadFileInfo.getTempFileName());
-                        if (file.exists()) {
-                            deleteResult = file.delete();
-                        }
                     }
-                }
-                if (deleteResult) {
-                    Log.d(TAG, "DeleteDownloadFileTask.run 数据库+文件删除成功url：" + mUrl);
-                    // 2.delete success
-                    OnDeleteDownloadFileListener.MainThreadHelper.onDeleteDownloadFileSuccess(downloadFileInfo, 
-                            mOnDeleteDownloadFileListener);
-                    return;
+                    if (deleteResult) {
+                        Log.d(TAG, "DeleteDownloadFileTask.run 件删除成功url：" + mUrl);
+                        // 2.delete success
+                        OnDeleteDownloadFileListener.MainThreadHelper.onDeleteDownloadFileSuccess(downloadFileInfo, 
+                                mOnDeleteDownloadFileListener);
+                        return;
+                    } else {
+                        failReason = new OnDeleteDownloadFileFailReason("delete file in path failed!", 
+                                OnDeleteDownloadFileFailReason.TYPE_UNKNOWN);
+                    }
                 } else {
-                    failReason = new OnDeleteDownloadFileFailReason("delete file in path failed!", 
+                    failReason = new OnDeleteDownloadFileFailReason("delete file failed!", 
                             OnDeleteDownloadFileFailReason.TYPE_UNKNOWN);
                 }
             } else {

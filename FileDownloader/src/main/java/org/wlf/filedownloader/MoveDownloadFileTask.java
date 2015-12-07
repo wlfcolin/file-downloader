@@ -107,8 +107,8 @@ public class MoveDownloadFileTask implements Runnable {
         moveResult = mFileDownloadCacher.updateDownloadFile(downloadFileInfo);
         if (moveResult) {
             // record changed
-            if (mOnMoveDownloadFileListener instanceof OnSyncMoveDownloadFileListener) 
-            {//OnSyncMoveDownloadFileListener,that means the caller hopes to sync something
+            if (mOnMoveDownloadFileListener instanceof OnSyncMoveDownloadFileListener) {
+                // OnSyncMoveDownloadFileListener,that means the caller hopes to sync something
                 moveResult = ((OnSyncMoveDownloadFileListener) mOnMoveDownloadFileListener).onDoSyncMoveDownloadFile
                         (downloadFileInfo);
             }

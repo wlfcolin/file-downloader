@@ -5,11 +5,13 @@ import org.wlf.filedownloader.DownloadFileInfo;
 import java.util.List;
 
 /**
+ * an interface that can sync with caller when moving multi download files
+ *
  * @author wlf(Andy)
  * @datetime 2015-12-01 18:22 GMT+8
  * @email 411086563@qq.com
  */
-public abstract class OnSycnMoveDownloadFilesListener implements OnMoveDownloadFilesListener {
+public interface OnSycnMoveDownloadFilesListener extends OnMoveDownloadFilesListener {
 
     /**
      * sync move(for example,the caller will need to do it's own database record)
@@ -19,8 +21,6 @@ public abstract class OnSycnMoveDownloadFilesListener implements OnMoveDownloadF
      * @return true means the caller hopes to continue the operation,otherwise the caller may get in trouble itself,
      * the file-downloader will rollback the operation
      */
-    public boolean onDoSyncMoveDownloadFiles(List<DownloadFileInfo> downloadFilesNeedMove, List<DownloadFileInfo> 
-            downloadFilesMoved) {
-        return true;
-    }
+    boolean onDoSyncMoveDownloadFiles(List<DownloadFileInfo> downloadFilesNeedMove, List<DownloadFileInfo> 
+            downloadFilesMoved);
 }

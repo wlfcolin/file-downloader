@@ -8,6 +8,8 @@ import org.wlf.filedownloader.DownloadFileInfo;
 import java.util.List;
 
 /**
+ * listener for moving multi download files
+ * <br/>
  * 批量移动下载文件监听器
  *
  * @author wlf(Andy)

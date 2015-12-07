@@ -7,6 +7,7 @@ import android.util.Log;
 import org.wlf.filedownloader.DownloadFileCacher.DownloadStatusRecordException;
 import org.wlf.filedownloader.FileDownloadTask.OnStopDownloadFileTaskFailReason;
 import org.wlf.filedownloader.FileDownloadTask.OnStopFileDownloadTaskListener;
+import org.wlf.filedownloader.base.Control;
 import org.wlf.filedownloader.base.Status;
 import org.wlf.filedownloader.base.Stoppable;
 import org.wlf.filedownloader.helper.FileDownloadTaskParamHelper;
@@ -21,6 +22,7 @@ import org.wlf.filedownloader.listener.OnMoveDownloadFileListener.OnMoveDownload
 import org.wlf.filedownloader.listener.OnMoveDownloadFilesListener;
 import org.wlf.filedownloader.listener.OnRenameDownloadFileListener;
 import org.wlf.filedownloader.listener.OnRenameDownloadFileListener.OnRenameDownloadFileFailReason;
+import org.wlf.filedownloader.listener.OnSyncDeleteDownloadFileListener;
 import org.wlf.filedownloader.listener.OnSyncMoveDownloadFileListener;
 import org.wlf.filedownloader.util.CollectionUtil;
 import org.wlf.filedownloader.util.UrlUtil;
@@ -477,6 +479,7 @@ public class FileDownloadManager {
         // clear cache
         mDetectUrlFileCacher.release();
         mDownloadFileCacher.release();
+        mWeakOnFileDownloadStatusListeners.clear();
 
         sInstance = null;
     }
@@ -956,7 +959,10 @@ public class FileDownloadManager {
      *
      * @param url                          file url
      * @param deleteDownloadedFileInPath   whether delete file in path
-     * @param onDeleteDownloadFileListener DeleteDownloadFileListener
+     * @param onDeleteDownloadFileListener use {@link OnDeleteDownloadFileListener} for default,or use {@link
+     *                                     OnSyncDeleteDownloadFileListener} for do some custom sync with 
+     *                                     file-downloader,
+     *                                     if custom sync failed,the file-downloader will rollback the operation
      */
     public void delete(String url, final boolean deleteDownloadedFileInPath, final OnDeleteDownloadFileListener 
             onDeleteDownloadFileListener) {
@@ -1017,15 +1023,16 @@ public class FileDownloadManager {
      * @param urls                          file mUrls
      * @param deleteDownloadedFile          whether delete file in path
      * @param onDeleteDownloadFilesListener DeleteDownloadFilesListener
+     * @return the control for the operation
      */
-    public void delete(List<String> urls, boolean deleteDownloadedFile, OnDeleteDownloadFilesListener 
+    public Control delete(List<String> urls, boolean deleteDownloadedFile, OnDeleteDownloadFilesListener 
             onDeleteDownloadFilesListener) {
 
         checkInit();
 
         if (mDeleteDownloadFilesTask != null && !mDeleteDownloadFilesTask.isStopped()) {
             // deleting
-            return;
+            return new DeleteControl(mDeleteDownloadFilesTask);
         }
 
         DeleteDownloadFilesTask deleteDownloadFilesTask = new DeleteDownloadFilesTask(urls, deleteDownloadedFile);
@@ -1035,6 +1042,8 @@ public class FileDownloadManager {
         new Thread(deleteDownloadFilesTask).start();
 
         this.mDeleteDownloadFilesTask = deleteDownloadFilesTask;
+
+        return new DeleteControl(mDeleteDownloadFilesTask);
     }
 
     // --------------------------------------move download--------------------------------------
@@ -1115,14 +1124,15 @@ public class FileDownloadManager {
      * @param urls                        file mUrls
      * @param newDirPath                  new dir path
      * @param onMoveDownloadFilesListener MoveDownloadFilesListener
+     * @return the control for the operation
      */
-    public void move(List<String> urls, String newDirPath, OnMoveDownloadFilesListener onMoveDownloadFilesListener) {
+    public Control move(List<String> urls, String newDirPath, OnMoveDownloadFilesListener onMoveDownloadFilesListener) {
 
         checkInit();
 
         if (mMoveDownloadFilesTask != null && !mMoveDownloadFilesTask.isStopped()) {
             // moving
-            return;
+            return new MoveControl(mMoveDownloadFilesTask);
         }
 
         MoveDownloadFilesTask moveDownloadFilesTask = new MoveDownloadFilesTask(urls, newDirPath);
@@ -1132,6 +1142,8 @@ public class FileDownloadManager {
         new Thread(moveDownloadFilesTask).start();
 
         this.mMoveDownloadFilesTask = moveDownloadFilesTask;
+
+        return new MoveControl(moveDownloadFilesTask);
     }
 
     // --------------------------------------rename download--------------------------------------
@@ -1560,6 +1572,54 @@ public class FileDownloadManager {
             }
             mCompleted = true;
             mIsStop = true;
+        }
+    }
+
+    public static class DeleteControl implements Control {
+
+        private DeleteDownloadFilesTask mDeleteDownloadFilesTask;
+
+        private DeleteControl(DeleteDownloadFilesTask deleteDownloadFilesTask) {
+            mDeleteDownloadFilesTask = deleteDownloadFilesTask;
+        }
+
+        @Override
+        public void stop() {
+            if (mDeleteDownloadFilesTask != null) {
+                mDeleteDownloadFilesTask.stop();
+            }
+        }
+
+        @Override
+        public boolean isStopped() {
+            if (mDeleteDownloadFilesTask == null) {
+                return true;
+            }
+            return mDeleteDownloadFilesTask.isStopped();
+        }
+    }
+
+    public static class MoveControl implements Control {
+
+        private MoveDownloadFilesTask mMoveDownloadFilesTask;
+
+        private MoveControl(MoveDownloadFilesTask moveDownloadFilesTask) {
+            mMoveDownloadFilesTask = moveDownloadFilesTask;
+        }
+
+        @Override
+        public void stop() {
+            if (mMoveDownloadFilesTask != null) {
+                mMoveDownloadFilesTask.stop();
+            }
+        }
+
+        @Override
+        public boolean isStopped() {
+            if (mMoveDownloadFilesTask == null) {
+                return true;
+            }
+            return mMoveDownloadFilesTask.isStopped();
         }
     }
 
