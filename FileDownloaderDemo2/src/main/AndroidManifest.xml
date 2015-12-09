@@ -25,6 +25,10 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
+        <activity
+            android:name=".custom_model.CustomModelActivity"
+            android:label="@string/custom_model__title_name">
+        </activity>
     </application>
 
 </manifest>

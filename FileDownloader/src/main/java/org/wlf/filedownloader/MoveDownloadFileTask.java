@@ -23,6 +23,7 @@ public class MoveDownloadFileTask implements Runnable {
     private String mUrl;
     private String mNewDirPath;
     private DownloadFileCacher mFileDownloadCacher;
+    private boolean isSyncCallback = false;
 
     private OnMoveDownloadFileListener mOnMoveDownloadFileListener;
 
@@ -42,24 +43,33 @@ public class MoveDownloadFileTask implements Runnable {
         this.mOnMoveDownloadFileListener = onMoveDownloadFileListener;
     }
 
+    // package use only
+
+    /**
+     * enable the callback sync
+     */
+    void enableSyncCallback() {
+        isSyncCallback = true;
+    }
+
     @Override
     public void run() {
 
         DownloadFileInfo downloadFileInfo = mFileDownloadCacher.getDownloadFile(mUrl);
 
+        // check null
         if (downloadFileInfo == null) {
-            OnMoveDownloadFileListener.MainThreadHelper.onMoveDownloadFileFailed(downloadFileInfo, new 
-                    OnMoveDownloadFileFailReason("the DownloadFile is empty!", OnMoveDownloadFileFailReason
-                    .TYPE_NULL_POINTER), mOnMoveDownloadFileListener);
+            notifyFailed(downloadFileInfo, new OnMoveDownloadFileFailReason("the DownloadFile is empty!", 
+                    OnMoveDownloadFileFailReason.TYPE_NULL_POINTER));
             return;
         }
 
-        OnMoveDownloadFileListener.MainThreadHelper.onMoveDownloadFilePrepared(downloadFileInfo, 
-                mOnMoveDownloadFileListener);
+        // prepared
+        notifyPrepared(downloadFileInfo);
 
+        // check status
         File oldFile = null;
         File newFile = null;
-
         switch (downloadFileInfo.getStatus()) {
             // complete download,get the saveFilePath
             case Status.DOWNLOAD_STATUS_COMPLETED:
@@ -73,71 +83,108 @@ public class MoveDownloadFileTask implements Runnable {
                 break;
             default:
                 // status error
-                OnMoveDownloadFileListener.MainThreadHelper.onMoveDownloadFileFailed(downloadFileInfo, new 
-                        OnMoveDownloadFileFailReason("DownloadFile status error!", OnMoveDownloadFileFailReason
-                        .TYPE_FILE_STATUS_ERROR), mOnMoveDownloadFileListener);
+                notifyFailed(downloadFileInfo, new OnMoveDownloadFileFailReason("DownloadFile status error!", 
+                        OnMoveDownloadFileFailReason.TYPE_FILE_STATUS_ERROR));
                 return;
         }
 
+        // check original file
         if (oldFile == null || !oldFile.exists()) {
-            OnMoveDownloadFileListener.MainThreadHelper.onMoveDownloadFileFailed(downloadFileInfo, new 
-                    OnMoveDownloadFileFailReason("the original fie does not exist!", OnMoveDownloadFileFailReason
-                    .TYPE_ORIGINAL_FILE_NOT_EXIST), mOnMoveDownloadFileListener);
+            notifyFailed(downloadFileInfo, new OnMoveDownloadFileFailReason("the original file does not exist!", 
+                    OnMoveDownloadFileFailReason.TYPE_ORIGINAL_FILE_NOT_EXIST));
             return;
         }
 
-        // create ParentFile of the newFile
+        // check new file
+        if (newFile != null && newFile.exists()) {
+            notifyFailed(downloadFileInfo, new OnMoveDownloadFileFailReason("the target file exist!", 
+                    OnMoveDownloadFileFailReason.TYPE_TARGET_FILE_EXIST));
+            return;
+        }
+
+        // create ParentFile of the newFile if not exists
         if (newFile != null && !newFile.getParentFile().exists()) {
             FileUtil.createFileParentDir(newFile.getAbsolutePath());
         }
 
-        if (newFile != null && newFile.exists()) {
-            OnMoveDownloadFileListener.MainThreadHelper.onMoveDownloadFileFailed(downloadFileInfo, new 
-                    OnMoveDownloadFileFailReason("the target fie exist!", OnMoveDownloadFileFailReason
-                    .TYPE_TARGET_FILE_EXIST), mOnMoveDownloadFileListener);
-            return;
-        }
-
-        boolean moveResult = false;
-
+        // backup oldDirPath;
         String oldDirPath = downloadFileInfo.getFileDir();
 
-        // change record in database
+        // move result
+        boolean moveResult = false;
+
+        // change record in db
         downloadFileInfo.setFileDir(mNewDirPath);
         moveResult = mFileDownloadCacher.updateDownloadFile(downloadFileInfo);
+        // succeed in db
         if (moveResult) {
-            // record changed
-            if (mOnMoveDownloadFileListener instanceof OnSyncMoveDownloadFileListener) {
-                // OnSyncMoveDownloadFileListener,that means the caller hopes to sync something
-                moveResult = ((OnSyncMoveDownloadFileListener) mOnMoveDownloadFileListener).onDoSyncMoveDownloadFile
-                        (downloadFileInfo);
-            }
-            if (!moveResult) {// rollback,sync with the caller FIXME,use transaction to control the update is better
-                downloadFileInfo.setFileDir(oldDirPath);
-                mFileDownloadCacher.updateDownloadFile(downloadFileInfo);
-            }
-        }
-
-        if (moveResult) {// move in the file system
+            // move in the file system
             moveResult = oldFile.renameTo(newFile);
-            if (moveResult) {
-                // move success
-                OnMoveDownloadFileListener.MainThreadHelper.onMoveDownloadFileSuccess(downloadFileInfo, 
-                        mOnMoveDownloadFileListener);
-            } else {
-                // move in the file system failed,rollback in database FIXME,use transaction to control the update is
-                // better
+            if (moveResult) {// succeed
+                if (mOnMoveDownloadFileListener instanceof OnSyncMoveDownloadFileListener) {
+                    // OnSyncMoveDownloadFileListener,that means the caller hopes to sync something
+                    moveResult = ((OnSyncMoveDownloadFileListener) mOnMoveDownloadFileListener)
+                            .onDoSyncMoveDownloadFile(downloadFileInfo);
+                    if (moveResult) {// sync with the caller succeed
+                        // move success
+                        notifySuccess(downloadFileInfo);
+                    } else {
+                        // rollback db,sync with the caller
+                        downloadFileInfo.setFileDir(oldDirPath);
+                        mFileDownloadCacher.updateDownloadFile(downloadFileInfo);
+                        // rollback file system,sync with the caller
+                        newFile.renameTo(oldFile);
+                    }
+                } else {// succeed
+                    // move success
+                    notifySuccess(downloadFileInfo);
+                }
+            } else {// failed to move in the file system,rollback in db
                 downloadFileInfo.setFileDir(oldDirPath);
                 mFileDownloadCacher.updateDownloadFile(downloadFileInfo);
-                OnMoveDownloadFileListener.MainThreadHelper.onMoveDownloadFileFailed(downloadFileInfo, new 
-                        OnMoveDownloadFileFailReason("update record error!", OnMoveDownloadFileFailReason
-                        .TYPE_UPDATE_RECORD_ERROR), mOnMoveDownloadFileListener);
+                notifyFailed(downloadFileInfo, new OnMoveDownloadFileFailReason("update record error!", 
+                        OnMoveDownloadFileFailReason.TYPE_UPDATE_RECORD_ERROR));
             }
         } else {
-            // move failed
-            OnMoveDownloadFileListener.MainThreadHelper.onMoveDownloadFileFailed(downloadFileInfo, null, 
+            // move in db failed
+            notifyFailed(downloadFileInfo, new OnMoveDownloadFileFailReason("update record error!", 
+                    OnMoveDownloadFileFailReason.TYPE_UPDATE_RECORD_ERROR));
+        }
+    }
+
+    private void notifyPrepared(DownloadFileInfo downloadFileInfo) {
+        if (mOnMoveDownloadFileListener == null) {
+            return;
+        }
+        if (isSyncCallback) {
+            mOnMoveDownloadFileListener.onMoveDownloadFilePrepared(downloadFileInfo);
+        } else {
+            OnMoveDownloadFileListener.MainThreadHelper.onMoveDownloadFilePrepared(downloadFileInfo, 
                     mOnMoveDownloadFileListener);
         }
+    }
 
+    private void notifySuccess(DownloadFileInfo downloadFileInfo) {
+        if (mOnMoveDownloadFileListener == null) {
+            return;
+        }
+        if (isSyncCallback) {
+            mOnMoveDownloadFileListener.onMoveDownloadFileSuccess(downloadFileInfo);
+        } else {
+            OnMoveDownloadFileListener.MainThreadHelper.onMoveDownloadFileSuccess(downloadFileInfo, 
+                    mOnMoveDownloadFileListener);
+        }
+    }
+
+    private void notifyFailed(DownloadFileInfo downloadFileInfo, OnMoveDownloadFileFailReason failReason) {
+        if (mOnMoveDownloadFileListener == null) {
+            return;
+        }
+        if (isSyncCallback) {
+            mOnMoveDownloadFileListener.onMoveDownloadFileFailed(downloadFileInfo, failReason);
+        } else {
+            OnMoveDownloadFileListener.MainThreadHelper.onMoveDownloadFileFailed(downloadFileInfo, failReason, 
+                    mOnMoveDownloadFileListener);
+        }
     }
 }

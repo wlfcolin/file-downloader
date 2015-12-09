@@ -12,6 +12,8 @@ import org.wlf.filedownloader.base.Status;
 import org.wlf.filedownloader.db.ContentDbDao;
 import org.wlf.filedownloader.db_recoder.DownloadFileDbHelper;
 import org.wlf.filedownloader.db_recoder.DownloadFileDbRecorder;
+import org.wlf.filedownloader.listener.OnDownloadFileChangeListener;
+import org.wlf.filedownloader.listener.OnDownloadFileChangeListener.Type;
 import org.wlf.filedownloader.util.CollectionUtil;
 import org.wlf.filedownloader.util.ContentValuesUtil;
 import org.wlf.filedownloader.util.FileUtil;
@@ -46,15 +48,19 @@ public class DownloadFileCacher extends DownloadFileDbRecorder {
 
     private Object mModifyLock = new Object();// lock
 
+    private OnDownloadFileChangeListener mOnDownloadFileChangeListener;
+
     // package use only
 
     /**
      * constructor of DownloadFileCacher
      *
-     * @param context Context
+     * @param context                      Context
+     * @param onDownloadFileChangeListener
      */
-    DownloadFileCacher(Context context) {
+    DownloadFileCacher(Context context, OnDownloadFileChangeListener onDownloadFileChangeListener) {
         mDownloadFileDbHelper = new DownloadFileDbHelper(context);
+        this.mOnDownloadFileChangeListener = onDownloadFileChangeListener;
         initDownloadFileInfoMapFromDb();
     }
 
@@ -100,6 +106,10 @@ public class DownloadFileCacher extends DownloadFileDbRecorder {
                 // succeed,update memory cache
                 downloadFileInfo.setId(new Integer((int) id));
                 mDownloadFileInfoMap.put(url, downloadFileInfo);
+                // notify listener
+                if (mOnDownloadFileChangeListener != null) {
+                    mOnDownloadFileChangeListener.onDownloadFileCreated(downloadFileInfo);
+                }
                 return true;
             }
         }
@@ -139,6 +149,11 @@ public class DownloadFileCacher extends DownloadFileDbRecorder {
                     } else {
                         mDownloadFileInfoMap.put(url, downloadFileInfo);
                     }
+                    // notify listener
+                    if (mOnDownloadFileChangeListener != null) {
+                        mOnDownloadFileChangeListener.onDownloadFileUpdated(downloadFileInfo, Type.OTHER);// FIXME 
+                        // now notify all
+                    }
                     return true;
                 }
             }
@@ -152,6 +167,11 @@ public class DownloadFileCacher extends DownloadFileDbRecorder {
                     downloadFileInfoInMap.update(downloadFileInfo);
                 } else {
                     mDownloadFileInfoMap.put(url, downloadFileInfo);
+                }
+                // notify listener
+                if (mOnDownloadFileChangeListener != null) {
+                    mOnDownloadFileChangeListener.onDownloadFileUpdated(downloadFileInfo, Type.OTHER);// FIXME now 
+                    // notify all
                 }
                 return true;
             }
@@ -184,6 +204,10 @@ public class DownloadFileCacher extends DownloadFileDbRecorder {
             if (result == 1) {
                 // succeed,update memory cache
                 mDownloadFileInfoMap.remove(url);
+                // notify observer
+                if (mOnDownloadFileChangeListener != null) {
+                    mOnDownloadFileChangeListener.onDownloadFileDeleted(downloadFileInfo);
+                }
                 return true;
             } else {
                 // try to delete by url
@@ -191,6 +215,10 @@ public class DownloadFileCacher extends DownloadFileDbRecorder {
                 if (result == 1) {
                     // succeed,update memory cache
                     mDownloadFileInfoMap.remove(url);
+                    // notify listener
+                    if (mOnDownloadFileChangeListener != null) {
+                        mOnDownloadFileChangeListener.onDownloadFileDeleted(downloadFileInfo);
+                    }
                     return true;
                 }
             }

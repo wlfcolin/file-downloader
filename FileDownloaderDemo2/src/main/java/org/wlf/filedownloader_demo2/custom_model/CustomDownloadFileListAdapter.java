@@ -1,4 +1,4 @@
-package org.wlf.filedownloader_demo2;
+package org.wlf.filedownloader_demo2.custom_model;
 
 import android.app.AlertDialog;
 import android.content.Context;
@@ -18,7 +18,7 @@ import org.wlf.filedownloader.FileDownloadManager;
 import org.wlf.filedownloader.base.Status;
 import org.wlf.filedownloader.listener.OnDeleteDownloadFileListener;
 import org.wlf.filedownloader.listener.OnFileDownloadStatusListener;
-import org.wlf.filedownloader.util.CollectionUtil;
+import org.wlf.filedownloader_demo2.R;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -37,10 +37,11 @@ import me.tedyin.circleprogressbarlib.CircleProgressBar;
  * @datetime 2015-12-05 10:11 GMT+8
  * @email 411086563@qq.com
  */
-public class DownloadFileListAdapter extends BaseAdapter implements OnFileDownloadStatusListener {
+public class CustomDownloadFileListAdapter extends BaseAdapter implements OnFileDownloadStatusListener {
 
     private Context mContext;
 
+    // model data
     private List<CustomVideoInfo> mCustomVideoInfos = new ArrayList<CustomVideoInfo>();
     // cached convert views
     private Map<String, WeakReference<View>> mConvertViews = new LinkedHashMap<String, WeakReference<View>>();
@@ -48,68 +49,12 @@ public class DownloadFileListAdapter extends BaseAdapter implements OnFileDownlo
     private FileDownloadManager mFileDownloadManager;
     private Toast mToast;
 
-    public DownloadFileListAdapter(Context context, List<CustomVideoInfo> customVideoInfos) {
+    public CustomDownloadFileListAdapter(Context context, List<CustomVideoInfo> customVideoInfos) {
         mContext = context;
         mCustomVideoInfos = customVideoInfos;
         mFileDownloadManager = FileDownloadManager.getInstance(mContext);
-        syncWithDownloadFiles(false);
-    }
 
-    private void syncWithDownloadFile(DownloadFileInfo downloadFileInfo, boolean notify) {
-
-        if (downloadFileInfo == null || TextUtils.isEmpty(downloadFileInfo.getUrl())) {
-            return;
-        }
-
-        boolean hasSync = false;
-
-        for (CustomVideoInfo customVideoInfo : mCustomVideoInfos) {
-            if (customVideoInfo == null) {
-                continue;
-            }
-            if (downloadFileInfo.getUrl().equals(customVideoInfo.getUrl())) {
-                // find
-                if (!customVideoInfo.isInitDownloadFileInfo()) {
-                    customVideoInfo.setDownloadFileInfo(downloadFileInfo);
-                    hasSync = true;
-                }
-                break;
-            }
-        }
-
-        if (hasSync && notify) {
-            notifyDataSetChanged();
-        }
-
-    }
-
-    private void syncWithDownloadFiles(boolean notify) {
-
-        if (CollectionUtil.isEmpty(mCustomVideoInfos)) {
-            return;
-        }
-
-        boolean hasSync = false;
-
-        for (CustomVideoInfo customVideoInfo : mCustomVideoInfos) {
-            if (customVideoInfo == null || TextUtils.isEmpty(customVideoInfo.getUrl()) || customVideoInfo
-                    .isInitDownloadFileInfo()) {
-                continue;
-            }
-
-            DownloadFileInfo downloadFileInfo = mFileDownloadManager.getDownloadFileByUrl(customVideoInfo.getUrl());
-            if (downloadFileInfo == null) {
-                continue;
-            }
-
-            // init DownloadFileInfo,and need keep the CustomVideoInfo that contact with DownloadFileInfo
-            customVideoInfo.setDownloadFileInfo(downloadFileInfo);
-            hasSync = true;
-        }
-
-        if (hasSync && notify) {
-            notifyDataSetChanged();
-        }
+        CustomVideoInfo.syncCustomVideos(mContext, mCustomVideoInfos);
     }
 
     @Override
@@ -147,12 +92,12 @@ public class DownloadFileListAdapter extends BaseAdapter implements OnFileDownlo
             cacheConvertView = weakCacheConvertView.get();
             if (cacheConvertView == null) {
                 // not exist
-                cacheConvertView = View.inflate(parent.getContext(), R.layout.main__item_download, null);
+                cacheConvertView = View.inflate(parent.getContext(), R.layout.custom_model__item_download, null);
                 mConvertViews.put(url, new WeakReference<View>(cacheConvertView));
             }
         } else {
             // not exist
-            cacheConvertView = View.inflate(parent.getContext(), R.layout.main__item_download, null);
+            cacheConvertView = View.inflate(parent.getContext(), R.layout.custom_model__item_download, null);
             mConvertViews.put(url, new WeakReference<View>(cacheConvertView));
         }
 
@@ -166,7 +111,7 @@ public class DownloadFileListAdapter extends BaseAdapter implements OnFileDownlo
 
         if (!customVideoInfo.isInitDownloadFileInfo()) {
             // try to sync
-            syncWithDownloadFiles(false);
+            CustomVideoInfo.syncCustomVideo(mContext, customVideoInfo);
         }
 
         // has been started download
@@ -239,8 +184,9 @@ public class DownloadFileListAdapter extends BaseAdapter implements OnFileDownlo
 
                             // download file status:unknown
                             case Status.DOWNLOAD_STATUS_UNKNOWN:
-                                showToast(mContext.getString(R.string.main__can_not_download2) + downloadFileInfo
-                                        .getFilePath() + mContext.getString(R.string.main__re_download));
+                                showToast(mContext.getString(R.string.custom_model__can_not_download2) +
+                                        downloadFileInfo.getFilePath() + mContext.getString(R.string
+                                        .custom_model__re_download));
                                 break;
 
                             // download file status:error & paused
@@ -253,10 +199,11 @@ public class DownloadFileListAdapter extends BaseAdapter implements OnFileDownlo
                             case Status.DOWNLOAD_STATUS_FILE_NOT_EXIST:
                                 // show dialog
                                 AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
-                                builder.setTitle(mContext.getString(R.string.main__whether_re_download))
-                                        .setNegativeButton(mContext.getString(R.string.main__dialog_btn_cancel), null);
-                                builder.setPositiveButton(mContext.getString(R.string.main__dialog_btn_confirm), new 
-                                        DialogInterface.OnClickListener() {
+                                builder.setTitle(mContext.getString(R.string.custom_model__whether_re_download))
+                                        .setNegativeButton(mContext.getString(R.string
+                                                .custom_model__dialog_btn_cancel), null);
+                                builder.setPositiveButton(mContext.getString(R.string
+                                        .custom_model__dialog_btn_confirm), new DialogInterface.OnClickListener() {
                                     public void onClick(DialogInterface dialog, int which) {
                                         // re-download
                                         mFileDownloadManager.reStart(downloadFileInfo.getUrl());
@@ -276,7 +223,7 @@ public class DownloadFileListAdapter extends BaseAdapter implements OnFileDownlo
 
                             // download file status:completed
                             case Status.DOWNLOAD_STATUS_COMPLETED:
-                                showToast(mContext.getString(R.string.main__download_finish));
+                                showToast(mContext.getString(R.string.custom_model__download_finish));
                                 break;
                         }
 
@@ -306,8 +253,8 @@ public class DownloadFileListAdapter extends BaseAdapter implements OnFileDownlo
 
                         @Override
                         public void onDeleteDownloadFileSuccess(DownloadFileInfo downloadFileDeleted) {
-                            
-                            showToast(mContext.getString(R.string.main__delete_succeed));
+
+                            showToast(mContext.getString(R.string.custom_model__delete_succeed));
 
                             mCustomVideoInfos.remove(customVideoInfo);
                             mConvertViews.remove(customVideoInfo.getUrl());
@@ -343,9 +290,9 @@ public class DownloadFileListAdapter extends BaseAdapter implements OnFileDownlo
         if (downloadFileInfo == null) {
             return;
         }
-        showToast(mContext.getString(R.string.main__waiting) + ",url:" + downloadFileInfo.getUrl());
+        showToast(mContext.getString(R.string.custom_model__waiting) + ",url:" + downloadFileInfo.getUrl());
 
-        syncWithDownloadFile(downloadFileInfo, false);
+        CustomVideoInfo.syncCustomVideo(mCustomVideoInfos, downloadFileInfo);
     }
 
     @Override
@@ -354,9 +301,9 @@ public class DownloadFileListAdapter extends BaseAdapter implements OnFileDownlo
         if (downloadFileInfo == null) {
             return;
         }
-        showToast(mContext.getString(R.string.main__preparing) + ",url:" + downloadFileInfo.getUrl());
+        showToast(mContext.getString(R.string.custom_model__preparing) + ",url:" + downloadFileInfo.getUrl());
 
-        syncWithDownloadFile(downloadFileInfo, false);
+        CustomVideoInfo.syncCustomVideo(mCustomVideoInfos, downloadFileInfo);
     }
 
     @Override
@@ -365,9 +312,9 @@ public class DownloadFileListAdapter extends BaseAdapter implements OnFileDownlo
         if (downloadFileInfo == null) {
             return;
         }
-        showToast(mContext.getString(R.string.main__prepared) + ",url:" + downloadFileInfo.getUrl());
+        showToast(mContext.getString(R.string.custom_model__prepared) + ",url:" + downloadFileInfo.getUrl());
 
-        syncWithDownloadFile(downloadFileInfo, false);
+        CustomVideoInfo.syncCustomVideo(mCustomVideoInfos, downloadFileInfo);
     }
 
     @Override
@@ -401,7 +348,7 @@ public class DownloadFileListAdapter extends BaseAdapter implements OnFileDownlo
         if (downloadFileInfo == null) {
             return;
         }
-        showToast(mContext.getString(R.string.main__paused) + ",url:" + downloadFileInfo.getUrl());
+        showToast(mContext.getString(R.string.custom_model__paused) + ",url:" + downloadFileInfo.getUrl());
     }
 
     @Override
@@ -410,7 +357,7 @@ public class DownloadFileListAdapter extends BaseAdapter implements OnFileDownlo
         if (downloadFileInfo == null) {
             return;
         }
-        showToast(mContext.getString(R.string.main__download_finish) + ",url:" + downloadFileInfo.getUrl());
+        showToast(mContext.getString(R.string.custom_model__download_finish) + ",url:" + downloadFileInfo.getUrl());
     }
 
     @Override
@@ -419,13 +366,13 @@ public class DownloadFileListAdapter extends BaseAdapter implements OnFileDownlo
 
         if (failReason != null) {
 
-            String type = mContext.getString(R.string.main__download_fail_type) + failReason.getType();
+            String type = mContext.getString(R.string.custom_model__download_fail_type) + failReason.getType();
             String reason = failReason.getOriginalCause() == null ? "" : failReason.getOriginalCause().getClass()
                     .getSimpleName();
 
-            showToast(mContext.getString(R.string.main__download_failed) + type + "," + reason + ",url:" + url);
+            showToast(mContext.getString(R.string.custom_model__download_failed) + type + "," + reason + ",url:" + url);
         } else {
-            showToast(mContext.getString(R.string.main__download_failed) + ",url:" + url);
+            showToast(mContext.getString(R.string.custom_model__download_failed) + ",url:" + url);
         }
 
     }
