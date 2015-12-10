@@ -18,7 +18,7 @@ import java.util.List;
  * @author wlf(Andy)
  * @email 411086563@qq.com
  */
-public class RenameDownloadFileTask implements Runnable {
+class RenameDownloadFileTask implements Runnable {
 
     private static final String TAG = RenameDownloadFileTask.class.getSimpleName();
 
@@ -29,7 +29,7 @@ public class RenameDownloadFileTask implements Runnable {
 
     private OnRenameDownloadFileListener mOnRenameDownloadFileListener;
 
-    public RenameDownloadFileTask(String url, String newFileName, boolean includedSuffix, DownloadFileCacher 
+    RenameDownloadFileTask(String url, String newFileName, boolean includedSuffix, DownloadFileCacher 
             fileDownloadCacher) {
         super();
         this.mUrl = url;
@@ -38,7 +38,7 @@ public class RenameDownloadFileTask implements Runnable {
         this.mFileDownloadCacher = fileDownloadCacher;
     }
 
-    public void setOnRenameDownloadFileListener(OnRenameDownloadFileListener onRenameDownloadFileListener) {
+    void setOnRenameDownloadFileListener(OnRenameDownloadFileListener onRenameDownloadFileListener) {
         this.mOnRenameDownloadFileListener = onRenameDownloadFileListener;
     }
 

@@ -16,7 +16,7 @@ import java.io.File;
  * @author wlf(Andy)
  * @email 411086563@qq.com
  */
-public class MoveDownloadFileTask implements Runnable {
+class MoveDownloadFileTask implements Runnable {
 
     private static final String TAG = MoveDownloadFileTask.class.getSimpleName();
 
@@ -27,7 +27,7 @@ public class MoveDownloadFileTask implements Runnable {
 
     private OnMoveDownloadFileListener mOnMoveDownloadFileListener;
 
-    public MoveDownloadFileTask(String url, String newDirPath, DownloadFileCacher fileDownloadCacher) {
+    MoveDownloadFileTask(String url, String newDirPath, DownloadFileCacher fileDownloadCacher) {
         super();
         this.mUrl = url;
         this.mNewDirPath = newDirPath;
@@ -39,7 +39,7 @@ public class MoveDownloadFileTask implements Runnable {
      *
      * @param onMoveDownloadFileListener MoveDownloadFileListener
      */
-    public void setOnMoveDownloadFileListener(OnMoveDownloadFileListener onMoveDownloadFileListener) {
+    void setOnMoveDownloadFileListener(OnMoveDownloadFileListener onMoveDownloadFileListener) {
         this.mOnMoveDownloadFileListener = onMoveDownloadFileListener;
     }
 

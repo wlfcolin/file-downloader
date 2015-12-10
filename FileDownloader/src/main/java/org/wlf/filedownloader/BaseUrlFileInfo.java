@@ -9,7 +9,7 @@ import java.io.File;
  * @datetime 2015-11-25 09:58 GMT+8
  * @email 411086563@qq.com
  */
-public abstract class BaseUrlFileInfo {
+abstract class BaseUrlFileInfo {
 
     /**
      * support range of bytes

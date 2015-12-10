@@ -37,7 +37,7 @@ import java.util.Set;
  * @author wlf(Andy)
  * @email 411086563@qq.com
  */
-public class DownloadFileCacher extends DownloadFileDbRecorder {
+class DownloadFileCacher extends DownloadFileDbRecorder {
 
     private static final String TAG = DownloadFileCacher.class.getSimpleName();
 
@@ -48,20 +48,37 @@ public class DownloadFileCacher extends DownloadFileDbRecorder {
 
     private Object mModifyLock = new Object();// lock
 
-    private OnDownloadFileChangeListener mOnDownloadFileChangeListener;
+    private DownloadFileChangeObserver mDownloadFileChangeObserver;
 
     // package use only
 
     /**
      * constructor of DownloadFileCacher
      *
-     * @param context                      Context
-     * @param onDownloadFileChangeListener
+     * @param context Context
      */
-    DownloadFileCacher(Context context, OnDownloadFileChangeListener onDownloadFileChangeListener) {
+    DownloadFileCacher(Context context) {
         mDownloadFileDbHelper = new DownloadFileDbHelper(context);
-        this.mOnDownloadFileChangeListener = onDownloadFileChangeListener;
+        this.mDownloadFileChangeObserver = new DownloadFileChangeObserver();
         initDownloadFileInfoMapFromDb();
+    }
+
+    /**
+     * register an OnDownloadFileChangeListener
+     *
+     * @param onDownloadFileChangeListener the OnDownloadFileChangeListener impl
+     */
+    void registerDownloadFileChangeListener(OnDownloadFileChangeListener onDownloadFileChangeListener) {
+        mDownloadFileChangeObserver.addOnDownloadFileChangeListener(onDownloadFileChangeListener);
+    }
+
+    /**
+     * unregister an OnDownloadFileChangeListener
+     *
+     * @param onDownloadFileChangeListener the OnDownloadFileChangeListener impl
+     */
+    void unregisterDownloadFileChangeListener(OnDownloadFileChangeListener onDownloadFileChangeListener) {
+        mDownloadFileChangeObserver.removeOnDownloadFileChangeListener(onDownloadFileChangeListener);
     }
 
     @Override
@@ -107,8 +124,8 @@ public class DownloadFileCacher extends DownloadFileDbRecorder {
                 downloadFileInfo.setId(new Integer((int) id));
                 mDownloadFileInfoMap.put(url, downloadFileInfo);
                 // notify listener
-                if (mOnDownloadFileChangeListener != null) {
-                    mOnDownloadFileChangeListener.onDownloadFileCreated(downloadFileInfo);
+                if (mDownloadFileChangeObserver != null) {
+                    mDownloadFileChangeObserver.onDownloadFileCreated(downloadFileInfo);
                 }
                 return true;
             }
@@ -150,9 +167,9 @@ public class DownloadFileCacher extends DownloadFileDbRecorder {
                         mDownloadFileInfoMap.put(url, downloadFileInfo);
                     }
                     // notify listener
-                    if (mOnDownloadFileChangeListener != null) {
-                        mOnDownloadFileChangeListener.onDownloadFileUpdated(downloadFileInfo, Type.OTHER);// FIXME 
-                        // now notify all
+                    if (mDownloadFileChangeObserver != null) {
+                        // FIXME current notify all
+                        mDownloadFileChangeObserver.onDownloadFileUpdated(downloadFileInfo, Type.OTHER);
                     }
                     return true;
                 }
@@ -169,9 +186,9 @@ public class DownloadFileCacher extends DownloadFileDbRecorder {
                     mDownloadFileInfoMap.put(url, downloadFileInfo);
                 }
                 // notify listener
-                if (mOnDownloadFileChangeListener != null) {
-                    mOnDownloadFileChangeListener.onDownloadFileUpdated(downloadFileInfo, Type.OTHER);// FIXME now 
-                    // notify all
+                if (mDownloadFileChangeObserver != null) {
+                    // FIXME current notify all
+                    mDownloadFileChangeObserver.onDownloadFileUpdated(downloadFileInfo, Type.OTHER);
                 }
                 return true;
             }
@@ -205,8 +222,8 @@ public class DownloadFileCacher extends DownloadFileDbRecorder {
                 // succeed,update memory cache
                 mDownloadFileInfoMap.remove(url);
                 // notify observer
-                if (mOnDownloadFileChangeListener != null) {
-                    mOnDownloadFileChangeListener.onDownloadFileDeleted(downloadFileInfo);
+                if (mDownloadFileChangeObserver != null) {
+                    mDownloadFileChangeObserver.onDownloadFileDeleted(downloadFileInfo);
                 }
                 return true;
             } else {
@@ -216,8 +233,8 @@ public class DownloadFileCacher extends DownloadFileDbRecorder {
                     // succeed,update memory cache
                     mDownloadFileInfoMap.remove(url);
                     // notify listener
-                    if (mOnDownloadFileChangeListener != null) {
-                        mOnDownloadFileChangeListener.onDownloadFileDeleted(downloadFileInfo);
+                    if (mDownloadFileChangeObserver != null) {
+                        mDownloadFileChangeObserver.onDownloadFileDeleted(downloadFileInfo);
                     }
                     return true;
                 }
@@ -502,7 +519,7 @@ public class DownloadFileCacher extends DownloadFileDbRecorder {
     /**
      * DownloadStatusRecordException
      */
-    public static class DownloadStatusRecordException extends FailException {
+    static class DownloadStatusRecordException extends FailException {
 
         private static final long serialVersionUID = 2729490220280837606L;
 

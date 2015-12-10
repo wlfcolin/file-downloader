@@ -30,7 +30,7 @@ import java.io.InputStream;
  * @author wlf(Andy)
  * @email 411086563@qq.com
  */
-public class FileDownloadTask implements Runnable, Stoppable, OnHttpDownloadListener, OnFileSaveListener {
+class FileDownloadTask implements Runnable, Stoppable, OnHttpDownloadListener, OnFileSaveListener {
 
     /**
      * LOG TAG
@@ -54,8 +54,23 @@ public class FileDownloadTask implements Runnable, Stoppable, OnHttpDownloadList
 
     private boolean mIsNotifyTaskFinish;// whether task is finish
 
-    public FileDownloadTask(FileDownloadTaskParam taskParamInfo, DownloadFileDbRecorder recorder, 
-                            OnFileDownloadStatusListener onFileDownloadStatusListener) {
+    /**
+     * create by DownloadFile
+     *
+     * @param downloadFileInfo DownloadFile
+     * @return FileDownloadTaskParam
+     */
+    static FileDownloadTaskParam createByDownloadFile(DownloadFileInfo downloadFileInfo) {
+        if (downloadFileInfo == null) {
+            return null;
+        }
+        return new FileDownloadTaskParam(downloadFileInfo.getUrl(), downloadFileInfo.getDownloadedSize(), 
+                downloadFileInfo.getFileSize(), downloadFileInfo.getETag(), downloadFileInfo.getAcceptRangeType(), 
+                downloadFileInfo.getTempFilePath(), downloadFileInfo.getFilePath());
+    }
+
+    FileDownloadTask(FileDownloadTaskParam taskParamInfo, DownloadFileDbRecorder recorder, 
+                     OnFileDownloadStatusListener onFileDownloadStatusListener) {
         super();
         this.mTaskParamInfo = taskParamInfo;
 
@@ -89,13 +104,13 @@ public class FileDownloadTask implements Runnable, Stoppable, OnHttpDownloadList
                 mTaskParamInfo.mFileTotalSize);
         mSaver.setOnFileSaveListener(this);
     }
-    
+
     /**
      * set StopFileDownloadTaskListener
      *
      * @param onStopFileDownloadTaskListener StopFileDownloadTaskListener
      */
-    public void setOnStopFileDownloadTaskListener(OnStopFileDownloadTaskListener onStopFileDownloadTaskListener) {
+    void setOnStopFileDownloadTaskListener(OnStopFileDownloadTaskListener onStopFileDownloadTaskListener) {
         this.mOnStopFileDownloadTaskListener = onStopFileDownloadTaskListener;
     }
 
@@ -116,7 +131,7 @@ public class FileDownloadTask implements Runnable, Stoppable, OnHttpDownloadList
      *
      * @return current URL
      */
-    public String getUrl() {
+    String getUrl() {
         return mTaskParamInfo.mUrl;
     }
 
@@ -591,7 +606,7 @@ public class FileDownloadTask implements Runnable, Stoppable, OnHttpDownloadList
     /**
      * FileDownloadTask init Param
      */
-    public static class FileDownloadTaskParam {
+    static class FileDownloadTaskParam {
         /**
          * file url
          */
@@ -637,7 +652,7 @@ public class FileDownloadTask implements Runnable, Stoppable, OnHttpDownloadList
     /**
      * OnStopFileDownloadTaskListener
      */
-    public interface OnStopFileDownloadTaskListener {
+    interface OnStopFileDownloadTaskListener {
 
         /**
          * StopFileDownloadTaskSucceed
@@ -658,7 +673,7 @@ public class FileDownloadTask implements Runnable, Stoppable, OnHttpDownloadList
     /**
      * OnStopDownloadFileTaskFailReason
      */
-    public static class OnStopDownloadFileTaskFailReason extends FailReason {
+    static class OnStopDownloadFileTaskFailReason extends FailReason {
 
         private static final long serialVersionUID = 6959079784746889291L;
 

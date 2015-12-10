@@ -19,7 +19,7 @@ import java.net.HttpURLConnection;
  * @author wlf(Andy)
  * @email 411086563@qq.com
  */
-public class DetectUrlFileTask implements Runnable {
+class DetectUrlFileTask implements Runnable {
 
     private static final String TAG = DetectUrlFileTask.class.getSimpleName();
 
@@ -33,8 +33,8 @@ public class DetectUrlFileTask implements Runnable {
     private DownloadFileCacher mDownloadFileCacher;
     private OnDetectUrlFileListener mOnDetectUrlFileListener;
 
-    public DetectUrlFileTask(String url, String downloadSaveDir, DetectUrlFileCacher detectUrlFileCacher, 
-                             DownloadFileCacher downloadFileCacher) {
+    DetectUrlFileTask(String url, String downloadSaveDir, DetectUrlFileCacher detectUrlFileCacher, DownloadFileCacher
+            downloadFileCacher) {
         super();
         this.mUrl = url;
         this.mDownloadSaveDir = downloadSaveDir;
@@ -47,7 +47,7 @@ public class DetectUrlFileTask implements Runnable {
      *
      * @param onDetectUrlFileListener DetectUrlFileListener
      */
-    public void setOnDetectUrlFileListener(OnDetectUrlFileListener onDetectUrlFileListener) {
+    void setOnDetectUrlFileListener(OnDetectUrlFileListener onDetectUrlFileListener) {
         this.mOnDetectUrlFileListener = onDetectUrlFileListener;
     }
 

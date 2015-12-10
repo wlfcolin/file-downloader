@@ -63,8 +63,8 @@ class DownloadFileStatusObserver implements OnFileDownloadStatusListener {
             }
         }
     }
-    
-    void release(){
+
+    void release() {
         mWeakOnFileDownloadStatusListeners.clear();
     }
 

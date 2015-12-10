@@ -125,7 +125,7 @@ public class DownloadFileInfo extends BaseUrlFileInfo {
      *
      * @param detectUrlFileInfo DetectUrlFileInfo
      */
-    public DownloadFileInfo(DetectUrlFileInfo detectUrlFileInfo) {
+    DownloadFileInfo(DetectUrlFileInfo detectUrlFileInfo) {
         this.mUrl = detectUrlFileInfo.getUrl();
         this.mFileName = detectUrlFileInfo.getFileName();
         this.mFileSize = detectUrlFileInfo.getFileSize();
@@ -140,7 +140,7 @@ public class DownloadFileInfo extends BaseUrlFileInfo {
      *
      * @param cursor database cursor
      */
-    public DownloadFileInfo(Cursor cursor) {
+    DownloadFileInfo(Cursor cursor) {
         if (cursor != null && !cursor.isClosed()) {
             int id = -1;
             String url = null;

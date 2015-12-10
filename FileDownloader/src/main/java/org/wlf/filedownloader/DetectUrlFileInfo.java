@@ -13,7 +13,7 @@ import org.wlf.filedownloader.util.UrlUtil;
  * @author wlf(Andy)
  * @email 411086563@qq.com
  */
-public class DetectUrlFileInfo extends BaseUrlFileInfo {
+class DetectUrlFileInfo extends BaseUrlFileInfo {
 
     @SuppressWarnings("unused")
     private DetectUrlFileInfo() {
@@ -29,8 +29,7 @@ public class DetectUrlFileInfo extends BaseUrlFileInfo {
      * @param fileDir         file dir
      * @param fileName        file name
      */
-    public DetectUrlFileInfo(String url, int fileSize, String eTag, String acceptRangeType, String fileDir, String 
-            fileName) {
+    DetectUrlFileInfo(String url, int fileSize, String eTag, String acceptRangeType, String fileDir, String fileName) {
         super();
         this.mUrl = url;
         this.mFileSize = fileSize;

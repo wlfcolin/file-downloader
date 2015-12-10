@@ -108,7 +108,7 @@ public class FileDownloadConfiguration {
             this.mContext = context.getApplicationContext();
             // default: /sdcard/Android/data/{package_name}/files/file_downloader
             try {
-                mFileDownloadDir = this.mContext.getExternalFilesDir(null).getAbsolutePath() + File.separator + 
+                mFileDownloadDir = this.mContext.getExternalFilesDir(null).getAbsolutePath() + File.separator +
                         "file_downloader";
             } catch (Exception e) {
                 // if there is not sdcard,use /data/data/{package_name}/files/file_downloader for the default

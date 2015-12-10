@@ -16,7 +16,7 @@ import java.io.File;
  * @author wlf(Andy)
  * @email 411086563@qq.com
  */
-public class DeleteDownloadFileTask implements Runnable {
+class DeleteDownloadFileTask implements Runnable {
 
     private static final String TAG = DeleteDownloadFileTask.class.getSimpleName();
 
@@ -26,15 +26,14 @@ public class DeleteDownloadFileTask implements Runnable {
 
     private OnDeleteDownloadFileListener mOnDeleteDownloadFileListener;
 
-    public DeleteDownloadFileTask(String url, boolean deleteDownloadedFileInPath, DownloadFileCacher 
-            fileDownloadCacher) {
+    DeleteDownloadFileTask(String url, boolean deleteDownloadedFileInPath, DownloadFileCacher fileDownloadCacher) {
         super();
         this.mUrl = url;
         this.mDeleteDownloadedFileInPath = deleteDownloadedFileInPath;
         this.mFileDownloadCacher = fileDownloadCacher;
     }
 
-    public void setOnDeleteDownloadFileListener(OnDeleteDownloadFileListener onDeleteDownloadFileListener) {
+    void setOnDeleteDownloadFileListener(OnDeleteDownloadFileListener onDeleteDownloadFileListener) {
         this.mOnDeleteDownloadFileListener = onDeleteDownloadFileListener;
     }
 

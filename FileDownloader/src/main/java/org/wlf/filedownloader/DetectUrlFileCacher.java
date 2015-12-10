@@ -13,7 +13,7 @@ import java.util.Map;
  * @author wlf(Andy)
  * @email 411086563@qq.com
  */
-public class DetectUrlFileCacher {
+class DetectUrlFileCacher {
 
     // detect file memory cache
     private Map<String, DetectUrlFileInfo> mDetectUrlFileInfoMap = new HashMap<String, DetectUrlFileInfo>();
@@ -26,7 +26,7 @@ public class DetectUrlFileCacher {
      * @param detectUrlFileInfo DetectUrlFile
      * @return true means update succeed
      */
-    public boolean addOrUpdateDetectUrlFile(DetectUrlFileInfo detectUrlFileInfo) {
+    boolean addOrUpdateDetectUrlFile(DetectUrlFileInfo detectUrlFileInfo) {
 
         if (detectUrlFileInfo == null) {
             return false;
