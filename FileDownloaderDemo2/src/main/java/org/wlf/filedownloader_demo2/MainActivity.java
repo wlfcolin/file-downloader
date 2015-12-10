@@ -9,7 +9,7 @@ import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
-import org.wlf.filedownloader.FileDownloadManager;
+import org.wlf.filedownloader.FileDownloader;
 import org.wlf.filedownloader_demo2.custom_model.CustomModelActivity;
 
 /**
@@ -33,9 +33,9 @@ public class MainActivity extends Activity implements OnItemClickListener {
         lvList = (ListView) findViewById(R.id.lvList);
 
         ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_expandable_list_item_1);
-        
-        adapter.add(getString(R.string.custom_model__title_name));
-        
+
+        adapter.add(getString(R.string.main__custom_model_item_text));
+
         lvList.setAdapter(adapter);
         lvList.setOnItemClickListener(this);
     }
@@ -59,6 +59,6 @@ public class MainActivity extends Activity implements OnItemClickListener {
     protected void onDestroy() {
         super.onDestroy();
         // pause all downloads
-        FileDownloadManager.getInstance(this).pauseAll();
+        FileDownloader.pauseAll();
     }
 }

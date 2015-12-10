@@ -29,8 +29,10 @@ import java.util.List;
  * 文件下载管理器
  *
  * @author wlf
+ * @deprecated use {@link FileDownloader} instead,if the version you are using is reach 0.2.0
  */
-public class FileDownloadManager {
+@Deprecated
+public final class FileDownloadManager {
 
     /**
      * LOG TAG
@@ -180,7 +182,9 @@ public class FileDownloadManager {
      */
     private void checkInit() {
         if (!isInit()) {
-            throw new IllegalStateException("please init " + FileDownloadManager.class.getSimpleName());
+            throw new IllegalStateException("please init the file-downloader by using " + FileDownloader.class
+                    .getSimpleName() + " or " + FileDownloadManager.class.getSimpleName() + " if the version is below" +
+                    " 0.2.0");
         }
     }
 

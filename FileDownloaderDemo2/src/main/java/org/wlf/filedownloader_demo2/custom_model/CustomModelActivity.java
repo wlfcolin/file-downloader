@@ -4,7 +4,7 @@ import android.app.Activity;
 import android.os.Bundle;
 import android.widget.ListView;
 
-import org.wlf.filedownloader.FileDownloadManager;
+import org.wlf.filedownloader.FileDownloader;
 import org.wlf.filedownloader_demo2.R;
 
 import java.util.ArrayList;
@@ -39,7 +39,7 @@ public class CustomModelActivity extends Activity {
         lvDownloadFileList.setAdapter(mCustomDownloadFileListAdapter);
 
         // registerDownloadStatusListener 
-        FileDownloadManager.getInstance(this).registerDownloadStatusListener(mCustomDownloadFileListAdapter);
+        FileDownloader.registerDownloadStatusListener(mCustomDownloadFileListAdapter);
     }
 
     // get model data(may come from server)
@@ -66,9 +66,9 @@ public class CustomModelActivity extends Activity {
     protected void onDestroy() {
         super.onDestroy();
         //        // pause all downloads
-        //        FileDownloadManager.getInstance(this).pauseAll();
+        //        FileDownloader.pauseAll();
 
         // unregisterDownloadStatusListener
-        FileDownloadManager.getInstance(this).unregisterDownloadStatusListener(mCustomDownloadFileListAdapter);
+        FileDownloader.unregisterDownloadStatusListener(mCustomDownloadFileListAdapter);
     }
 }

@@ -23,6 +23,7 @@ public class FileDownloadConfiguration {
      */
     private static final String TAG = FileDownloadConfiguration.class.getSimpleName();
 
+    private Context mContext;
     /**
      * download dir
      */
@@ -55,12 +56,22 @@ public class FileDownloadConfiguration {
         if (builder == null) {
             throw new NullPointerException("builder can not be empty!");
         }
+        this.mContext = builder.mContext;
         this.mFileDownloadDir = builder.mFileDownloadDir;
         this.mFileDownloadEngine = Executors.newFixedThreadPool(builder.mDownloadTaskSize);
         this.mSupportEngine = Executors.newSingleThreadExecutor();// default single thread
     }
 
     // getters,package use only
+
+    /**
+     * get Context
+     *
+     * @return Context
+     */
+    Context getContext() {
+        return mContext;
+    }
 
     /**
      * get FileDownloadDir

@@ -14,7 +14,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import org.wlf.filedownloader.DownloadFileInfo;
-import org.wlf.filedownloader.FileDownloadManager;
+import org.wlf.filedownloader.FileDownloader;
 import org.wlf.filedownloader.base.Status;
 import org.wlf.filedownloader.listener.OnDeleteDownloadFileListener;
 import org.wlf.filedownloader.listener.OnFileDownloadStatusListener;
@@ -46,15 +46,11 @@ public class CustomDownloadFileListAdapter extends BaseAdapter implements OnFile
     // cached convert views
     private Map<String, WeakReference<View>> mConvertViews = new LinkedHashMap<String, WeakReference<View>>();
 
-    private FileDownloadManager mFileDownloadManager;
     private Toast mToast;
 
     public CustomDownloadFileListAdapter(Context context, List<CustomVideoInfo> customVideoInfos) {
         mContext = context;
         mCustomVideoInfos = customVideoInfos;
-        mFileDownloadManager = FileDownloadManager.getInstance(mContext);
-
-        CustomVideoInfo.syncCustomVideos(mContext, mCustomVideoInfos);
     }
 
     @Override
@@ -80,6 +76,8 @@ public class CustomDownloadFileListAdapter extends BaseAdapter implements OnFile
             return null;
         }
 
+        Log.e("wlf", "getView,customVideoInfo.url:" + customVideoInfo.getUrl());
+
         String url = customVideoInfo.getUrl();
         if (TextUtils.isEmpty(url)) {
             mConvertViews.remove(url);
@@ -88,18 +86,21 @@ public class CustomDownloadFileListAdapter extends BaseAdapter implements OnFile
         View cacheConvertView = null;
 
         WeakReference<View> weakCacheConvertView = mConvertViews.get(url);
-        if (weakCacheConvertView != null) {
+
+        if (weakCacheConvertView == null) {
+            // not exist
+            cacheConvertView = View.inflate(parent.getContext(), R.layout.custom_model__item_download, null);
+            mConvertViews.put(url, new WeakReference<View>(cacheConvertView));
+        } else {
             cacheConvertView = weakCacheConvertView.get();
             if (cacheConvertView == null) {
                 // not exist
                 cacheConvertView = View.inflate(parent.getContext(), R.layout.custom_model__item_download, null);
                 mConvertViews.put(url, new WeakReference<View>(cacheConvertView));
             }
-        } else {
-            // not exist
-            cacheConvertView = View.inflate(parent.getContext(), R.layout.custom_model__item_download, null);
-            mConvertViews.put(url, new WeakReference<View>(cacheConvertView));
         }
+
+        Log.e("wlf", "getView,cacheConvertView:" + cacheConvertView);
 
         LinearLayout lnlyDownloadItem = (LinearLayout) cacheConvertView.findViewById(R.id.lnlyDownloadItem);
         registerClickListener(lnlyDownloadItem, customVideoInfo);
@@ -109,13 +110,8 @@ public class CustomDownloadFileListAdapter extends BaseAdapter implements OnFile
         TextView tvText = (TextView) cacheConvertView.findViewById(R.id.tvText);
         tvText.setText(customVideoInfo.getUrl());
 
-        if (!customVideoInfo.isInitDownloadFileInfo()) {
-            // try to sync
-            CustomVideoInfo.syncCustomVideo(mContext, customVideoInfo);
-        }
-
         // has been started download
-        if (customVideoInfo.isInitDownloadFileInfo()) {
+        if (customVideoInfo.getDownloadFileInfo() != null) {
 
             DownloadFileInfo downloadFileInfo = customVideoInfo.getDownloadFileInfo();
 
@@ -162,6 +158,9 @@ public class CustomDownloadFileListAdapter extends BaseAdapter implements OnFile
 
     private void registerClickListener(View lnlyDownloadItem, final CustomVideoInfo customVideoInfo) {
 
+        Log.e("wlf", "registerClickListener,lnlyDownloadItem:" + lnlyDownloadItem + ",customVideoInfo:" + 
+                customVideoInfo.getUrl());
+
         if (lnlyDownloadItem == null || customVideoInfo == null) {
             return;
         }
@@ -175,8 +174,10 @@ public class CustomDownloadFileListAdapter extends BaseAdapter implements OnFile
                 @Override
                 public void onClick(View v) {
 
+                    Log.e("wlf", "onClick:" + customVideoInfo.getUrl());
+
                     // has been started download
-                    if (customVideoInfo.isInitDownloadFileInfo()) {
+                    if (customVideoInfo.getDownloadFileInfo() != null) {
 
                         final DownloadFileInfo downloadFileInfo = customVideoInfo.getDownloadFileInfo();
 
@@ -192,7 +193,7 @@ public class CustomDownloadFileListAdapter extends BaseAdapter implements OnFile
                             // download file status:error & paused
                             case Status.DOWNLOAD_STATUS_ERROR:
                             case Status.DOWNLOAD_STATUS_PAUSED:
-                                mFileDownloadManager.start(downloadFileInfo.getUrl());
+                                FileDownloader.start(downloadFileInfo.getUrl());
                                 break;
 
                             // download file status:file not exist
@@ -206,7 +207,7 @@ public class CustomDownloadFileListAdapter extends BaseAdapter implements OnFile
                                         .custom_model__dialog_btn_confirm), new DialogInterface.OnClickListener() {
                                     public void onClick(DialogInterface dialog, int which) {
                                         // re-download
-                                        mFileDownloadManager.reStart(downloadFileInfo.getUrl());
+                                        FileDownloader.reStart(downloadFileInfo.getUrl());
                                     }
                                 });
                                 builder.show();
@@ -217,8 +218,10 @@ public class CustomDownloadFileListAdapter extends BaseAdapter implements OnFile
                             case Status.DOWNLOAD_STATUS_PREPARING:
                             case Status.DOWNLOAD_STATUS_PREPARED:
                             case Status.DOWNLOAD_STATUS_DOWNLOADING:
+
+                                Log.e("wlf", "pause:" + downloadFileInfo.getUrl());
                                 // pause
-                                mFileDownloadManager.pause(downloadFileInfo.getUrl());
+                                FileDownloader.pause(downloadFileInfo.getUrl());
                                 break;
 
                             // download file status:completed
@@ -230,7 +233,7 @@ public class CustomDownloadFileListAdapter extends BaseAdapter implements OnFile
                     }
                     // never download
                     else {
-                        mFileDownloadManager.start(customVideoInfo.getUrl());
+                        FileDownloader.start(customVideoInfo.getUrl());
                     }
 
                 }
@@ -245,7 +248,7 @@ public class CustomDownloadFileListAdapter extends BaseAdapter implements OnFile
                     if (downloadFileInfo == null) {
                         return;
                     }
-                    mFileDownloadManager.delete(downloadFileInfo.getUrl(), true, new OnDeleteDownloadFileListener() {
+                    FileDownloader.delete(downloadFileInfo.getUrl(), true, new OnDeleteDownloadFileListener() {
                         @Override
                         public void onDeleteDownloadFilePrepared(DownloadFileInfo downloadFileNeedDelete) {
 
@@ -291,8 +294,6 @@ public class CustomDownloadFileListAdapter extends BaseAdapter implements OnFile
             return;
         }
         showToast(mContext.getString(R.string.custom_model__waiting) + ",url:" + downloadFileInfo.getUrl());
-
-        CustomVideoInfo.syncCustomVideo(mCustomVideoInfos, downloadFileInfo);
     }
 
     @Override
@@ -302,8 +303,6 @@ public class CustomDownloadFileListAdapter extends BaseAdapter implements OnFile
             return;
         }
         showToast(mContext.getString(R.string.custom_model__preparing) + ",url:" + downloadFileInfo.getUrl());
-
-        CustomVideoInfo.syncCustomVideo(mCustomVideoInfos, downloadFileInfo);
     }
 
     @Override
@@ -313,8 +312,6 @@ public class CustomDownloadFileListAdapter extends BaseAdapter implements OnFile
             return;
         }
         showToast(mContext.getString(R.string.custom_model__prepared) + ",url:" + downloadFileInfo.getUrl());
-
-        CustomVideoInfo.syncCustomVideo(mCustomVideoInfos, downloadFileInfo);
     }
 
     @Override

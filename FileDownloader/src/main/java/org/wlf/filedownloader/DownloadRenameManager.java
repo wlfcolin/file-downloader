@@ -15,6 +15,7 @@ import java.util.concurrent.ExecutorService;
  * @author wlf(Andy)
  * @datetime 2015-12-10 11:31 GMT+8
  * @email 411086563@qq.com
+ * @since 0.2.0
  */
 class DownloadRenameManager {
 

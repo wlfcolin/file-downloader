@@ -1,6 +1,8 @@
 <resources>
     <string name="app_name">文件下载管理器Demo2</string>
 
+    <string name="main__custom_model_item_text">在自定义模型中快速使用</string>
+
     <!-- custom_model -->
     <string name="custom_model__title_name">自定义模型使用</string>
     <string name="custom_model__can_not_download2">无法下载，请删除：</string>

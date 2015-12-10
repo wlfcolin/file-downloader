@@ -1,6 +1,8 @@
 <resources>
     <string name="app_name">FileDownloader Demo2</string>
 
+    <string name="main__custom_model_item_text">Easy use in Custom Model</string>
+    
     <!-- custom_model -->
     <string name="custom_model__title_name">Custom Model Usage</string>
     <string name="custom_model__can_not_download2">Can not download,please delete the file:</string>
