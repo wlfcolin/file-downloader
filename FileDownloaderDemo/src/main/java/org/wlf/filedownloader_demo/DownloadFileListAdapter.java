@@ -21,7 +21,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import org.wlf.filedownloader.DownloadFileInfo;
-import org.wlf.filedownloader.FileDownloadManager;
+import org.wlf.filedownloader.FileDownloader;
 import org.wlf.filedownloader.base.Status;
 import org.wlf.filedownloader.listener.OnFileDownloadStatusListener;
 import org.wlf.filedownloader.util.FileUtil;
@@ -70,7 +70,7 @@ public class DownloadFileListAdapter extends BaseAdapter implements OnFileDownlo
 
     // init DownloadFileInfos
     private void initDownloadFileInfos() {
-        this.mDownloadFileInfos = FileDownloadManager.getInstance(mActivity).getDownloadFiles();
+        this.mDownloadFileInfos = FileDownloader.getDownloadFiles();
         mConvertViews.clear();
         mSelectedDownloadFileInfos.clear();
         if (mOnItemSelectListener != null) {
@@ -183,7 +183,11 @@ public class DownloadFileListAdapter extends BaseAdapter implements OnFileDownlo
                 break;
             // download file status:downloading
             case Status.DOWNLOAD_STATUS_DOWNLOADING:
-                tvText.setText(context.getString(R.string.main__downloading));
+                if (tvText.getTag() != null) {
+                    tvText.setText((String) tvText.getTag());
+                } else {
+                    tvText.setText(context.getString(R.string.main__downloading));
+                }
                 break;
             // download file status:error
             case Status.DOWNLOAD_STATUS_ERROR:
@@ -218,17 +222,14 @@ public class DownloadFileListAdapter extends BaseAdapter implements OnFileDownlo
         cbSelect.setOnCheckedChangeListener(new OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                // fileDownloadManager
-                final FileDownloadManager fileDownloadManager = FileDownloadManager.getInstance(buttonView.getContext
-                        ());
                 if (isChecked) {
-                    mSelectedDownloadFileInfos.add(fileDownloadManager.getDownloadFileByUrl(url));
+                    mSelectedDownloadFileInfos.add(FileDownloader.getDownloadFileByUrl(url));
                     if (mOnItemSelectListener != null) {
                         // select a download file
                         mOnItemSelectListener.onSelected(mSelectedDownloadFileInfos);
                     }
                 } else {
-                    mSelectedDownloadFileInfos.remove(fileDownloadManager.getDownloadFileByUrl(url));
+                    mSelectedDownloadFileInfos.remove(FileDownloader.getDownloadFileByUrl(url));
                     if (mSelectedDownloadFileInfos.isEmpty()) {
                         if (mOnItemSelectListener != null) {
                             // select none
@@ -254,10 +255,6 @@ public class DownloadFileListAdapter extends BaseAdapter implements OnFileDownlo
 
         lnlyDownloadItem.setOnClickListener(new OnClickListener() {
 
-            // fileDownloadManager
-            final FileDownloadManager fileDownloadManager = FileDownloadManager.getInstance(lnlyDownloadItem
-                    .getContext());
-
             @Override
             public void onClick(View v) {
                 final Context context = v.getContext();
@@ -271,7 +268,7 @@ public class DownloadFileListAdapter extends BaseAdapter implements OnFileDownlo
                         // download file status:error & paused
                         case Status.DOWNLOAD_STATUS_ERROR:
                         case Status.DOWNLOAD_STATUS_PAUSED:
-                            fileDownloadManager.start(curDownloadFileInfo.getUrl());
+                            FileDownloader.start(curDownloadFileInfo.getUrl());
                             showToast(context.getString(R.string.main__start_download) + curDownloadFileInfo
                                     .getFileName());
                             break;
@@ -285,7 +282,7 @@ public class DownloadFileListAdapter extends BaseAdapter implements OnFileDownlo
                                     DialogInterface.OnClickListener() {
                                 public void onClick(DialogInterface dialog, int which) {
                                     // re-download
-                                    fileDownloadManager.reStart(curDownloadFileInfo.getUrl());
+                                    FileDownloader.reStart(curDownloadFileInfo.getUrl());
                                     showToast(context.getString(R.string.main__re_download2) + curDownloadFileInfo
                                             .getFileName());
                                 }
@@ -298,14 +295,18 @@ public class DownloadFileListAdapter extends BaseAdapter implements OnFileDownlo
                         case Status.DOWNLOAD_STATUS_PREPARED:
                         case Status.DOWNLOAD_STATUS_DOWNLOADING:
                             // pause
-                            fileDownloadManager.pause(curDownloadFileInfo.getUrl());
+                            FileDownloader.pause(curDownloadFileInfo.getUrl());
 
                             showToast(context.getString(R.string.main__paused_download) + curDownloadFileInfo
                                     .getFileName());
 
                             TextView tvText = (TextView) lnlyDownloadItem.findViewById(R.id.tvText);
                             if (tvText != null) {
-                                tvText.setText(context.getString(R.string.main__paused));
+                                if (tvText.getTag() == null) {
+                                    tvText.setTag((String) tvText.getTag());
+                                } else {
+                                    tvText.setText(context.getString(R.string.main__paused));
+                                }
                             }
                             break;
                         // download file status:completed
@@ -404,8 +405,6 @@ public class DownloadFileListAdapter extends BaseAdapter implements OnFileDownlo
             return;
         }
 
-        updateShow();
-
         // add
         if (addNewDownloadFileInfo(downloadFileInfo)) {
             // add succeed
@@ -500,8 +499,10 @@ public class DownloadFileListAdapter extends BaseAdapter implements OnFileDownlo
             tvPercent.setText(((float) (Math.round(percent * 100)) / 100) + "%");
 
             // download speed and remain times
-            tvText.setText(((float) (Math.round(downloadSpeed * 100)) / 100) + "KB/s" + "  " + TimeUtil
-                    .seconds2HH_mm_ss(remainingTime));
+            String speed = ((float) (Math.round(downloadSpeed * 100)) / 100) + "KB/s" + "  " + TimeUtil
+                    .seconds2HH_mm_ss(remainingTime);
+            tvText.setText(speed);
+            tvText.setTag(speed);
 
             setBackgroundOnClickListener(lnlyDownloadItem, downloadFileInfo);
         } else {
@@ -582,7 +583,7 @@ public class DownloadFileListAdapter extends BaseAdapter implements OnFileDownlo
             updateShow();
         }
 
-        Log.d(TAG, "onFileDownloadStatusCompleted url：" + url + "，status(正常应该是" + Status.DOWNLOAD_STATUS_COMPLETED + 
+        Log.d(TAG, "onFileDownloadStatusCompleted url：" + url + "，status(正常应该是" + Status.DOWNLOAD_STATUS_COMPLETED +
                 ")：" + downloadFileInfo.getStatus());
     }
 

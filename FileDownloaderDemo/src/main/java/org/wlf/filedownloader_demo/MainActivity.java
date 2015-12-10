@@ -20,11 +20,10 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import org.wlf.filedownloader.DownloadFileInfo;
-import org.wlf.filedownloader.FileDownloadManager;
+import org.wlf.filedownloader.FileDownloader;
 import org.wlf.filedownloader.listener.OnDeleteDownloadFileListener;
 import org.wlf.filedownloader.listener.OnDeleteDownloadFilesListener;
 import org.wlf.filedownloader.listener.OnDetectUrlFileListener;
-import org.wlf.filedownloader.listener.OnFileDownloadStatusListener;
 import org.wlf.filedownloader.listener.OnMoveDownloadFileListener;
 import org.wlf.filedownloader.listener.OnMoveDownloadFilesListener;
 import org.wlf.filedownloader.listener.OnRenameDownloadFileListener;
@@ -45,14 +44,6 @@ public class MainActivity extends Activity implements OnDetectUrlFileListener, O
 
     // adapter
     private DownloadFileListAdapter mDownloadFileListAdapter;
-
-    // download status listener
-    private OnFileDownloadStatusListener mOnFileDownloadStatusListener;
-    // detect url listener
-    private OnDetectUrlFileListener mOnDetectUrlFileListener;
-
-    // mFileDownloadManager
-    private FileDownloadManager mFileDownloadManager;
 
     // toast
     private Toast mToast;
@@ -78,16 +69,10 @@ public class MainActivity extends Activity implements OnDetectUrlFileListener, O
         mDownloadFileListAdapter = new DownloadFileListAdapter(this);
         lvDownloadFileList.setAdapter(mDownloadFileListAdapter);
 
-        mOnFileDownloadStatusListener = mDownloadFileListAdapter;
-        mOnDetectUrlFileListener = this;
-
-        mFileDownloadManager = FileDownloadManager.getInstance(this);
-        if (mFileDownloadManager != null) {
-            // registerDownloadStatusListener 
-            mFileDownloadManager.registerDownloadStatusListener(mDownloadFileListAdapter);
-        }
-
         mDownloadFileListAdapter.setOnItemSelectListener(this);
+
+        // registerDownloadStatusListener 
+        FileDownloader.registerDownloadStatusListener(mDownloadFileListAdapter);
     }
 
     @Override
@@ -142,7 +127,7 @@ public class MainActivity extends Activity implements OnDetectUrlFileListener, O
             public void onClick(DialogInterface dialog, int which) {
                 // file url
                 String url = etUrl.getText().toString().trim();
-                mFileDownloadManager.start(url);
+                FileDownloader.start(url);
             }
         });
         builder.show();
@@ -187,7 +172,7 @@ public class MainActivity extends Activity implements OnDetectUrlFileListener, O
                 urls.add(url2);
                 urls.add(url3);
 
-                mFileDownloadManager.start(urls);
+                FileDownloader.start(urls);
             }
         });
         builder.show();
@@ -208,7 +193,7 @@ public class MainActivity extends Activity implements OnDetectUrlFileListener, O
             public void onClick(DialogInterface dialog, int which) {
                 // file url
                 String url = etUrlCustom.getText().toString().trim();
-                mFileDownloadManager.detect(url, mOnDetectUrlFileListener);
+                FileDownloader.detect(url, MainActivity.this);
             }
         });
         builder.show();
@@ -216,13 +201,12 @@ public class MainActivity extends Activity implements OnDetectUrlFileListener, O
 
     @Override
     protected void onDestroy() {
-        if (mFileDownloadManager != null) {
-            // pause all downloads
-            mFileDownloadManager.pauseAll();
-            // unregisterDownloadStatusListener
-            mFileDownloadManager.unregisterDownloadStatusListener(mDownloadFileListAdapter);
-        }
         super.onDestroy();
+
+        // pause all downloads
+        FileDownloader.pauseAll();
+        // unregisterDownloadStatusListener
+        FileDownloader.unregisterDownloadStatusListener(mDownloadFileListAdapter);
     }
 
     // show toast
@@ -282,7 +266,7 @@ public class MainActivity extends Activity implements OnDetectUrlFileListener, O
                 // create download
                 showToast(getString(R.string.main__new_download) + url);
                 Log.e("wlf", "探测文件，新建下载：" + url);
-                mFileDownloadManager.createAndStart(url, newFileDir, newFileName);
+                FileDownloader.createAndStart(url, newFileDir, newFileName);
             }
         });
         builder.show();
@@ -293,7 +277,7 @@ public class MainActivity extends Activity implements OnDetectUrlFileListener, O
         showToast(getString(R.string.main__continue_download) + url);
         Log.e("wlf", "探测文件，继续下载：" + url);
         // continue download
-        mFileDownloadManager.start(url);
+        FileDownloader.start(url);
     }
 
     @Override
@@ -358,7 +342,7 @@ public class MainActivity extends Activity implements OnDetectUrlFileListener, O
 
                 // single delete
                 if (urls.size() == 1) {
-                    mFileDownloadManager.delete(urls.get(0), deleteDownloadedFile, new OnDeleteDownloadFileListener() {
+                    FileDownloader.delete(urls.get(0), deleteDownloadedFile, new OnDeleteDownloadFileListener() {
                         @Override
                         public void onDeleteDownloadFileSuccess(DownloadFileInfo downloadFileDeleted) {
                             showToast(getString(R.string.main__delete_succeed));
@@ -382,7 +366,7 @@ public class MainActivity extends Activity implements OnDetectUrlFileListener, O
                 // multi delete
                 else {
                     Log.e("wlf_deletes", "点击开始批量删除");
-                    mFileDownloadManager.delete(urls, deleteDownloadedFile, new OnDeleteDownloadFilesListener() {
+                    FileDownloader.delete(urls, deleteDownloadedFile, new OnDeleteDownloadFilesListener() {
 
                         @Override
                         public void onDeletingDownloadFiles(List<DownloadFileInfo> downloadFilesNeedDelete, 
@@ -420,7 +404,7 @@ public class MainActivity extends Activity implements OnDetectUrlFileListener, O
             @Override
             public void onClick(View v) {
 
-                String oldDirPath = FileDownloadManager.getInstance(MainActivity.this).getDownloadDir();
+                String oldDirPath = FileDownloader.getDownloadDir();
 
                 final EditText etFileDir = new EditText(MainActivity.this);
                 etFileDir.setText(oldDirPath);
@@ -452,7 +436,7 @@ public class MainActivity extends Activity implements OnDetectUrlFileListener, O
 
                         // single move
                         if (urls.size() == 1) {
-                            mFileDownloadManager.move(urls.get(0), newDirPath, new OnMoveDownloadFileListener() {
+                            FileDownloader.move(urls.get(0), newDirPath, new OnMoveDownloadFileListener() {
 
                                 @Override
                                 public void onMoveDownloadFileSuccess(DownloadFileInfo downloadFileMoved) {
@@ -476,7 +460,7 @@ public class MainActivity extends Activity implements OnDetectUrlFileListener, O
                         }
                         // multi move
                         else {
-                            mFileDownloadManager.move(urls, newDirPath, new OnMoveDownloadFilesListener() {
+                            FileDownloader.move(urls, newDirPath, new OnMoveDownloadFilesListener() {
 
                                 @Override
                                 public void onMoveDownloadFilesPrepared(List<DownloadFileInfo> downloadFilesNeedMove) {
@@ -578,7 +562,7 @@ public class MainActivity extends Activity implements OnDetectUrlFileListener, O
 
                             String newName = etFileName.getText().toString();
 
-                            mFileDownloadManager.rename(urls.get(0), newName, cbIncludedSuffix.isChecked(), new 
+                            FileDownloader.rename(urls.get(0), newName, cbIncludedSuffix.isChecked(), new 
                                     OnRenameDownloadFileListener() {
 
                                 @Override
