@@ -9,7 +9,7 @@
 * Fix re-download save dir exception when ever moved to other dir
 * Fix can not start after paused in the status under waiting,preparing,prepared
 
-* Introduced interface FileDownloader instead of deprecated FileDownloadManager(FileDownloadManager also can use)
+* Introduced class FileDownloader instead of deprecated FileDownloadManager(FileDownloadManager also can use)
 * Introduced interface OnDownloadFileChangeListener to listen DownloadFileChange(created,updated,deleted)
 * New API in FileDownloadManager(also in FileDownloader): *
  * registerDownloadStatusListener(OnFileDownloadStatusListener)
