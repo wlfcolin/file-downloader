@@ -9,7 +9,6 @@ import org.wlf.filedownloader.base.Stoppable;
 import org.wlf.filedownloader.listener.OnDeleteDownloadFileListener;
 import org.wlf.filedownloader.listener.OnDeleteDownloadFileListener.OnDeleteDownloadFileFailReason;
 import org.wlf.filedownloader.listener.OnDeleteDownloadFilesListener;
-import org.wlf.filedownloader.listener.OnSyncDeleteDownloadFileListener;
 import org.wlf.filedownloader.util.UrlUtil;
 
 import java.util.ArrayList;
@@ -91,10 +90,7 @@ class DownloadDeleteManager {
      *
      * @param url                          file url
      * @param deleteDownloadedFileInPath   whether delete file in path
-     * @param onDeleteDownloadFileListener use {@link OnDeleteDownloadFileListener} for default,or use {@link
-     *                                     OnSyncDeleteDownloadFileListener} for do some custom sync with
-     *                                     file-downloader,
-     *                                     if custom sync failed,the file-downloader will rollback the operation
+     * @param onDeleteDownloadFileListener DeleteDownloadFileListener
      */
     void delete(String url, final boolean deleteDownloadedFileInPath, final OnDeleteDownloadFileListener 
             onDeleteDownloadFileListener) {

@@ -644,6 +644,7 @@ class DownloadTaskManager {
         DownloadFileInfo downloadFileInfo = getDownloadFile(url);
         if (downloadFileInfo != null) {
             downloadFileInfo.setDownloadedSize(0);
+            downloadFileInfo.setFileDir(mConfiguration.getFileDownloadDir());
             mDownloadFileCacher.updateDownloadFile(downloadFileInfo);
         }
         start(url);

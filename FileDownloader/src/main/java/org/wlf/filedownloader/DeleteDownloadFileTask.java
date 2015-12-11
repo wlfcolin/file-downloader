@@ -4,7 +4,6 @@ import android.util.Log;
 
 import org.wlf.filedownloader.listener.OnDeleteDownloadFileListener;
 import org.wlf.filedownloader.listener.OnDeleteDownloadFileListener.OnDeleteDownloadFileFailReason;
-import org.wlf.filedownloader.listener.OnSyncDeleteDownloadFileListener;
 
 import java.io.File;
 
@@ -54,17 +53,6 @@ class DeleteDownloadFileTask implements Runnable {
             if (deleteResult) {
 
                 Log.d(TAG, "DeleteDownloadFileTask.run 数据库删除成功url：" + mUrl);
-
-                if (mOnDeleteDownloadFileListener instanceof OnSyncDeleteDownloadFileListener) {
-                    // OnSyncMoveDownloadFileListener,that means the caller hopes to sync something
-                    deleteResult = ((OnSyncDeleteDownloadFileListener) mOnDeleteDownloadFileListener)
-                            .onDoSyncDeleteDownloadFile(downloadFileInfo);
-                }
-
-                if (!deleteResult) {
-                    // rollback,sync with the caller FIXME,use transaction to control the update is better
-                    mFileDownloadCacher.addDownloadFile(downloadFileInfo);
-                }
 
                 // delete in path
                 if (deleteResult) {

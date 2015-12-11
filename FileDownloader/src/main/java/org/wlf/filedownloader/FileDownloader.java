@@ -9,10 +9,6 @@ import org.wlf.filedownloader.listener.OnFileDownloadStatusListener;
 import org.wlf.filedownloader.listener.OnMoveDownloadFileListener;
 import org.wlf.filedownloader.listener.OnMoveDownloadFilesListener;
 import org.wlf.filedownloader.listener.OnRenameDownloadFileListener;
-import org.wlf.filedownloader.listener.OnSyncDeleteDownloadFileListener;
-import org.wlf.filedownloader.listener.OnSyncDeleteDownloadFilesListener;
-import org.wlf.filedownloader.listener.OnSyncMoveDownloadFileListener;
-import org.wlf.filedownloader.listener.OnSyncMoveDownloadFilesListener;
 
 import java.util.List;
 
@@ -287,9 +283,7 @@ public final class FileDownloader {
      *
      * @param url                        file url
      * @param newDirPath                 new dir path
-     * @param onMoveDownloadFileListener use {@link OnMoveDownloadFileListener} for default,or use {@link
-     *                                   OnSyncMoveDownloadFileListener} for do some custom sync with file-downloader,
-     *                                   if custom sync failed,the file-downloader will rollback the operation
+     * @param onMoveDownloadFileListener MoveDownloadFileListener
      * @see FileDownloadManager#move(String, String, OnMoveDownloadFileListener)
      */
     public static void move(String url, String newDirPath, OnMoveDownloadFileListener onMoveDownloadFileListener) {
@@ -301,9 +295,7 @@ public final class FileDownloader {
      *
      * @param urls                        file mUrls
      * @param newDirPath                  new dir path
-     * @param onMoveDownloadFilesListener use {@link OnMoveDownloadFilesListener} for default,or use {@link
-     *                                    OnSyncMoveDownloadFilesListener} for do some custom sync with file-downloader,
-     *                                    if custom sync failed,the file-downloader will rollback the operation
+     * @param onMoveDownloadFilesListener MoveDownloadFilesListener
      * @return the control for the operation
      * @see FileDownloadManager#move(List, String, OnMoveDownloadFilesListener)
      */
@@ -319,10 +311,7 @@ public final class FileDownloader {
      *
      * @param url                          file url
      * @param deleteDownloadedFileInPath   whether delete file in path
-     * @param onDeleteDownloadFileListener use {@link OnDeleteDownloadFileListener} for default,or use {@link
-     *                                     OnSyncDeleteDownloadFileListener} for do some custom sync with
-     *                                     file-downloader,
-     *                                     if custom sync failed,the file-downloader will rollback the operation
+     * @param onDeleteDownloadFileListener DeleteDownloadFileListener
      * @see FileDownloadManager#delete(String, boolean, OnDeleteDownloadFileListener)
      */
     public static void delete(String url, boolean deleteDownloadedFileInPath, OnDeleteDownloadFileListener 
@@ -335,10 +324,7 @@ public final class FileDownloader {
      *
      * @param urls                          file mUrls
      * @param deleteDownloadedFile          whether delete file in path
-     * @param onDeleteDownloadFilesListener use {@link OnDeleteDownloadFilesListener} for default,or use {@link
-     *                                      OnSyncDeleteDownloadFilesListener} for do some custom sync with
-     *                                      file-downloader,
-     *                                      if custom sync failed,the file-downloader will rollback the operation
+     * @param onDeleteDownloadFilesListener DeleteDownloadFilesListener
      * @return the control for the operation
      * @see FileDownloadManager#delete(List, boolean, OnDeleteDownloadFilesListener)
      */

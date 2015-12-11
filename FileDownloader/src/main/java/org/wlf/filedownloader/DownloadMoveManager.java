@@ -10,10 +10,6 @@ import org.wlf.filedownloader.base.Stoppable;
 import org.wlf.filedownloader.listener.OnMoveDownloadFileListener;
 import org.wlf.filedownloader.listener.OnMoveDownloadFileListener.OnMoveDownloadFileFailReason;
 import org.wlf.filedownloader.listener.OnMoveDownloadFilesListener;
-import org.wlf.filedownloader.listener.OnSyncMoveDownloadFileListener;
-import org.wlf.filedownloader.listener.OnSyncMoveDownloadFilesListener;
-import org.wlf.filedownloader.util.CollectionUtil;
-import org.wlf.filedownloader.util.FileUtil;
 import org.wlf.filedownloader.util.UrlUtil;
 
 import java.util.ArrayList;
@@ -146,9 +142,7 @@ class DownloadMoveManager {
      *
      * @param url                        file url
      * @param newDirPath                 new dir path
-     * @param onMoveDownloadFileListener use {@link OnMoveDownloadFileListener} for default,or use {@link
-     *                                   OnSyncMoveDownloadFileListener} for do some custom sync with file-downloader,
-     *                                   if custom sync failed,the file-downloader will rollback the operation
+     * @param onMoveDownloadFileListener MoveDownloadFileListener
      */
     void move(String url, String newDirPath, OnMoveDownloadFileListener onMoveDownloadFileListener) {
         move(url, newDirPath, onMoveDownloadFileListener, false);
@@ -348,60 +342,9 @@ class DownloadMoveManager {
                 return;
             }
 
-            if (mOnMoveDownloadFilesListener instanceof OnSyncMoveDownloadFilesListener) {
-                List<DownloadFileInfo> callerConfirmed = ((OnSyncMoveDownloadFilesListener) 
-                        mOnMoveDownloadFilesListener).onDoSyncMoveDownloadFiles(mDownloadFilesNeedMove, 
-                        mDownloadFilesMoved);
-
-                // meed rollback list
-                List<DownloadFileInfo> rollbackList = new ArrayList<DownloadFileInfo>();
-                rollbackList.addAll(mDownloadFilesMoved);
-
-                if (CollectionUtil.isEmpty(callerConfirmed) || CollectionUtil.isEmpty(mDownloadFilesMoved)) {
-
-                } else {
-                    // check url
-                    for (DownloadFileInfo downloadFileInfoConfirmed : callerConfirmed) {
-                        if (downloadFileInfoConfirmed == null || !UrlUtil.isUrl(downloadFileInfoConfirmed.getUrl())) {
-                            continue;
-                        }
-                        for (DownloadFileInfo downloadFileInfoMoved : mDownloadFilesMoved) {
-                            if (downloadFileInfoMoved == null || !UrlUtil.isUrl(downloadFileInfoMoved.getUrl())) {
-                                continue;
-                            }
-                            if (downloadFileInfoConfirmed.getUrl().equals(downloadFileInfoMoved.getUrl())) {
-                                // downloadFileInfoConfirmed
-                                rollbackList.remove(downloadFileInfoMoved);
-                                break;
-                            }
-                        }
-                    }
-                    if (!rollbackList.isEmpty()) {
-                        // some of mDownloadFilesMoved need rollback
-                        for (int i = 0; i < rollbackList.size(); i++) {
-                            DownloadFileInfo downloadFileInfo = rollbackList.get(i);
-                            if (downloadFileInfo == null) {
-                                continue;
-                            }
-
-                            String url = downloadFileInfo.getUrl();
-                            String oldDirPath = mOldFileDir.get(url);
-                            if (FileUtil.isFilePath(oldDirPath)) {
-                                move(url, oldDirPath, null, true);
-                            }
-                        }
-                    }
-                }
-
-                if (mOnMoveDownloadFilesListener != null) {
-                    OnMoveDownloadFilesListener.MainThreadHelper.onMoveDownloadFilesCompleted(mDownloadFilesNeedMove,
-                            mDownloadFilesMoved, mOnMoveDownloadFilesListener);
-                }
-            } else {
-                if (mOnMoveDownloadFilesListener != null) {
-                    OnMoveDownloadFilesListener.MainThreadHelper.onMoveDownloadFilesCompleted(mDownloadFilesNeedMove,
-                            mDownloadFilesMoved, mOnMoveDownloadFilesListener);
-                }
+            if (mOnMoveDownloadFilesListener != null) {
+                OnMoveDownloadFilesListener.MainThreadHelper.onMoveDownloadFilesCompleted(mDownloadFilesNeedMove, 
+                        mDownloadFilesMoved, mOnMoveDownloadFilesListener);
             }
             mCompleted = true;
             mIsStop = true;

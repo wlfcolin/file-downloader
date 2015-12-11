@@ -3,7 +3,6 @@ package org.wlf.filedownloader;
 import org.wlf.filedownloader.base.Status;
 import org.wlf.filedownloader.listener.OnMoveDownloadFileListener;
 import org.wlf.filedownloader.listener.OnMoveDownloadFileListener.OnMoveDownloadFileFailReason;
-import org.wlf.filedownloader.listener.OnSyncMoveDownloadFileListener;
 import org.wlf.filedownloader.util.FileUtil;
 
 import java.io.File;
@@ -121,24 +120,8 @@ class MoveDownloadFileTask implements Runnable {
             // move in the file system
             moveResult = oldFile.renameTo(newFile);
             if (moveResult) {// succeed
-                if (mOnMoveDownloadFileListener instanceof OnSyncMoveDownloadFileListener) {
-                    // OnSyncMoveDownloadFileListener,that means the caller hopes to sync something
-                    moveResult = ((OnSyncMoveDownloadFileListener) mOnMoveDownloadFileListener)
-                            .onDoSyncMoveDownloadFile(downloadFileInfo);
-                    if (moveResult) {// sync with the caller succeed
-                        // move success
-                        notifySuccess(downloadFileInfo);
-                    } else {
-                        // rollback db,sync with the caller
-                        downloadFileInfo.setFileDir(oldDirPath);
-                        mFileDownloadCacher.updateDownloadFile(downloadFileInfo);
-                        // rollback file system,sync with the caller
-                        newFile.renameTo(oldFile);
-                    }
-                } else {// succeed
-                    // move success
-                    notifySuccess(downloadFileInfo);
-                }
+                // move success
+                notifySuccess(downloadFileInfo);
             } else {// failed to move in the file system,rollback in db
                 downloadFileInfo.setFileDir(oldDirPath);
                 mFileDownloadCacher.updateDownloadFile(downloadFileInfo);
