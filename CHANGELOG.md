@@ -3,7 +3,7 @@
 **0.2.0-preview**
 
 * Fix re-download the downloaded size is bigger than 100%
-* Fix preparing status never been called
+* Fix waiting status never been called
 * Fix multi deletes sometimes callback not sync with the status
 * Fix delete exception in waiting status
 * Fix re-download save dir exception when ever moved to other dir
