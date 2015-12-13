@@ -35,6 +35,13 @@ public final class FileDownloader {
      * @return FileDownloadManager
      */
     private static FileDownloadManager getFileDownloadManager() {
+        
+        if(FileDownloadManager.getConfiguration() != null){
+            if (sConfiguration == null) {
+                sConfiguration = FileDownloadManager.getConfiguration();
+            }
+        }
+        
         if (sConfiguration == null) {
             throw new IllegalStateException("please init the file-downloader by using " + FileDownloader.class
                     .getSimpleName() + " or " + FileDownloadManager.class.getSimpleName() + " if the version is below" +

@@ -5,37 +5,47 @@ this is a powerful http-file download tool, my goal is to make downloading http 
 **Usage:**
 * 1.add in dependencies of your module's build.gradle(Gradle:)
 ``` java
-compile 'org.wlf:FileDownloader:0.1.0'
+compile 'org.wlf:FileDownloader:0.2.0'
 ``` 
+for eclipse users,jars:
+**[FileDownloader-0.2.0.jar](https://github.com/wlfcolin/file-downloader/raw/master/download/release/FileDownloader-0.2.0.jar)**
+**[FileDownloader-0.2.0-sources.jar](https://dl.bintray.com/wlfcolin/maven/org/wlf/FileDownloader/0.2.0/FileDownloader-0.2.0-sources.jar)**
 
-* 2.init FileDownloadManager in your application's onCreate() method
+* 2.init FileDownloader in your application's onCreate() method
 ``` java
 // 1.create FileDownloadConfiguration.Builder
 Builder builder = new FileDownloadConfiguration.Builder(this);
 // 2.config FileDownloadConfiguration.Builder
-builder.configFileDownloadDir(Environment.getExternalStorageDirectory().getAbsolutePath() + File.separator + "FileDownloader");// config the download path
+builder.configFileDownloadDir(Environment.getExternalStorageDirectory().getAbsolutePath() + File.separator +
+        "FileDownloader");// config the download path
 builder.configDownloadTaskSize(3);// allow 3 download task at the same time
 FileDownloadConfiguration configuration = builder.build();// build FileDownloadConfiguration with the builder
-// 3.init FileDownloadManager with the configuration
-FileDownloadManager.getInstance(this).init(configuration);
+// 3.init FileDownloader with the configuration (the deprecated class FileDownloadManager is also available，see change log)
+FileDownloader.init(configuration);
 ```
 
-* 3.create a new download
+* 3.register a DownloadStatusListener
 ``` java
-mFileDownloadManager.start(url, mOnFileDownloadStatusListener);
+// registerDownloadStatusListener 
+FileDownloader.registerDownloadStatusListener(mDownloadFileListAdapter);
 ```
 
-* 4.or create a custom new download
+* 4.create a new download
 ``` java
-mFileDownloadManager.detect(url, new OnDetectUrlFileListener() {
+FileDownloader.start(url);
+```
+
+* 5.or create a custom new download
+``` java
+FileDownloader.detect(url, new OnDetectUrlFileListener() {
     @Override
     public void onDetectNewDownloadFile(String url, String fileName, String saveDir, int fileSize) {
        // change fileName,saveDir if needed
-        mFileDownloadManager.createAndStart(url, newFileDir, newFileName, mOnFileDownloadStatusListener);
+        FileDownloader.createAndStart(url, newFileDir, newFileName);
     }
     @Override
     public void onDetectUrlFileExist(String url) {
-        mFileDownloadManager.start(url, mOnFileDownloadStatusListener);
+        FileDownloader.start(url);
     }
     @Override
     public void onDetectUrlFileFailed(String url, DetectUrlFileFailReason failReason) {
@@ -44,33 +54,33 @@ mFileDownloadManager.detect(url, new OnDetectUrlFileListener() {
 });
 ```
 
-* 5.pause a download
+* 6.pause a download
 ``` java
-mFileDownloadManager.pause(url);// single
-mFileDownloadManager.pause(urls);// multi
-mFileDownloadManager.pauseAll;// all
+FileDownloader.pause(url);// single
+FileDownloader.pause(urls);// multi
+FileDownloader.pauseAll();// all
 ```
 
-* 6.continue a paused download
+* 7.continue a paused download
 ``` java
-mFileDownloadManager.start(url, mOnFileDownloadStatusListener);
+FileDownloader.start(url);
 ```
 
-* 7.move download files to new dir path
+* 8.move download files to new dir path
 ``` java
-mFileDownloadManager.move(url, newDirPath, mOnMoveDownloadFileListener);// single file
-mFileDownloadManager.move(urls, newDirPath, mOnMoveDownloadFilesListener);// multi files
+FileDownloader.move(url, newDirPath, mOnMoveDownloadFileListener);// single file
+FileDownloader.move(urls, newDirPath, mOnMoveDownloadFilesListener);// multi files
 ```
 
-* 8.delete download files
+* 9.delete download files
 ``` java
-mFileDownloadManager.delete(url, true, mOnDeleteDownloadFileListener);// single file
-mFileDownloadManager.delete(urls, true, mOnDeleteDownloadFilesListener);// multi files
+FileDownloader.delete(url, true, mOnDeleteDownloadFileListener);// single file
+FileDownloader.delete(urls, true, mOnDeleteDownloadFilesListener);// multi files
 ```
 
-* 9.rename a download file
+* 10.rename a download file
 ``` java
-mFileDownloadManager.rename(url, newName, true, mOnRenameDownloadFileListener);
+FileDownloader.rename(url, newName, true, mOnRenameDownloadFileListener);
 ```
 
 ------------------------------------------------------------------------

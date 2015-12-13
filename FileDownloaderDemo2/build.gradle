@@ -9,7 +9,7 @@ android {
         minSdkVersion 15
         targetSdkVersion 15
         versionCode 2
-        versionName "0.2.0-preview"
+        versionName "0.2.0"
     }
     buildTypes {
         release {
@@ -22,6 +22,7 @@ android {
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     compile project(':FileDownloader')
+    // compile 'org.wlf:FileDownloader:0.2.0'
 
     // compile 'me.tedyin.circleprogressbarlib:circleprogressbarlib:0.6.1'
     compile(name: 'circleprogressbarlib-0.6.1', ext: 'aar')

@@ -98,6 +98,14 @@ public final class FileDownloadManager {
         return sInstance;
     }
 
+    // package access, FileDownloader use only
+    static FileDownloadConfiguration getConfiguration() {
+        if (sInstance != null) {
+            return sInstance.mConfiguration;
+        }
+        return null;
+    }
+
     /**
      * try to recover exceptionStates
      */
