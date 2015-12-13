@@ -9,7 +9,7 @@ compile 'org.wlf:FileDownloader:0.2.0'
 ``` 
 for eclipse users,jars:
 **[FileDownloader-0.2.0.jar](https://github.com/wlfcolin/file-downloader/raw/master/download/release/FileDownloader-0.2.0.jar)**
-**[FileDownloader-0.2.0-sources.jar](https://dl.bintray.com/wlfcolin/maven/org/wlf/FileDownloader/0.2.0/FileDownloader-0.2.0-sources.jar)**
+, **[FileDownloader-0.2.0-sources.jar](https://dl.bintray.com/wlfcolin/maven/org/wlf/FileDownloader/0.2.0/FileDownloader-0.2.0-sources.jar)**
 
 * 2.init FileDownloader in your application's onCreate() method
 ``` java
@@ -20,7 +20,7 @@ builder.configFileDownloadDir(Environment.getExternalStorageDirectory().getAbsol
         "FileDownloader");// config the download path
 builder.configDownloadTaskSize(3);// allow 3 download task at the same time
 FileDownloadConfiguration configuration = builder.build();// build FileDownloadConfiguration with the builder
-// 3.init FileDownloader with the configuration (the deprecated class FileDownloadManager is also available，see change log)
+// 3.init FileDownloader with the configuration (the deprecated class FileDownloadManager is also available，see [Change Log](https://github.com/wlfcolin/file-downloader/blob/master/CHANGELOG.md))
 FileDownloader.init(configuration);
 ```
 
