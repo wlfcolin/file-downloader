@@ -59,7 +59,7 @@ public class FileDownloadConfiguration {
         this.mContext = builder.mContext;
         this.mFileDownloadDir = builder.mFileDownloadDir;
         this.mFileDownloadEngine = Executors.newFixedThreadPool(builder.mDownloadTaskSize);
-        this.mSupportEngine = Executors.newSingleThreadExecutor();// default single thread
+        this.mSupportEngine = Executors.newCachedThreadPool();// no limit
     }
 
     // getters,package use only
@@ -102,11 +102,11 @@ public class FileDownloadConfiguration {
     public static class Builder {
 
         /**
-         * max download task at the same time,default 10
+         * max download task at the same time,max 5
          */
-        public static final int MAX_DOWNLOAD_TASK_SIZE = 10;
+        public static final int MAX_DOWNLOAD_TASK_SIZE = 5;
         /**
-         * default download task at the same time,2
+         * default download task at the same time,default 2
          */
         public static final int DEFAULT_DOWNLOAD_TASK_SIZE = 2;
 
