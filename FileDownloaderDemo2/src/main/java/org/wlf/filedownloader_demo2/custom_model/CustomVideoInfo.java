@@ -33,7 +33,7 @@ public class CustomVideoInfo implements OnDownloadFileChangeListener {
         FileDownloader.registerDownloadFileChangeListener(this);
 
         // init DownloadFileInfo if has been downloaded
-        mDownloadFileInfo = FileDownloader.getDownloadFileByUrl(mUrl);
+        mDownloadFileInfo = FileDownloader.getDownloadFile(mUrl);
     }
 
     @Override

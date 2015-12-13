@@ -22,7 +22,6 @@ import org.wlf.filedownloader.DownloadFileInfo;
 import org.wlf.filedownloader.FileDownloader;
 import org.wlf.filedownloader.base.Status;
 import org.wlf.filedownloader.listener.OnFileDownloadStatusListener;
-import org.wlf.filedownloader.util.CollectionUtil;
 import org.wlf.filedownloader.util.FileUtil;
 import org.wlf.filedownloader_demo2.MathUtil;
 import org.wlf.filedownloader_demo2.R;
@@ -47,31 +46,23 @@ public class CourseDownloadAdapter extends RecyclerView.Adapter<CourseDownloadVi
     private OnItemSelectListener mOnItemSelectListener;
 
     public CourseDownloadAdapter(List<CoursePreviewInfo> coursePreviewInfos) {
-        update(coursePreviewInfos);
+        update(coursePreviewInfos, true);
     }
 
-    public void update(List<CoursePreviewInfo> coursePreviewInfos) {
+    public void update(List<CoursePreviewInfo> coursePreviewInfos, boolean clearSelects) {
         if (coursePreviewInfos == null) {
             return;
         }
         mCoursePreviewInfos = coursePreviewInfos;
-        notifyDataSetChanged();
 
-        //remove those are not in mCoursePreviewInfos
-        List<CoursePreviewInfo> backup = new ArrayList<CoursePreviewInfo>();
-        mSelectCoursePreviewInfos.removeAll(mCoursePreviewInfos);
-        backup.removeAll(mSelectCoursePreviewInfos);
-        mSelectCoursePreviewInfos.addAll(backup);
-
-        if (CollectionUtil.isEmpty(mSelectCoursePreviewInfos)) {
+        if (clearSelects) {
+            mSelectCoursePreviewInfos.clear();
             if (mOnItemSelectListener != null) {
                 mOnItemSelectListener.onNoneSelect();
             }
-        } else {
-            if (mOnItemSelectListener != null) {
-                mOnItemSelectListener.onSelected(coursePreviewInfos);
-            }
         }
+
+        notifyDataSetChanged();
     }
 
     public void setOnItemSelectListener(OnItemSelectListener onItemSelectListener) {
@@ -416,24 +407,27 @@ public class CourseDownloadAdapter extends RecyclerView.Adapter<CourseDownloadVi
     @Override
     public void onFileDownloadStatusWaiting(DownloadFileInfo downloadFileInfo) {
         int position = findPosition(downloadFileInfo);
-        if (position > 0 && position < getItemCount()) {
-            notifyItemChanged(position, "onFileDownloadStatusWaiting");
+        if (position >= 0 && position < getItemCount()) {
+            notifyItemChanged(position, new Payload(downloadFileInfo.getStatus(), downloadFileInfo.getUrl(), -1, -1, 
+                    null));
         }
     }
 
     @Override
     public void onFileDownloadStatusPreparing(DownloadFileInfo downloadFileInfo) {
         int position = findPosition(downloadFileInfo);
-        if (position > 0 && position < getItemCount()) {
-            notifyItemChanged(position, "onFileDownloadStatusPreparing");
+        if (position >= 0 && position < getItemCount()) {
+            notifyItemChanged(position, new Payload(downloadFileInfo.getStatus(), downloadFileInfo.getUrl(), -1, -1, 
+                    null));
         }
     }
 
     @Override
     public void onFileDownloadStatusPrepared(DownloadFileInfo downloadFileInfo) {
         int position = findPosition(downloadFileInfo);
-        if (position > 0 && position < getItemCount()) {
-            notifyItemChanged(position, "onFileDownloadStatusPrepared");
+        if (position >= 0 && position < getItemCount()) {
+            notifyItemChanged(position, new Payload(downloadFileInfo.getStatus(), downloadFileInfo.getUrl(), -1, -1, 
+                    null));
         }
     }
 
@@ -441,7 +435,7 @@ public class CourseDownloadAdapter extends RecyclerView.Adapter<CourseDownloadVi
     public void onFileDownloadStatusDownloading(DownloadFileInfo downloadFileInfo, float downloadSpeed, long 
             remainingTime) {
         int position = findPosition(downloadFileInfo);
-        if (position > 0 && position < getItemCount()) {
+        if (position >= 0 && position < getItemCount()) {
             notifyItemChanged(position, new Payload(downloadFileInfo.getStatus(), downloadFileInfo.getUrl(), 
                     downloadSpeed, remainingTime, null));
         }
@@ -450,16 +444,18 @@ public class CourseDownloadAdapter extends RecyclerView.Adapter<CourseDownloadVi
     @Override
     public void onFileDownloadStatusPaused(DownloadFileInfo downloadFileInfo) {
         int position = findPosition(downloadFileInfo);
-        if (position > 0 && position < getItemCount()) {
-            notifyItemChanged(position, "onFileDownloadStatusPaused");
+        if (position >= 0 && position < getItemCount()) {
+            notifyItemChanged(position, new Payload(downloadFileInfo.getStatus(), downloadFileInfo.getUrl(), -1, -1, 
+                    null));
         }
     }
 
     @Override
     public void onFileDownloadStatusCompleted(DownloadFileInfo downloadFileInfo) {
         int position = findPosition(downloadFileInfo);
-        if (position > 0 && position < getItemCount()) {
-            notifyItemChanged(position, "onFileDownloadStatusCompleted");
+        if (position >= 0 && position < getItemCount()) {
+            notifyItemChanged(position, new Payload(downloadFileInfo.getStatus(), downloadFileInfo.getUrl(), -1, -1, 
+                    null));
         }
     }
 
@@ -467,8 +463,9 @@ public class CourseDownloadAdapter extends RecyclerView.Adapter<CourseDownloadVi
     public void onFileDownloadStatusFailed(String url, DownloadFileInfo downloadFileInfo, 
                                            OnFileDownloadStatusFailReason failReason) {
         int position = findPosition(downloadFileInfo);
-        if (position > 0 && position < getItemCount()) {
-            notifyItemChanged(position, downloadFileInfo);
+        if (position >= 0 && position < getItemCount()) {
+            notifyItemChanged(position, new Payload(downloadFileInfo.getStatus(), downloadFileInfo.getUrl(), -1, -1, 
+                    failReason));
         }
     }
 

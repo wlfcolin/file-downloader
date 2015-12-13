@@ -76,8 +76,8 @@ public final class FileDownloader {
      * @return DownloadFile
      * @see FileDownloadManager#getDownloadFileByUrl(String)
      */
-    public static DownloadFileInfo getDownloadFileByUrl(String url) {
-        return getFileDownloadManager().getDownloadFileByUrl(url);
+    public static DownloadFileInfo getDownloadFile(String url) {
+        return getFileDownloadManager().getDownloadFile(url);
     }
 
     /**

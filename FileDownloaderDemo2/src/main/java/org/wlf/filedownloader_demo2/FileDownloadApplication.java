@@ -3,6 +3,9 @@ package org.wlf.filedownloader_demo2;
 import android.app.Application;
 import android.os.Environment;
 
+import com.nostra13.universalimageloader.core.ImageLoader;
+import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
+
 import org.wlf.filedownloader.FileDownloadConfiguration;
 import org.wlf.filedownloader.FileDownloadConfiguration.Builder;
 import org.wlf.filedownloader.FileDownloader;
@@ -26,6 +29,9 @@ public class FileDownloadApplication extends Application {
 
         // init FileDownloader
         initFileDownloader();
+
+        // init ImageLoader
+        initImageLoader();
     }
 
     @Override
@@ -52,5 +58,12 @@ public class FileDownloadApplication extends Application {
     // release FileDownloader
     private void releaseFileDownloader() {
         FileDownloader.release();
+    }
+    
+    // init ImageLoader
+    private void initImageLoader(){
+        // Create global configuration and initialize ImageLoader with this config
+        ImageLoaderConfiguration config = new ImageLoaderConfiguration.Builder(this).build();
+        ImageLoader.getInstance().init(config);
     }
 }

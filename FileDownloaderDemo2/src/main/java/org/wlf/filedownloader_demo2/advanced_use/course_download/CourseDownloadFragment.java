@@ -48,7 +48,7 @@ public class CourseDownloadFragment extends Fragment implements OnItemSelectList
         return frag;
     }
 
-    private RecyclerView mRvAdvancedUse;
+    private RecyclerView mRvCourseDownload;
     private CourseDownloadAdapter mCourseDownloadAdapter;
 
     private LinearLayout mLnlyOperation;
@@ -65,19 +65,19 @@ public class CourseDownloadFragment extends Fragment implements OnItemSelectList
 
             rootView = inflater.inflate(R.layout.advanced_use__fragment_course_download, null);
 
-            mRvAdvancedUse = (RecyclerView) rootView.findViewById(R.id.rvAdvancedUse);
+            mRvCourseDownload = (RecyclerView) rootView.findViewById(R.id.rvCourseDownload);
 
             // create LinearLayoutManager
             LinearLayoutManager layoutManager = new LinearLayoutManager(getActivity());
             // vertical layout
             layoutManager.setOrientation(LinearLayoutManager.VERTICAL);
             // set layoutManager
-            mRvAdvancedUse.setLayoutManager(layoutManager);
+            mRvCourseDownload.setLayoutManager(layoutManager);
 
             mCourseDownloadAdapter = new CourseDownloadAdapter(null);
-            mRvAdvancedUse.setAdapter(mCourseDownloadAdapter);
+            mRvCourseDownload.setAdapter(mCourseDownloadAdapter);
 
-            mRvAdvancedUse.setItemAnimator(null);
+            mRvCourseDownload.setItemAnimator(null);
             mCourseDownloadAdapter.setOnItemSelectListener(this);
 
             mLnlyOperation = (LinearLayout) rootView.findViewById(R.id.lnlyOperation);
@@ -85,7 +85,7 @@ public class CourseDownloadFragment extends Fragment implements OnItemSelectList
             mBtnStartOrContinue = (Button) rootView.findViewById(R.id.btnStartOrContinue);
             mBtnDelete = (Button) rootView.findViewById(R.id.btnDelete);
 
-            initCourseDownloadData();
+            initCourseDownloadData(true);
 
             FileDownloader.registerDownloadStatusListener(mCourseDownloadAdapter);
             FileDownloader.registerDownloadFileChangeListener(this);
@@ -94,12 +94,12 @@ public class CourseDownloadFragment extends Fragment implements OnItemSelectList
         return rootView;
     }
 
-    private void initCourseDownloadData() {
+    private void initCourseDownloadData(final boolean clearSelects) {
         GetCourseDownloads getCourseDownloads = new GetCourseDownloads();
         getCourseDownloads.getCourseDownloads(getActivity(), new OnGetCourseDownloadsListener() {
             @Override
             public void onGetCourseDownloadsSucceed(List<CoursePreviewInfo> coursePreviewInfos) {
-                mCourseDownloadAdapter.update(coursePreviewInfos);
+                mCourseDownloadAdapter.update(coursePreviewInfos, clearSelects);
             }
 
             @Override
@@ -216,14 +216,17 @@ public class CourseDownloadFragment extends Fragment implements OnItemSelectList
                                                                         DownloadFileInfo downloadFileDeleting) {
                                         Log.e("wlf", "批量删除中，downloadFilesNeedDelete：" + downloadFilesNeedDelete.size
                                                 () + ",downloadFilesDeleted:" + downloadFilesDeleted.size());
-                                        showToast(getString(R.string.advanced_use__deleting) +
-                                                downloadFileDeleting.getFileName() +
-                                                getString(R.string.advanced_use__progress) +
-                                                (downloadFilesDeleted.size() + downloadFilesSkip.size()) +
-                                                getString(R.string.advanced_use__failed2) +
-                                                downloadFilesSkip.size() + getString(R.string
-                                                .advanced_use__skip_and_total_delete_division) +
-                                                downloadFilesNeedDelete.size());
+                                        if (downloadFileDeleting != null && downloadFilesSkip != null) {
+                                            showToast(getString(R.string.advanced_use__deleting) +
+                                                    downloadFileDeleting.getFileName() +
+                                                    getString(R.string.advanced_use__progress) +
+                                                    (downloadFilesDeleted.size() + downloadFilesSkip.size()) +
+                                                    getString(R.string.advanced_use__failed2) +
+                                                    downloadFilesSkip.size() + getString(R.string
+                                                    .advanced_use__skip_and_total_delete_division) +
+
+                                                    downloadFilesNeedDelete.size());
+                                        }
                                     }
 
                                     @Override
@@ -274,7 +277,7 @@ public class CourseDownloadFragment extends Fragment implements OnItemSelectList
     @Override
     public void onDownloadFileCreated(DownloadFileInfo downloadFileInfo) {
         Log.e("wlf", "onDownloadFileCreated---" + downloadFileInfo.getUrl() + ",thread:" + Thread.currentThread());
-        initCourseDownloadData();
+        initCourseDownloadData(false);
     }
 
     @Override
@@ -283,7 +286,7 @@ public class CourseDownloadFragment extends Fragment implements OnItemSelectList
 
     @Override
     public void onDownloadFileDeleted(DownloadFileInfo downloadFileInfo) {
-        initCourseDownloadData();
+        initCourseDownloadData(true);
     }
 
 }

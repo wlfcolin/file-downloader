@@ -247,6 +247,18 @@ public final class FileDownloadManager {
      * @param url file url
      * @return DownloadFile
      */
+    public DownloadFileInfo getDownloadFile(String url) {
+        return mDownloadFileCacher.getDownloadFile(url);
+    }
+
+    /**
+     * get DownloadFile by file url
+     *
+     * @param url file url
+     * @return DownloadFile
+     * @deprecated use {@link #getDownloadFile(String)} instead
+     */
+    @Deprecated
     public DownloadFileInfo getDownloadFileByUrl(String url) {
         return mDownloadFileCacher.getDownloadFile(url);
     }

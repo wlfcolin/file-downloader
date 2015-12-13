@@ -57,13 +57,37 @@ public class GetCoursePreviews {
                     "http://dlsw.baidu.com/sw-search-sp/soft/3a/12350/QQ_7.9.16638.0_setup.1449542695.exe",
                     //
                     "http://dlsw.baidu.com/sw-search-sp/soft/51/11843/Firefox_42.0.0.5780_setup.1446619646.exe"
-                    
+
+            };
+
+            String[] coverUrls = new String[]{
+                    //
+                    "http://e.hiphotos.baidu.com/zhidao/pic/item/3801213fb80e7becf012edb72f2eb9389a506b98.jpg",
+                    //
+                    "http://e.hiphotos.baidu.com/zhidao/pic/item/f2deb48f8c5494eeac6d0f3a2ef5e0fe99257e41.jpg",
+                    //
+                    "http://a.hiphotos.baidu.com/zhidao/pic/item/8ad4b31c8701a18b9f38ddb99c2f07082938fe71.jpg",
+                    //
+                    "http://f.hiphotos.bdimg.com/album/pic/item/0e2442a7d933c8959c5136eed31373f082020073.jpg",
+                    //
+                    "http://d.hiphotos.baidu.com/zhidao/pic/item/faf2b2119313b07e6959a5560fd7912396dd8c8c.jpg",
+                    //
+                    "http://a.hiphotos.baidu.com/zhidao/pic/item/faedab64034f78f077b4dbb07b310a55b3191c31.jpg",
+                    //
+                    "http://d.hiphotos.baidu.com/zhidao/pic/item/f603918fa0ec08fa2a8d93df59ee3d6d55fbda3d.jpg",
+                    //
+                    "http://a.hiphotos.baidu.com/zhidao/pic/item/a686c9177f3e6709b9ec3d393bc79f3df9dc5503.jpg",
+                    //
+                    "http://a.hiphotos.baidu.com/zhidao/pic/item/c8177f3e6709c93df8710edd9e3df8dcd100541c.jpg",
+                    //
+                    "http://f.hiphotos.baidu.com/zhidao/pic/item/fd039245d688d43ff2eafcc07f1ed21b0ef43b44.jpg"
+
             };
 
             for (int i = 0; i < courseUrls.length; i++) {
                 String courseName = courseUrls[i].substring(courseUrls[i].lastIndexOf("/") + 1, courseUrls[i].length());
-                CoursePreviewInfo coursePreviewInfo = new CoursePreviewInfo("C" + i, courseUrls[i], courseName, 
-                        CourseDbHelper.getInstance(context));
+                CoursePreviewInfo coursePreviewInfo = new CoursePreviewInfo("C" + i, courseUrls[i], coverUrls[i], 
+                        courseName, CourseDbHelper.getInstance(context));
                 coursePreviewInfos.add(coursePreviewInfo);
             }
 

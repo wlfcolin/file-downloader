@@ -223,13 +223,13 @@ public class DownloadFileListAdapter extends BaseAdapter implements OnFileDownlo
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if (isChecked) {
-                    mSelectedDownloadFileInfos.add(FileDownloader.getDownloadFileByUrl(url));
+                    mSelectedDownloadFileInfos.add(FileDownloader.getDownloadFile(url));
                     if (mOnItemSelectListener != null) {
                         // select a download file
                         mOnItemSelectListener.onSelected(mSelectedDownloadFileInfos);
                     }
                 } else {
-                    mSelectedDownloadFileInfos.remove(FileDownloader.getDownloadFileByUrl(url));
+                    mSelectedDownloadFileInfos.remove(FileDownloader.getDownloadFile(url));
                     if (mSelectedDownloadFileInfos.isEmpty()) {
                         if (mOnItemSelectListener != null) {
                             // select none

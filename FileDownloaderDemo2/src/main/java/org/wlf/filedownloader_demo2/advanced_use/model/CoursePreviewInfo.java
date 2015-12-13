@@ -31,6 +31,9 @@ public class CoursePreviewInfo implements OnDownloadFileChangeListener {
     @DatabaseField(columnName = "course_url", unique = true, canBeNull = false)
     private String mCourseUrl;//the url of the course
 
+    @DatabaseField(columnName = "course_cover_url")
+    private String mCourseCoverUrl;//the cover_url of the course
+    
     @DatabaseField(columnName = "course_name")
     private String mCourseName;//the name of the course
 
@@ -42,9 +45,10 @@ public class CoursePreviewInfo implements OnDownloadFileChangeListener {
         init();
     }
 
-    public CoursePreviewInfo(String courseId, String courseUrl, String courseName, CourseDbHelper courseDbHelper) {
+    public CoursePreviewInfo(String courseId, String courseUrl,String courseCoverUrl, String courseName, CourseDbHelper courseDbHelper) {
         mCourseId = courseId;
         mCourseUrl = courseUrl;
+        mCourseCoverUrl = courseCoverUrl;
         mCourseName = courseName;
         mCourseDbHelper = courseDbHelper;
 
@@ -58,7 +62,7 @@ public class CoursePreviewInfo implements OnDownloadFileChangeListener {
 
         // init DownloadFileInfo if has been downloaded
         if (!TextUtils.isEmpty(mCourseUrl)) {
-            mDownloadFileInfo = FileDownloader.getDownloadFileByUrl(mCourseUrl);
+            mDownloadFileInfo = FileDownloader.getDownloadFile(mCourseUrl);
         }
     }
 
@@ -80,6 +84,10 @@ public class CoursePreviewInfo implements OnDownloadFileChangeListener {
 
     public String getCourseUrl() {
         return mCourseUrl;
+    }
+
+    public String getCourseCoverUrl() {
+        return mCourseCoverUrl;
     }
 
     public String getCourseName() {
@@ -154,24 +162,5 @@ public class CoursePreviewInfo implements OnDownloadFileChangeListener {
                 e.printStackTrace();
             }
         }
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (o instanceof CoursePreviewInfo) {
-            CoursePreviewInfo other = (CoursePreviewInfo) o;
-            if (!TextUtils.isEmpty(other.mCourseUrl)) {
-                return other.mCourseUrl.equals(mCourseUrl);
-            }
-        }
-        return super.equals(o);
-    }
-
-    @Override
-    public int hashCode() {
-        if (!TextUtils.isEmpty(mCourseUrl)) {
-            return mCourseName.hashCode();
-        }
-        return super.hashCode();
     }
 }

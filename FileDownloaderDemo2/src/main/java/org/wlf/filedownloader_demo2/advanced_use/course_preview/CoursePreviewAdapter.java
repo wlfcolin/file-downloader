@@ -8,6 +8,8 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.nostra13.universalimageloader.core.ImageLoader;
+
 import org.wlf.filedownloader.FileDownloader;
 import org.wlf.filedownloader_demo2.R;
 import org.wlf.filedownloader_demo2.ToastUtil;
@@ -67,7 +69,11 @@ public class CoursePreviewAdapter extends RecyclerView.Adapter<CoursePreviewView
         }
 
         // course cover
-        holder.mIvCourseCover.setImageResource(R.mipmap.ic_launcher);
+        if (TextUtils.isEmpty(coursePreviewInfo.getCourseCoverUrl())) {
+            holder.mIvCourseCover.setImageResource(R.mipmap.ic_launcher);
+        } else {
+            ImageLoader.getInstance().displayImage(coursePreviewInfo.getCourseCoverUrl(), holder.mIvCourseCover);
+        }
         // course name
         holder.mTvCourseName.setText(coursePreviewInfo.getCourseName());
 
