@@ -1,0 +1,8 @@
+<resources>
+    <!-- text size -->
+    <dimen name="main__item_file_name_text_size">18sp</dimen>
+    <dimen name="main__item_downloaded_size_text_size">12sp</dimen>
+    <dimen name="main__item_total_size_text_size">12sp</dimen>
+    <dimen name="main__item_download_percent_text_size">12sp</dimen>
+    <dimen name="main__item_extra_text_text_size">12sp</dimen>
+</resources>

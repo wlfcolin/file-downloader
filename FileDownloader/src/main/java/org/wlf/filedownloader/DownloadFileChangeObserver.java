@@ -3,8 +3,8 @@ package org.wlf.filedownloader;
 import org.wlf.filedownloader.listener.OnDownloadFileChangeListener;
 
 import java.lang.ref.WeakReference;
-import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.CopyOnWriteArraySet;
 
 /**
  * DownloadFileChange Observer
@@ -16,7 +16,7 @@ import java.util.Set;
 class DownloadFileChangeObserver implements OnDownloadFileChangeListener {
 
     private Set<WeakReference<OnDownloadFileChangeListener>> mWeakOnDownloadFileChangeListeners = new 
-            HashSet<WeakReference<OnDownloadFileChangeListener>>();
+            CopyOnWriteArraySet<WeakReference<OnDownloadFileChangeListener>>();
 
     /**
      * add a DownloadFileChangeListener
@@ -79,7 +79,7 @@ class DownloadFileChangeObserver implements OnDownloadFileChangeListener {
             if (weakListener == null || weakListener == this) {
                 continue;
             }
-            weakListener.onDownloadFileCreated(downloadFileInfo);
+            OnDownloadFileChangeListener.MainThreadHelper.onDownloadFileCreated(downloadFileInfo, weakListener);
         }
     }
 
@@ -94,7 +94,7 @@ class DownloadFileChangeObserver implements OnDownloadFileChangeListener {
             if (weakListener == null || weakListener == this) {
                 continue;
             }
-            weakListener.onDownloadFileUpdated(downloadFileInfo, type);
+            OnDownloadFileChangeListener.MainThreadHelper.onDownloadFileUpdated(downloadFileInfo, type, weakListener);
         }
     }
 
@@ -109,7 +109,7 @@ class DownloadFileChangeObserver implements OnDownloadFileChangeListener {
             if (weakListener == null || weakListener == this) {
                 continue;
             }
-            weakListener.onDownloadFileDeleted(downloadFileInfo);
+            OnDownloadFileChangeListener.MainThreadHelper.onDownloadFileDeleted(downloadFileInfo, weakListener);
         }
     }
 }

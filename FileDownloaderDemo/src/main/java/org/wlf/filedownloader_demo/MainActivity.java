@@ -149,6 +149,10 @@ public class MainActivity extends Activity implements OnDetectUrlFileListener, O
         etUrl3.setText("http://down.sandai.net/thunder7/Thunder_dl_7.9.41.5020.exe");// exe file,thunder
         etUrl3.setFocusable(true);
 
+        final EditText etUrl4 = new EditText(this);
+        etUrl3.setText("http://mp4.28mtv.com/mp41/1862-刘德华-余生一起过[68mtv.com].mp4");// mp4 file,mv
+        etUrl3.setFocusable(true);
+        
         LinearLayout linearLayout = new LinearLayout(this);
         linearLayout.setOrientation(LinearLayout.VERTICAL);
         LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 
@@ -156,6 +160,7 @@ public class MainActivity extends Activity implements OnDetectUrlFileListener, O
         linearLayout.addView(etUrl1, params);
         linearLayout.addView(etUrl2, params);
         linearLayout.addView(etUrl3, params);
+        linearLayout.addView(etUrl4, params);
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle(getString(R.string.main__please_input_multi_download_files)).setView(linearLayout)

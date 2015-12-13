@@ -1,5 +1,8 @@
 package org.wlf.filedownloader.listener;
 
+import android.os.Handler;
+import android.os.Looper;
+
 import org.wlf.filedownloader.DownloadFileInfo;
 
 /**
@@ -49,5 +52,72 @@ public interface OnDownloadFileChangeListener {
          * other，may be all
          */
         OTHER
+    }
+
+    /**
+     * Callback helper for main thread
+     */
+    public static class MainThreadHelper {
+
+        /**
+         * an new DownloadFile created
+         *
+         * @param downloadFileInfo new DownloadFile created
+         */
+        public static void onDownloadFileCreated(final DownloadFileInfo downloadFileInfo, final 
+        OnDownloadFileChangeListener onDownloadFileChangeListener) {
+            final Handler handler = new Handler(Looper.getMainLooper());
+            handler.post(new Runnable() {
+                @Override
+                public void run() {
+                    if (onDownloadFileChangeListener == null) {
+                        return;
+                    }
+                    onDownloadFileChangeListener.onDownloadFileCreated(downloadFileInfo);
+                    handler.removeCallbacksAndMessages(null);
+                }
+            });
+        }
+
+        /**
+         * an DownloadFile updated
+         *
+         * @param downloadFileInfo DownloadFile updated
+         * @param type             the update type
+         */
+        public static void onDownloadFileUpdated(final DownloadFileInfo downloadFileInfo, final Type type, final 
+        OnDownloadFileChangeListener onDownloadFileChangeListener) {
+            final Handler handler = new Handler(Looper.getMainLooper());
+            handler.post(new Runnable() {
+                @Override
+                public void run() {
+                    if (onDownloadFileChangeListener == null) {
+                        return;
+                    }
+                    onDownloadFileChangeListener.onDownloadFileUpdated(downloadFileInfo, type);
+                    handler.removeCallbacksAndMessages(null);
+                }
+            });
+        }
+
+        /**
+         * an DownloadFile deleted
+         *
+         * @param downloadFileInfo DownloadFile deleted
+         */
+        public static void onDownloadFileDeleted(final DownloadFileInfo downloadFileInfo, final 
+        OnDownloadFileChangeListener onDownloadFileChangeListener) {
+            final Handler handler = new Handler(Looper.getMainLooper());
+            handler.post(new Runnable() {
+                @Override
+                public void run() {
+                    if (onDownloadFileChangeListener == null) {
+                        return;
+                    }
+                    onDownloadFileChangeListener.onDownloadFileDeleted(downloadFileInfo);
+                    handler.removeCallbacksAndMessages(null);
+                }
+            });
+        }
     }
 }

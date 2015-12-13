@@ -1,7 +1,11 @@
 <resources>
+
     <string name="app_name">文件下载管理器Demo2</string>
 
+    <string name="common__get_data_failed">获取数据失败！</string>
+
     <string name="main__custom_model_item_text">在自定义模型中快速使用</string>
+    <string name="main__advance_use_item_text">高级用法</string>
 
     <!-- custom_model -->
     <string name="custom_model__title_name">自定义模型使用</string>
@@ -19,4 +23,52 @@
     <string name="custom_model__preparing">正在连接资源</string>
     <string name="custom_model__prepared">已连接资源</string>
     <string name="custom_model__delete_succeed">删除成功</string>
+
+    <!-- ##### advanced_use ##### -->
+    <string name="advanced_use__title_name">高级用法</string>
+    <string name="advanced_use__action_tab_course_preview_text">课程预览</string>
+    <string name="advanced_use__action_tab_course_download_text">课程下载</string>
+    <string name="advanced_use__course_preview_url_is_empty_note">课程URL为空!</string>
+    <string name="advanced_use__course_preview_start_download">开始下载：</string>
+
+    <!-- CourseDownloadAdapter -->
+    <string name="advanced_use__course_download_play_mp4">偶发mp4课程</string>
+    <string name="advanced_use__course_download_play_flv">偶发flv课程</string>
+    <string name="advanced_use__can_not_download">无法下载，请删除后重新下载</string>
+    <string name="advanced_use__getting_resource">正在获取资源</string>
+    <string name="advanced_use__connected_resource">已连接资源</string>
+    <string name="advanced_use__waiting">等待下载</string>
+    <string name="advanced_use__paused">已暂停</string>
+    <string name="advanced_use__downloading">正在下载</string>
+    <string name="advanced_use__download_error">下载出错</string>
+    <string name="advanced_use__download_completed">下载完成</string>
+    <string name="advanced_use__file_not_exist">文件不存在</string>
+    <string name="advanced_use__can_not_download2">无法下载，请删除:</string>
+    <string name="advanced_use__re_download"> 后重新下载</string>
+    <string name="advanced_use__start_download">开始/继续下载:</string>
+    <string name="advanced_use__whether_re_download">文件不存在，是否重新下载</string>
+    <string name="advanced_use__re_download2">重新下载</string>
+    <string name="advanced_use__paused_download">暂停下载：</string>
+    <string name="advanced_use__dialog_btn_cancel">取消</string>
+    <string name="advanced_use__dialog_btn_confirm">确认</string>
+    <string name="advanced_use__course_download_not_start">未开始</string>
+
+    <string name="advanced_use__btn_pause">暂停</string>
+    <string name="advanced_use__btn_start_or_continue">开始/继续</string>
+    <string name="advanced_use__btn_delete">删除</string>
+
+    <string name="course_center__course_cache_delete_confirm">是否确定删除这 %d 项？</string>
+
+    <string name="main__delete_succeed">删除成功</string>
+    <string name="advanced_use__deleting">正在删除</string>
+    <string name="main__delete">删除</string>
+    <string name="main__failed">失败</string>
+    <string name="advanced_use__progress">,进度:</string>
+    <string name="advanced_use__failed2">(失败:</string>
+    <string name="advanced_use__skip_and_total_delete_division">)/</string>
+    <string name="advanced_use__need_delete">需要删除</string>
+    <string name="advanced_use__delete_finish">删除完成，成功:</string>
+    <string name="advanced_use__failed3">,失败:</string>
+    <string name="advanced_use__delete_failed">删除失败!</string>
+    
 </resources>

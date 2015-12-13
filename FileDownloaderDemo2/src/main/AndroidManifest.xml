@@ -29,6 +29,10 @@
             android:name=".custom_model.CustomModelActivity"
             android:label="@string/custom_model__title_name">
         </activity>
+        <activity
+            android:name=".advanced_use.AdvancedUseActivity"
+            android:label="@string/advanced_use__title_name">
+        </activity>
     </application>
 
 </manifest>

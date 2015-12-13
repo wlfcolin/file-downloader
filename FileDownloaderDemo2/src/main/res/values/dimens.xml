@@ -1,0 +1,8 @@
+<resources>
+    <!-- width、height-->
+    <dimen name="main__item_layout_minHeight">100dp</dimen>
+    <!-- padding、margin-->
+    <dimen name="advanced_use___course_preview_item_decoration_margin">8dp</dimen>
+    
+    
+</resources>

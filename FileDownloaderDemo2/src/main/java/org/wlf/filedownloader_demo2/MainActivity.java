@@ -10,6 +10,7 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
 import org.wlf.filedownloader.FileDownloader;
+import org.wlf.filedownloader_demo2.advanced_use.AdvancedUseActivity;
 import org.wlf.filedownloader_demo2.custom_model.CustomModelActivity;
 
 /**
@@ -28,13 +29,14 @@ public class MainActivity extends Activity implements OnItemClickListener {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.main__activity_mian);
+        setContentView(R.layout.main__activity_main);
 
         lvList = (ListView) findViewById(R.id.lvList);
 
         ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_expandable_list_item_1);
 
         adapter.add(getString(R.string.main__custom_model_item_text));
+        adapter.add(getString(R.string.main__advance_use_item_text));
 
         lvList.setAdapter(adapter);
         lvList.setOnItemClickListener(this);
@@ -47,6 +49,9 @@ public class MainActivity extends Activity implements OnItemClickListener {
             switch (position) {
                 case 0:
                     intent = new Intent(this, CustomModelActivity.class);
+                    break;
+                case 1:
+                    intent = new Intent(this, AdvancedUseActivity.class);
                     break;
             }
             if (intent != null) {

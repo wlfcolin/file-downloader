@@ -302,11 +302,7 @@ public class DownloadFileListAdapter extends BaseAdapter implements OnFileDownlo
 
                             TextView tvText = (TextView) lnlyDownloadItem.findViewById(R.id.tvText);
                             if (tvText != null) {
-                                if (tvText.getTag() == null) {
-                                    tvText.setTag((String) tvText.getTag());
-                                } else {
-                                    tvText.setText(context.getString(R.string.main__paused));
-                                }
+                                tvText.setText(context.getString(R.string.main__paused));
                             }
                             break;
                         // download file status:completed

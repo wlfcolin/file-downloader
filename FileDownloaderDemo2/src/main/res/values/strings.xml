@@ -1,9 +1,13 @@
 <resources>
+
     <string name="app_name">FileDownloader Demo2</string>
 
+    <string name="common__get_data_failed">Get data failed!</string>
+
     <string name="main__custom_model_item_text">Easy use in Custom Model</string>
-    
-    <!-- custom_model -->
+    <string name="main__advance_use_item_text">Advance use</string>
+
+    <!-- ##### custom_model ##### -->
     <string name="custom_model__title_name">Custom Model Usage</string>
     <string name="custom_model__can_not_download2">Can not download,please delete the file:</string>
     <string name="custom_model__re_download"> re-download</string>
@@ -19,4 +23,52 @@
     <string name="custom_model__preparing">Preparing</string>
     <string name="custom_model__prepared">Prepared</string>
     <string name="custom_model__delete_succeed">Delete success</string>
+
+    <!-- ##### advanced_use ##### -->
+    <string name="advanced_use__title_name">Advanced Usage</string>
+    <string name="advanced_use__action_tab_course_preview_text">Course preview</string>
+    <string name="advanced_use__action_tab_course_download_text">Course download</string>
+    <string name="advanced_use__course_preview_url_is_empty_note">Course url is empty!</string>
+    <string name="advanced_use__course_preview_start_download">Start download:</string>
+
+    <!-- CourseDownloadAdapter -->
+    <string name="advanced_use__course_download_play_mp4">Play mp4 course</string>
+    <string name="advanced_use__course_download_play_flv">Play flv course</string>
+    <string name="advanced_use__can_not_download">Can not download, please delete the file</string>
+    <string name="advanced_use__getting_resource">Getting resource</string>
+    <string name="advanced_use__connected_resource">Connected resource</string>
+    <string name="advanced_use__waiting">Waiting</string>
+    <string name="advanced_use__paused">Paused</string>
+    <string name="advanced_use__downloading">Downloading</string>
+    <string name="advanced_use__download_error">Download error</string>
+    <string name="advanced_use__download_completed">Download completed</string>
+    <string name="advanced_use__file_not_exist">File not exist</string>
+    <string name="advanced_use__can_not_download2">Can not download,please delete the file:</string>
+    <string name="advanced_use__re_download"> re-download</string>
+    <string name="advanced_use__start_download">Start/Continue download:</string>
+    <string name="advanced_use__whether_re_download">File not exist,whether re-download</string>
+    <string name="advanced_use__re_download2">re-download</string>
+    <string name="advanced_use__paused_download">Paused download:</string>
+    <string name="advanced_use__dialog_btn_cancel">Cancel</string>
+    <string name="advanced_use__dialog_btn_confirm">Confirm</string>
+    <string name="advanced_use__course_download_not_start">Not start</string>
+
+    <string name="advanced_use__btn_pause">Pause</string>
+    <string name="advanced_use__btn_start_or_continue">Start/Continue</string>
+    <string name="advanced_use__btn_delete">Delete</string>
+
+    <string name="course_center__course_cache_delete_confirm">whether delete %d items？</string>
+
+    <string name="main__delete_succeed">Delete success</string>
+    <string name="advanced_use__deleting">Deleting</string>
+    <string name="main__delete">Delete</string>
+    <string name="main__failed">Failed</string>
+    <string name="advanced_use__progress">,Progress:</string>
+    <string name="advanced_use__failed2">(Failed:</string>
+    <string name="advanced_use__skip_and_total_delete_division">)/</string>
+    <string name="advanced_use__need_delete">Need to delete</string>
+    <string name="advanced_use__delete_finish">Delete finish,success:</string>
+    <string name="advanced_use__failed3">,Failed:</string>
+    <string name="advanced_use__delete_failed">Delete failed!</string>
+
 </resources>

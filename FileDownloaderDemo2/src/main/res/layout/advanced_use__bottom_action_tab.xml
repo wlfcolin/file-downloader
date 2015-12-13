@@ -1,0 +1,32 @@
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+             android:layout_width="match_parent"
+             android:layout_height="wrap_content"
+             android:background="#FFFFFF">
+
+    <!-- ActionTab按钮 -->
+    <RadioGroup
+        android:id="@+id/rgActionTab"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:gravity="center"
+        android:orientation="horizontal"
+        android:padding="3dp">
+
+        <RadioButton
+            android:id="@+id/rbTab1"
+            style="@style/AppTheme.Advanced_Use__Bottom_ActionTab_RadioButton"
+            android:layout_marginLeft="20dp"
+            android:checked="true"
+            android:drawableTop="@drawable/advanced_use__selector_btn_bottom_action_tab_1"
+            android:text="@string/advanced_use__action_tab_course_preview_text"/>
+
+        <RadioButton
+            android:id="@+id/rbTab2"
+            style="@style/AppTheme.Advanced_Use__Bottom_ActionTab_RadioButton"
+            android:layout_marginRight="20dp"
+            android:drawableTop="@drawable/advanced_use__selector_btn_bottom_action_tab_2"
+            android:text="@string/advanced_use__action_tab_course_download_text"/>
+    </RadioGroup>
+
+</FrameLayout>

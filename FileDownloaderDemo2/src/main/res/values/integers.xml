@@ -1,0 +1,3 @@
+<resources>
+    <integer name="course_center__grid_view_num_columns">2</integer>
+</resources>
