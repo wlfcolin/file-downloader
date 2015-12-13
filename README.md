@@ -20,9 +20,10 @@ builder.configFileDownloadDir(Environment.getExternalStorageDirectory().getAbsol
         "FileDownloader");// config the download path
 builder.configDownloadTaskSize(3);// allow 3 download task at the same time
 FileDownloadConfiguration configuration = builder.build();// build FileDownloadConfiguration with the builder
-// 3.init FileDownloader with the configuration (the deprecated class FileDownloadManager is also available，see [Change Log](https://github.com/wlfcolin/file-downloader/blob/master/CHANGELOG.md))
+// 3.init FileDownloader with the configuration
 FileDownloader.init(configuration);
 ```
+the deprecated class **FileDownloadManager** is also available，see [Change Log](https://github.com/wlfcolin/file-downloader/blob/master/CHANGELOG.md)
 
 * 3.register a DownloadStatusListener
 ``` java
