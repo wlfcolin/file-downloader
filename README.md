@@ -28,7 +28,7 @@ the deprecated class **FileDownloadManager** is also available，see [Change Log
 * 3.register a DownloadStatusListener
 ``` java
 // registerDownloadStatusListener 
-FileDownloader.registerDownloadStatusListener(mDownloadFileListAdapter);
+FileDownloader.registerDownloadStatusListener(mOnFileDownloadStatusListener);
 ```
 
 * 4.create a new download
