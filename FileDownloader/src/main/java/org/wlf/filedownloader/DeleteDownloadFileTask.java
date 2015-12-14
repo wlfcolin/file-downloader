@@ -22,6 +22,7 @@ class DeleteDownloadFileTask implements Runnable {
     private String mUrl;
     private boolean mDeleteDownloadedFileInPath;
     private DownloadFileCacher mFileDownloadCacher;
+    private boolean mIsSyncCallback = false;
 
     private OnDeleteDownloadFileListener mOnDeleteDownloadFileListener;
 
@@ -36,14 +37,22 @@ class DeleteDownloadFileTask implements Runnable {
         this.mOnDeleteDownloadFileListener = onDeleteDownloadFileListener;
     }
 
+    // package use only
+
+    /**
+     * enable the callback sync
+     */
+    void enableSyncCallback() {
+        mIsSyncCallback = true;
+    }
+
     @Override
     public void run() {
 
         DownloadFileInfo downloadFileInfo = mFileDownloadCacher.getDownloadFile(mUrl);
 
         // 1.prepared
-        OnDeleteDownloadFileListener.MainThreadHelper.onDeleteDownloadFilePrepared(downloadFileInfo, 
-                mOnDeleteDownloadFileListener);
+        notifyPrepared(downloadFileInfo);
 
         OnDeleteDownloadFileFailReason failReason = null;
 
@@ -79,8 +88,7 @@ class DeleteDownloadFileTask implements Runnable {
                     if (deleteResult) {
                         Log.d(TAG, "DeleteDownloadFileTask.run 件删除成功url：" + mUrl);
                         // 2.delete success
-                        OnDeleteDownloadFileListener.MainThreadHelper.onDeleteDownloadFileSuccess(downloadFileInfo, 
-                                mOnDeleteDownloadFileListener);
+                        notifySuccess(downloadFileInfo);
                         return;
                     } else {
                         failReason = new OnDeleteDownloadFileFailReason("delete file in path failed!", 
@@ -102,6 +110,41 @@ class DeleteDownloadFileTask implements Runnable {
         if (failReason != null) {
             Log.d(TAG, "DeleteDownloadFileTask.run 删除失败url：" + mUrl + ",failReason:" + failReason.getType());
             // 2.delete failed
+            notifyFailed(downloadFileInfo, failReason);
+        }
+    }
+
+    private void notifyPrepared(DownloadFileInfo downloadFileInfo) {
+        if (mOnDeleteDownloadFileListener == null) {
+            return;
+        }
+        if (mIsSyncCallback) {
+            mOnDeleteDownloadFileListener.onDeleteDownloadFilePrepared(downloadFileInfo);
+        } else {
+            OnDeleteDownloadFileListener.MainThreadHelper.onDeleteDownloadFilePrepared(downloadFileInfo, 
+                    mOnDeleteDownloadFileListener);
+        }
+    }
+
+    private void notifySuccess(DownloadFileInfo downloadFileInfo) {
+        if (mOnDeleteDownloadFileListener == null) {
+            return;
+        }
+        if (mIsSyncCallback) {
+            mOnDeleteDownloadFileListener.onDeleteDownloadFileSuccess(downloadFileInfo);
+        } else {
+            OnDeleteDownloadFileListener.MainThreadHelper.onDeleteDownloadFileSuccess(downloadFileInfo, 
+                    mOnDeleteDownloadFileListener);
+        }
+    }
+
+    private void notifyFailed(DownloadFileInfo downloadFileInfo, OnDeleteDownloadFileFailReason failReason) {
+        if (mOnDeleteDownloadFileListener == null) {
+            return;
+        }
+        if (mIsSyncCallback) {
+            mOnDeleteDownloadFileListener.onDeleteDownloadFileFailed(downloadFileInfo, failReason);
+        } else {
             OnDeleteDownloadFileListener.MainThreadHelper.onDeleteDownloadFileFailed(downloadFileInfo, failReason, 
                     mOnDeleteDownloadFileListener);
         }

@@ -334,6 +334,8 @@ class DownloadMoveManager {
                     move(url, mNewDirPath, onMoveDownloadFileListener, true);
                 }
             }
+
+            mIsStop = true;// because is sync delete,so at this time,the task is finish
         }
 
         // move finish

@@ -88,7 +88,7 @@ public class CoursePreviewAdapter extends RecyclerView.Adapter<CoursePreviewView
                 }
 
                 ToastUtil.showToast(v.getContext(), v.getContext().getString(R.string
-                        .advanced_use__course_preview_start_download) + coursePreviewInfo.getCourseName());
+                        .advanced_use__course_preview_add_download) + coursePreviewInfo.getCourseName());
                 // use FileDownloader to download
                 FileDownloader.start(coursePreviewInfo.getCourseUrl());
             }

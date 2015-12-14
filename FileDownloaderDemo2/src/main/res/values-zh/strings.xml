@@ -29,7 +29,7 @@
     <string name="advanced_use__action_tab_course_preview_text">课程预览</string>
     <string name="advanced_use__action_tab_course_download_text">课程下载</string>
     <string name="advanced_use__course_preview_url_is_empty_note">课程URL为空!</string>
-    <string name="advanced_use__course_preview_start_download">开始下载：</string>
+    <string name="advanced_use__course_preview_add_download">添加下载：</string>
 
     <!-- CourseDownloadAdapter -->
     <string name="advanced_use__course_download_play_mp4">偶发mp4课程</string>

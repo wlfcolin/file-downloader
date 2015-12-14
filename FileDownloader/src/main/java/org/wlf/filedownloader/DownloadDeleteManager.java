@@ -76,24 +76,20 @@ class DownloadDeleteManager {
      * delete download
      */
     private void deleteInternal(String url, boolean deleteDownloadedFileInPath, OnDeleteDownloadFileListener 
-            onDeleteDownloadFileListener) {
+            onDeleteDownloadFileListener, boolean isSyncCallback) {
         // create delete download task
         DeleteDownloadFileTask deleteDownloadFileTask = new DeleteDownloadFileTask(url, deleteDownloadedFileInPath, 
                 mDownloadFileCacher);
+        if (isSyncCallback) {
+            deleteDownloadFileTask.enableSyncCallback();
+        }
         deleteDownloadFileTask.setOnDeleteDownloadFileListener(onDeleteDownloadFileListener);
         // run task
         addAndRunTask(deleteDownloadFileTask);
     }
 
-    /**
-     * delete download
-     *
-     * @param url                          file url
-     * @param deleteDownloadedFileInPath   whether delete file in path
-     * @param onDeleteDownloadFileListener DeleteDownloadFileListener
-     */
-    void delete(String url, final boolean deleteDownloadedFileInPath, final OnDeleteDownloadFileListener 
-            onDeleteDownloadFileListener) {
+    private void delete(String url, final boolean deleteDownloadedFileInPath, final OnDeleteDownloadFileListener 
+            onDeleteDownloadFileListener, final boolean isSyncCallback) {
 
         final DownloadFileInfo downloadFileInfo = getDownloadFile(url);
         if (downloadFileInfo == null) {
@@ -113,7 +109,7 @@ class DownloadDeleteManager {
 
             Log.d(TAG, "delete 直接删除,url:" + url);
 
-            deleteInternal(url, deleteDownloadedFileInPath, onDeleteDownloadFileListener);
+            deleteInternal(url, deleteDownloadedFileInPath, onDeleteDownloadFileListener, isSyncCallback);
         } else {
 
             Log.d(TAG, "delete 需要先暂停后删除,url:" + url);
@@ -125,7 +121,7 @@ class DownloadDeleteManager {
 
                     Log.d(TAG, "delete 暂停成功，开始删除,url:" + url);
 
-                    deleteInternal(url, deleteDownloadedFileInPath, onDeleteDownloadFileListener);
+                    deleteInternal(url, deleteDownloadedFileInPath, onDeleteDownloadFileListener, isSyncCallback);
                 }
 
                 @Override
@@ -140,6 +136,18 @@ class DownloadDeleteManager {
                 }
             });
         }
+    }
+
+    /**
+     * delete download
+     *
+     * @param url                          file url
+     * @param deleteDownloadedFileInPath   whether delete file in path
+     * @param onDeleteDownloadFileListener DeleteDownloadFileListener
+     */
+    void delete(String url, boolean deleteDownloadedFileInPath, OnDeleteDownloadFileListener 
+            onDeleteDownloadFileListener) {
+        delete(url, deleteDownloadedFileInPath, onDeleteDownloadFileListener, false);
     }
 
     /**
@@ -242,8 +250,9 @@ class DownloadDeleteManager {
 
                     // start new delete
                     if (mOnDeleteDownloadFilesListener != null) {
-                        mOnDeleteDownloadFilesListener.onDeletingDownloadFiles(mDownloadFilesNeedDelete, 
-                                mDownloadFilesDeleted, mDownloadFilesSkip, downloadFileNeedDelete);
+                        OnDeleteDownloadFilesListener.MainThreadHelper.onDeletingDownloadFiles
+                                (mDownloadFilesNeedDelete, mDownloadFilesDeleted, mDownloadFilesSkip, 
+                                        downloadFileNeedDelete, mOnDeleteDownloadFilesListener);
                     }
 
                     deleteCount++;
@@ -326,8 +335,10 @@ class DownloadDeleteManager {
                 }
 
                 // deleting
-                delete(url, mDeleteDownloadedFile, onDeleteDownloadFileListener);
+                delete(url, mDeleteDownloadedFile, onDeleteDownloadFileListener, true);
             }
+
+            mIsStop = true;// because is sync delete,so at this time,the task is finish
         }
 
         // on delete finish
@@ -336,8 +347,8 @@ class DownloadDeleteManager {
                 return;
             }
             if (mOnDeleteDownloadFilesListener != null) {
-                mOnDeleteDownloadFilesListener.onDeleteDownloadFilesCompleted(mDownloadFilesNeedDelete, 
-                        mDownloadFilesDeleted);
+                OnDeleteDownloadFilesListener.MainThreadHelper.onDeleteDownloadFilesCompleted
+                        (mDownloadFilesNeedDelete, mDownloadFilesDeleted, mOnDeleteDownloadFilesListener);
             }
             mCompleted = true;
             mIsStop = true;

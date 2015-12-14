@@ -22,7 +22,7 @@ class MoveDownloadFileTask implements Runnable {
     private String mUrl;
     private String mNewDirPath;
     private DownloadFileCacher mFileDownloadCacher;
-    private boolean isSyncCallback = false;
+    private boolean mIsSyncCallback = false;
 
     private OnMoveDownloadFileListener mOnMoveDownloadFileListener;
 
@@ -48,7 +48,7 @@ class MoveDownloadFileTask implements Runnable {
      * enable the callback sync
      */
     void enableSyncCallback() {
-        isSyncCallback = true;
+        mIsSyncCallback = true;
     }
 
     @Override
@@ -139,7 +139,7 @@ class MoveDownloadFileTask implements Runnable {
         if (mOnMoveDownloadFileListener == null) {
             return;
         }
-        if (isSyncCallback) {
+        if (mIsSyncCallback) {
             mOnMoveDownloadFileListener.onMoveDownloadFilePrepared(downloadFileInfo);
         } else {
             OnMoveDownloadFileListener.MainThreadHelper.onMoveDownloadFilePrepared(downloadFileInfo, 
@@ -151,7 +151,7 @@ class MoveDownloadFileTask implements Runnable {
         if (mOnMoveDownloadFileListener == null) {
             return;
         }
-        if (isSyncCallback) {
+        if (mIsSyncCallback) {
             mOnMoveDownloadFileListener.onMoveDownloadFileSuccess(downloadFileInfo);
         } else {
             OnMoveDownloadFileListener.MainThreadHelper.onMoveDownloadFileSuccess(downloadFileInfo, 
@@ -163,7 +163,7 @@ class MoveDownloadFileTask implements Runnable {
         if (mOnMoveDownloadFileListener == null) {
             return;
         }
-        if (isSyncCallback) {
+        if (mIsSyncCallback) {
             mOnMoveDownloadFileListener.onMoveDownloadFileFailed(downloadFileInfo, failReason);
         } else {
             OnMoveDownloadFileListener.MainThreadHelper.onMoveDownloadFileFailed(downloadFileInfo, failReason, 

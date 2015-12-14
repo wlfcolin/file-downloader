@@ -29,7 +29,7 @@
     <string name="advanced_use__action_tab_course_preview_text">Course preview</string>
     <string name="advanced_use__action_tab_course_download_text">Course download</string>
     <string name="advanced_use__course_preview_url_is_empty_note">Course url is empty!</string>
-    <string name="advanced_use__course_preview_start_download">Start download:</string>
+    <string name="advanced_use__course_preview_add_download">add download:</string>
 
     <!-- CourseDownloadAdapter -->
     <string name="advanced_use__course_download_play_mp4">Play mp4 course</string>
