@@ -53,6 +53,10 @@
     <string name="advanced_use__dialog_btn_confirm">确认</string>
     <string name="advanced_use__course_download_not_start">未开始</string>
 
+    <string name="advanced_use__check_network">(请检查网络)</string>
+    <string name="advanced_use__url_illegal">(Url不合法)</string>
+    <string name="advanced_use__network_timeout">(网络超时)</string>
+
     <string name="advanced_use__btn_pause">暂停</string>
     <string name="advanced_use__btn_start_or_continue">开始/继续</string>
     <string name="advanced_use__btn_delete">删除</string>

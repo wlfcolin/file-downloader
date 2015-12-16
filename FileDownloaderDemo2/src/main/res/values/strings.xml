@@ -53,6 +53,10 @@
     <string name="advanced_use__dialog_btn_confirm">Confirm</string>
     <string name="advanced_use__course_download_not_start">Not start</string>
 
+    <string name="advanced_use__check_network">(Check network)</string>
+    <string name="advanced_use__url_illegal">Url illegal</string>
+    <string name="advanced_use__network_timeout">(Network timeout)</string>
+
     <string name="advanced_use__btn_pause">Pause</string>
     <string name="advanced_use__btn_start_or_continue">Start/Continue</string>
     <string name="advanced_use__btn_delete">Delete</string>

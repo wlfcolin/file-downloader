@@ -2,6 +2,7 @@ package org.wlf.filedownloader.listener;
 
 import org.wlf.filedownloader.base.FailReason;
 import org.wlf.filedownloader.http_downlaoder.HttpDownloader.HttpDownloadException;
+import org.wlf.filedownloader.listener.OnDetectUrlFileListener.DetectUrlFileFailReason;
 
 import java.net.ConnectException;
 import java.net.SocketTimeoutException;
@@ -76,6 +77,18 @@ public class HttpFailReason extends FailReason {
                     setType(TYPE_NETWORK_TIMEOUT);
                 } else if (HttpDownloadException.TYPE_NETWORK_DENIED.equals(type)) {
                     setType(TYPE_NETWORK_DENIED);
+                } else {
+                    //....
+                }
+            }
+            // DetectUrlFileFailReason
+            else if (throwable instanceof DetectUrlFileFailReason) {
+                DetectUrlFileFailReason detectUrlFileFailReason = (DetectUrlFileFailReason) throwable;
+                String type = detectUrlFileFailReason.getType();
+                if (DetectUrlFileFailReason.TYPE_NETWORK_DENIED.equals(type)) {
+                    setType(TYPE_NETWORK_DENIED);
+                } else if (DetectUrlFileFailReason.TYPE_NETWORK_TIMEOUT.equals(type)) {
+                    setType(TYPE_NETWORK_TIMEOUT);
                 } else {
                     //....
                 }

@@ -271,7 +271,7 @@ public interface OnFileDownloadStatusListener {
                 return;
             }
 
-            // HttpDownloadException
+            // FileSaveException
             if (throwable instanceof FileSaveException) {
                 FileSaveException fileSaveException = (FileSaveException) throwable;
                 String type = fileSaveException.getType();

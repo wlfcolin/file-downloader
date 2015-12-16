@@ -74,7 +74,7 @@ public class CourseDownloadFragment extends Fragment implements OnItemSelectList
             // set layoutManager
             mRvCourseDownload.setLayoutManager(layoutManager);
 
-            mCourseDownloadAdapter = new CourseDownloadAdapter(null);
+            mCourseDownloadAdapter = new CourseDownloadAdapter(getActivity(), null);
             mRvCourseDownload.setAdapter(mCourseDownloadAdapter);
 
             mRvCourseDownload.setItemAnimator(null);

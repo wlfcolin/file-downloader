@@ -44,8 +44,10 @@ public class CourseDownloadAdapter extends RecyclerView.Adapter<CourseDownloadVi
     private List<CoursePreviewInfo> mSelectCoursePreviewInfos = new ArrayList<CoursePreviewInfo>();
 
     private OnItemSelectListener mOnItemSelectListener;
+    private Context mContext;
 
-    public CourseDownloadAdapter(List<CoursePreviewInfo> coursePreviewInfos) {
+    public CourseDownloadAdapter(Context context, List<CoursePreviewInfo> coursePreviewInfos) {
+        this.mContext = context;
         update(coursePreviewInfos, true);
     }
 
@@ -168,25 +170,25 @@ public class CourseDownloadAdapter extends RecyclerView.Adapter<CourseDownloadVi
             holder.mTvPercent.setText(MathUtil.formatNumber(percent) + "%");
 
             final TextView tvText = holder.mTvText;
-            // status
+            // mStatus
             switch (downloadFileInfo.getStatus()) {
-                // download file status:unknown
+                // download file mStatus:unknown
                 case Status.DOWNLOAD_STATUS_UNKNOWN:
                     tvText.setText(context.getString(R.string.advanced_use__can_not_download));
                     break;
-                // download file status:waiting
+                // download file mStatus:waiting
                 case Status.DOWNLOAD_STATUS_WAITING:
                     tvText.setText(context.getString(R.string.advanced_use__waiting));
                     break;
-                // download file status:preparing
+                // download file mStatus:preparing
                 case Status.DOWNLOAD_STATUS_PREPARING:
                     tvText.setText(context.getString(R.string.advanced_use__getting_resource));
                     break;
-                // download file status:prepared
+                // download file mStatus:prepared
                 case Status.DOWNLOAD_STATUS_PREPARED:
                     tvText.setText(context.getString(R.string.advanced_use__connected_resource));
                     break;
-                // download file status:downloading
+                // download file mStatus:downloading
                 case Status.DOWNLOAD_STATUS_DOWNLOADING:
                     if (payload != null && payload.mDownloadSpeed > 0 && payload.mRemainingTime > 0) {
                         tvText.setText(MathUtil.formatNumber(payload.mDownloadSpeed) + "KB/s   " + TimeUtil
@@ -195,15 +197,31 @@ public class CourseDownloadAdapter extends RecyclerView.Adapter<CourseDownloadVi
                         tvText.setText(context.getString(R.string.advanced_use__downloading));
                     }
                     break;
-                // download file status:paused
+                // download file mStatus:paused
                 case Status.DOWNLOAD_STATUS_PAUSED:
                     tvText.setText(context.getString(R.string.advanced_use__paused));
                     break;
-                // download file status:error
+                // download file mStatus:error
                 case Status.DOWNLOAD_STATUS_ERROR:
+
+                    String msg = context.getString(R.string.advanced_use__download_error);
+
+                    if (payload != null && payload.mFailReason != null) {
+                        OnFileDownloadStatusFailReason failReason = payload.mFailReason;
+                        if (OnFileDownloadStatusFailReason.TYPE_NETWORK_DENIED.equals(failReason.getType())) {
+                            msg += context.getString(R.string.advanced_use__check_network);
+                        } else if (OnFileDownloadStatusFailReason.TYPE_URL_ILLEGAL.equals(failReason.getType())) {
+                            msg += context.getString(R.string.advanced_use__url_illegal);
+                        } else if (OnFileDownloadStatusFailReason.TYPE_NETWORK_TIMEOUT.equals(failReason.getType())) {
+                            msg += context.getString(R.string.advanced_use__network_timeout);
+                        }
+                    }
+
+                    tvText.setText(msg);
+
                     tvText.setText(context.getString(R.string.advanced_use__download_error));
                     break;
-                // download file status:completed
+                // download file mStatus:completed
                 case Status.DOWNLOAD_STATUS_COMPLETED:
                     holder.mTvDownloadSize.setText("");
                     //mp4
@@ -220,7 +238,7 @@ public class CourseDownloadAdapter extends RecyclerView.Adapter<CourseDownloadVi
                         tvText.setText(context.getString(R.string.advanced_use__download_completed));
                     }
                     break;
-                // download file status:file not exist
+                // download file mStatus:file not exist
                 case Status.DOWNLOAD_STATUS_FILE_NOT_EXIST:
                     holder.mTvDownloadSize.setText("");
                     tvText.setText(context.getString(R.string.advanced_use__file_not_exist));
@@ -263,7 +281,7 @@ public class CourseDownloadAdapter extends RecyclerView.Adapter<CourseDownloadVi
             }
         });
 
-        // set check status
+        // set check mStatus
         boolean isChecked = false;
         for (CoursePreviewInfo selectCoursePreviewInfo : mSelectCoursePreviewInfos) {
             if (selectCoursePreviewInfo == coursePreviewInfo) {
@@ -303,7 +321,7 @@ public class CourseDownloadAdapter extends RecyclerView.Adapter<CourseDownloadVi
                 final Context context = v.getContext();
                 if (downloadFileInfo != null) {
                     switch (downloadFileInfo.getStatus()) {
-                        // download file status:unknown
+                        // download file mStatus:unknown
                         case Status.DOWNLOAD_STATUS_UNKNOWN:
 
                             showToast(context, context.getString(R.string.advanced_use__can_not_download2) +
@@ -311,7 +329,7 @@ public class CourseDownloadAdapter extends RecyclerView.Adapter<CourseDownloadVi
                                     .advanced_use__re_download));
 
                             break;
-                        // download file status:error & paused
+                        // download file mStatus:error & paused
                         case Status.DOWNLOAD_STATUS_ERROR:
                         case Status.DOWNLOAD_STATUS_PAUSED:
 
@@ -320,7 +338,7 @@ public class CourseDownloadAdapter extends RecyclerView.Adapter<CourseDownloadVi
 
                             showToast(context, context.getString(R.string.advanced_use__start_download) + courseName);
                             break;
-                        // download file status:file not exist
+                        // download file mStatus:file not exist
                         case Status.DOWNLOAD_STATUS_FILE_NOT_EXIST:
 
                             // show dialog
@@ -341,7 +359,7 @@ public class CourseDownloadAdapter extends RecyclerView.Adapter<CourseDownloadVi
                                     });
                             builder.show();
                             break;
-                        // download file status:waiting & preparing & prepared & downloading
+                        // download file mStatus:waiting & preparing & prepared & downloading
                         case Status.DOWNLOAD_STATUS_WAITING:
                         case Status.DOWNLOAD_STATUS_PREPARING:
                         case Status.DOWNLOAD_STATUS_PREPARED:
@@ -356,7 +374,7 @@ public class CourseDownloadAdapter extends RecyclerView.Adapter<CourseDownloadVi
                                 holder.mTvText.setText(context.getString(R.string.advanced_use__paused));
                             }
                             break;
-                        // download file status:completed
+                        // download file mStatus:completed
                         case Status.DOWNLOAD_STATUS_COMPLETED:
 
                             if (holder.mTvDownloadSize != null) {
@@ -467,6 +485,21 @@ public class CourseDownloadAdapter extends RecyclerView.Adapter<CourseDownloadVi
             notifyItemChanged(position, new Payload(downloadFileInfo.getStatus(), downloadFileInfo.getUrl(), -1, -1, 
                     failReason));
         }
+
+
+        if (mContext != null) {
+            String msg = mContext.getString(R.string.advanced_use__download_error);
+
+            if (OnFileDownloadStatusFailReason.TYPE_NETWORK_DENIED.equals(failReason.getType())) {
+                msg += mContext.getString(R.string.advanced_use__check_network);
+            } else if (OnFileDownloadStatusFailReason.TYPE_URL_ILLEGAL.equals(failReason.getType())) {
+                msg += mContext.getString(R.string.advanced_use__url_illegal);
+            } else if (OnFileDownloadStatusFailReason.TYPE_NETWORK_TIMEOUT.equals(failReason.getType())) {
+                msg += mContext.getString(R.string.advanced_use__network_timeout);
+            }
+
+            showToast(mContext, msg);
+        }
     }
 
     public static final class CourseDownloadViewHolder extends RecyclerView.ViewHolder {
@@ -514,7 +547,7 @@ public class CourseDownloadAdapter extends RecyclerView.Adapter<CourseDownloadVi
 
     private static class Payload {
 
-        private int status = Status.DOWNLOAD_STATUS_UNKNOWN;
+        private int mStatus = Status.DOWNLOAD_STATUS_UNKNOWN;
 
         private String mUrl;
         private float mDownloadSpeed;
@@ -523,7 +556,7 @@ public class CourseDownloadAdapter extends RecyclerView.Adapter<CourseDownloadVi
 
         public Payload(int status, String url, float downloadSpeed, long remainingTime, 
                        OnFileDownloadStatusFailReason failReason) {
-            this.status = status;
+            this.mStatus = status;
             mUrl = url;
             mDownloadSpeed = downloadSpeed;
             mRemainingTime = remainingTime;
@@ -533,7 +566,7 @@ public class CourseDownloadAdapter extends RecyclerView.Adapter<CourseDownloadVi
         @Override
         public String toString() {
             return "Payload{" +
-                    "status=" + status +
+                    "mStatus=" + mStatus +
                     ", mUrl='" + mUrl + '\'' +
                     ", mDownloadSpeed=" + mDownloadSpeed +
                     ", mRemainingTime=" + mRemainingTime +

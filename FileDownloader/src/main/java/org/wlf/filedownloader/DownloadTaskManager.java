@@ -8,8 +8,10 @@ import org.wlf.filedownloader.FileDownloadTask.OnStopDownloadFileTaskFailReason;
 import org.wlf.filedownloader.FileDownloadTask.OnStopFileDownloadTaskListener;
 import org.wlf.filedownloader.base.Status;
 import org.wlf.filedownloader.listener.OnDetectUrlFileListener;
+import org.wlf.filedownloader.listener.OnDetectUrlFileListener.DetectUrlFileFailReason;
 import org.wlf.filedownloader.listener.OnFileDownloadStatusListener;
 import org.wlf.filedownloader.listener.OnFileDownloadStatusListener.OnFileDownloadStatusFailReason;
+import org.wlf.filedownloader.util.NetworkUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -158,6 +160,18 @@ class DownloadTaskManager {
      */
     private void addAndRunFileDownloadTask(DownloadFileInfo downloadFileInfo, OnFileDownloadStatusListener 
             onFileDownloadStatusListener) {
+        if (!NetworkUtil.isNetworkAvailable(mConfiguration.getContext())) {
+            if (onFileDownloadStatusListener != null) {
+                String url = "";
+                if (downloadFileInfo != null) {
+                    url = downloadFileInfo.getUrl();
+                }
+                onFileDownloadStatusListener.onFileDownloadStatusFailed(url, downloadFileInfo, new 
+                        OnFileDownloadStatusFailReason("network error!", OnFileDownloadStatusFailReason
+                        .TYPE_NETWORK_DENIED));
+                return;
+            }
+        }
         // create task
         FileDownloadTask fileDownloadTask = new FileDownloadTask(FileDownloadTask.createByDownloadFile
                 (downloadFileInfo), mDownloadFileCacher, onFileDownloadStatusListener);
@@ -308,6 +322,13 @@ class DownloadTaskManager {
      * @param onDetectUrlFileListener DetectUrlFileListener
      */
     void detect(String url, OnDetectUrlFileListener onDetectUrlFileListener) {
+        if (!NetworkUtil.isNetworkAvailable(mConfiguration.getContext())) {
+            if (onDetectUrlFileListener != null) {
+                onDetectUrlFileListener.onDetectUrlFileFailed(url, new DetectUrlFileFailReason("network error!", 
+                        DetectUrlFileFailReason.TYPE_NETWORK_DENIED));
+                return;
+            }
+        }
         // 1.prepare detectUrlFileTask
         DetectUrlFileTask detectUrlFileTask = new DetectUrlFileTask(url, mConfiguration.getFileDownloadDir(), 
                 mDetectUrlFileCacher, mDownloadFileCacher);

@@ -51,11 +51,11 @@ public class CustomModelActivity extends Activity {
         CustomVideoInfo customVideoInfo1 = new CustomVideoInfo(1, url1, "2015-10-11 13:20:12", "2015-10-11 14:10:50");
         customVideoInfos.add(customVideoInfo1);
 
-        String url2 = "http://sqdd.myapp.com/myapp/qqteam/AndroidQQ/mobileqq_android.apk";
+        String url2 = "http://dldir1.qq.com/weixin/android/weixin638android680.apk";
         CustomVideoInfo customVideoInfo2 = new CustomVideoInfo(2, url2, "2015-10-11 13:20:12", "2015-10-11 14:10:50");
         customVideoInfos.add(customVideoInfo2);
 
-        String url3 = "http://down.sandai.net/thunder7/Thunder_dl_7.9.41.5020.exe";
+        String url3 = "http://dlsw.baidu.com/sw-search-sp/soft/e2/25726/iQIYIMedia_002_4.3.11.1447139777.dmg";
         CustomVideoInfo customVideoInfo3 = new CustomVideoInfo(1, url3, "2015-10-11 13:20:12", "2015-10-11 14:10:50");
         customVideoInfos.add(customVideoInfo3);
 
