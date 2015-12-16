@@ -5,11 +5,11 @@ this is a powerful http-file download tool, my goal is to make downloading http 
 **Usage:**
 * 1.add in dependencies of your module's build.gradle(Gradle:)
 ``` java
-compile 'org.wlf:FileDownloader:0.2.0'
+compile 'org.wlf:FileDownloader:0.2.1'
 ``` 
 for eclipse users,jars:
-**[FileDownloader-0.2.0.jar](https://github.com/wlfcolin/file-downloader/raw/master/download/release/FileDownloader-0.2.0.jar)**
-, **[FileDownloader-0.2.0-sources.jar](https://dl.bintray.com/wlfcolin/maven/org/wlf/FileDownloader/0.2.0/FileDownloader-0.2.0-sources.jar)**
+**[FileDownloader-0.2.1.jar](https://github.com/wlfcolin/file-downloader/raw/master/download/release/FileDownloader-0.2.1.jar)**
+, **[FileDownloader-0.2.1-sources.jar](https://dl.bintray.com/wlfcolin/maven/org/wlf/FileDownloader/0.2.1/FileDownloader-0.2.1-sources.jar)**
 
 * 2.init FileDownloader in your application's onCreate() method
 ``` java

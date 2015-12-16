@@ -1,5 +1,9 @@
 # file-downloader Version Change Log
 
+**0.2.1**
+* Fix can not multi operation in detect url file,delete file, move file and rename file
+* Fix the callback not correct when network error
+
 **0.2.0**
 
 * Fix re-download the downloaded size is bigger than 100%
