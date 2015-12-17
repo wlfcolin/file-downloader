@@ -28,7 +28,7 @@
  * reStart(List<String>, OnFileDownloadStatusListener)-->reStart(List<String>) instead
  * getDownloadFileBySavePath(String, boolean)-->getDownloadFileByTempPath(String) instead
  * getDownloadFileByUrl(String)-->getDownloadFile(String) instead
-* Update in FileDownloadManager: *
+* Update in FileDownloadManager(also in FileDownloader):
  * Add return Control in move(List<String>, String, OnMoveDownloadFilesListener)
  * Add return Control in delete(List<String>, boolean, OnDeleteDownloadFilesListener)
 
