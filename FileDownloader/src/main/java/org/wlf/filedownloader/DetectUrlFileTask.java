@@ -24,7 +24,7 @@ class DetectUrlFileTask implements Runnable {
     private static final String TAG = DetectUrlFileTask.class.getSimpleName();
 
     private static final int MAX_REDIRECT_COUNT = 5;
-    private static final int CONNECT_TIMEOUT = 10 * 1000;// 10s
+    private static final int CONNECT_TIMEOUT = 15 * 1000;// 15s
     private static final String CHARSET = "UTF-8";
 
     private String mUrl;
@@ -96,7 +96,7 @@ class DetectUrlFileTask implements Runnable {
                         // http ok
                         case HttpURLConnection.HTTP_OK:
                             // get file name
-                            String fileName = mUrl.substring(mUrl.lastIndexOf('/') + 1);
+                            String fileName = UrlUtil.getFileNameByUrl(mUrl);
                             // get file size
                             int fileSize = conn.getContentLength();
                             // get etag

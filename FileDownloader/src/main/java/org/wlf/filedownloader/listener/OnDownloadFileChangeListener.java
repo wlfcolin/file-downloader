@@ -66,6 +66,9 @@ public interface OnDownloadFileChangeListener {
          */
         public static void onDownloadFileCreated(final DownloadFileInfo downloadFileInfo, final 
         OnDownloadFileChangeListener onDownloadFileChangeListener) {
+            if (onDownloadFileChangeListener == null) {
+                return;
+            }
             final Handler handler = new Handler(Looper.getMainLooper());
             handler.post(new Runnable() {
                 @Override
@@ -87,6 +90,9 @@ public interface OnDownloadFileChangeListener {
          */
         public static void onDownloadFileUpdated(final DownloadFileInfo downloadFileInfo, final Type type, final 
         OnDownloadFileChangeListener onDownloadFileChangeListener) {
+            if (onDownloadFileChangeListener == null) {
+                return;
+            }
             final Handler handler = new Handler(Looper.getMainLooper());
             handler.post(new Runnable() {
                 @Override
@@ -107,6 +113,9 @@ public interface OnDownloadFileChangeListener {
          */
         public static void onDownloadFileDeleted(final DownloadFileInfo downloadFileInfo, final 
         OnDownloadFileChangeListener onDownloadFileChangeListener) {
+            if (onDownloadFileChangeListener == null) {
+                return;
+            }
             final Handler handler = new Handler(Looper.getMainLooper());
             handler.post(new Runnable() {
                 @Override

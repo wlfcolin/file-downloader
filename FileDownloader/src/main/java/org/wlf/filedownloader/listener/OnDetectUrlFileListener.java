@@ -54,6 +54,9 @@ public interface OnDetectUrlFileListener {
         public static void onDetectNewDownloadFile(final String url, final String fileName, final String saveDir, 
                                                    final int fileSize, final OnDetectUrlFileListener 
                                                            onDetectUrlFileListener) {
+            if (onDetectUrlFileListener == null) {
+                return;
+            }
             final Handler handler = new Handler(Looper.getMainLooper());
             handler.post(new Runnable() {
                 @Override
@@ -71,6 +74,9 @@ public interface OnDetectUrlFileListener {
          */
         public static void onDetectUrlFileExist(final String url, final OnDetectUrlFileListener 
                 onDetectUrlFileListener) {
+            if (onDetectUrlFileListener == null) {
+                return;
+            }
             final Handler handler = new Handler(Looper.getMainLooper());
             handler.post(new Runnable() {
                 @Override
@@ -89,6 +95,9 @@ public interface OnDetectUrlFileListener {
          */
         public static void onDetectUrlFileFailed(final String url, final DetectUrlFileFailReason failReason, final 
         OnDetectUrlFileListener onDetectUrlFileListener) {
+            if (onDetectUrlFileListener == null) {
+                return;
+            }
             final Handler handler = new Handler(Looper.getMainLooper());
             handler.post(new Runnable() {
                 @Override

@@ -1,8 +1,9 @@
 package org.wlf.filedownloader.util;
 
 import android.text.TextUtils;
+import android.util.Log;
 
-import java.io.UnsupportedEncodingException;
+import java.net.URI;
 import java.net.URLEncoder;
 
 /**
@@ -12,6 +13,20 @@ import java.net.URLEncoder;
  * @email 411086563@qq.com
  */
 public class UrlUtil {
+
+    private static final EncodeInfo[] ALL_ENCODER_MAP = new EncodeInfo[]{
+            // % need first
+            new EncodeInfo("%", URLEncoder.encode("%")),
+            //
+            new EncodeInfo(" ", "%20"),
+            //
+            new EncodeInfo("[", URLEncoder.encode("[")),
+            //
+            new EncodeInfo("]", URLEncoder.encode("]")),
+            //
+            new EncodeInfo("#", URLEncoder.encode("#"))
+            //
+    };
 
     /**
      * whether the file url is http url
@@ -24,7 +39,7 @@ public class UrlUtil {
             return false;
         }
 
-        String encodedUrl = getEncoderUrl(url, "UTF-8");
+        String encodedUrl = getASCIIEncodedUrl(url);
         if (TextUtils.isEmpty(encodedUrl)) {
             return false;
         }
@@ -41,31 +56,142 @@ public class UrlUtil {
     }
 
     /**
-     * get Encoder Url
+     * get Encoded Url
      *
-     * @param url     file url
-     * @param charset encode charset
+     * @param url file url
      * @return encoded url
      */
-    public static String getEncoderUrl(String url, String charset) {
+    public static String getASCIIEncodedUrl(String url) {
 
-        int start = url.lastIndexOf("/");
-        if (start == -1) {
+        // trim url
+        if (url != null) {
+            url = url.trim();
+        }
+
+        String encodedUrl = null;
+
+        if (TextUtils.isEmpty(url)) {
             return null;
         }
-        String needEncode = url.substring(start + 1, url.length());// FIXME just encode file name,not file path
-        String needEncodeUrl = null;// URL Encoder
+
+        String replacedUrl = getReplacedUrl(url);
+
         try {
-            needEncodeUrl = URLEncoder.encode(needEncode, charset);
-        } catch (UnsupportedEncodingException e) {
+            URI uri = URI.create(replacedUrl);
+            encodedUrl = uri.toASCIIString();
+        } catch (Exception e) {
             e.printStackTrace();
         }
-        if (needEncodeUrl != null) {
-            needEncodeUrl = needEncodeUrl.replace("+", "%20");// replace space
-            // FIXME replace more
+
+        if (TextUtils.isEmpty(encodedUrl)) {
+            if (!TextUtils.isEmpty(replacedUrl)) {
+                encodedUrl = replacedUrl;
+            } else {
+                encodedUrl = url;
+            }
         }
 
-        String encodedUrl = url.substring(0, start) + "/" + needEncodeUrl;
+        Log.e("wlf", "encodedUrl:" + encodedUrl);
+
         return encodedUrl;
     }
+
+    /**
+     * get File Name
+     *
+     * @param url file url
+     * @return File Name
+     */
+    public static String getFileNameByUrl(String url) {
+
+        String fileName = null;
+
+        if (TextUtils.isEmpty(url)) {
+            return null;
+        }
+
+        String replacedUrl = getReplacedUrl(url);
+
+        try {
+            URI uri = URI.create(replacedUrl);
+            String path = uri.getPath();
+            if (TextUtils.isEmpty(path)) {
+                path = uri.getRawPath();
+            }
+            if (!TextUtils.isEmpty(path)) {
+                fileName = path.substring(path.lastIndexOf('/') + 1);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        if (TextUtils.isEmpty(fileName)) {
+            fileName = url;
+        }
+
+        return getUndoReplacedUrl(fileName);
+    }
+
+    private static String getReplacedUrl(String originalUrl) {
+
+        if (originalUrl == null) {
+            return null;
+        }
+
+        String replacedUrl = originalUrl;
+
+        for (EncodeInfo encodeInfo : ALL_ENCODER_MAP) {
+            if (encodeInfo == null) {
+                continue;
+            }
+            if (replacedUrl.contains(encodeInfo.unEncode)) {
+                // replace
+                replacedUrl = replacedUrl.replace(encodeInfo.unEncode, encodeInfo.encoded);
+            }
+        }
+
+        if (TextUtils.isEmpty(replacedUrl)) {
+            replacedUrl = originalUrl;
+        }
+
+        return replacedUrl;
+    }
+
+    private static String getUndoReplacedUrl(String replacedUrl) {
+
+        if (replacedUrl == null) {
+            return null;
+        }
+
+        String originalUrl = replacedUrl;
+
+        for (int i = ALL_ENCODER_MAP.length - 1; i > 0; i--) {
+            EncodeInfo encodeInfo = ALL_ENCODER_MAP[i];
+            if (encodeInfo == null) {
+                continue;
+            }
+            if (originalUrl.contains(encodeInfo.encoded)) {
+                // replace
+                originalUrl = originalUrl.replace(encodeInfo.encoded, encodeInfo.unEncode);
+            }
+        }
+
+        if (TextUtils.isEmpty(originalUrl)) {
+            originalUrl = replacedUrl;
+        }
+
+        return originalUrl;
+    }
+
+    private static class EncodeInfo {
+
+        public final String unEncode;
+        public final String encoded;
+
+        public EncodeInfo(String unEncode, String encoded) {
+            this.unEncode = unEncode;
+            this.encoded = encoded;
+        }
+    }
+
 }

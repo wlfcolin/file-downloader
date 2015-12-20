@@ -56,6 +56,9 @@ public interface OnMoveDownloadFilesListener {
          */
         public static void onMoveDownloadFilesPrepared(final List<DownloadFileInfo> downloadFilesNeedMove, final 
         OnMoveDownloadFilesListener onMoveDownloadFilesListener) {
+            if (onMoveDownloadFilesListener == null) {
+                return;
+            }
             final Handler handler = new Handler(Looper.getMainLooper());
             handler.post(new Runnable() {
                 @Override
@@ -77,6 +80,9 @@ public interface OnMoveDownloadFilesListener {
         public static void onMovingDownloadFiles(final List<DownloadFileInfo> downloadFilesNeedMove, final 
         List<DownloadFileInfo> downloadFilesMoved, final List<DownloadFileInfo> downloadFilesSkip, final 
         DownloadFileInfo downloadFileMoving, final OnMoveDownloadFilesListener onMoveDownloadFilesListener) {
+            if (onMoveDownloadFilesListener == null) {
+                return;
+            }
             final Handler handler = new Handler(Looper.getMainLooper());
             handler.post(new Runnable() {
                 @Override
@@ -96,6 +102,9 @@ public interface OnMoveDownloadFilesListener {
          */
         public static void onMoveDownloadFilesCompleted(final List<DownloadFileInfo> downloadFilesNeedMove, final 
         List<DownloadFileInfo> downloadFilesMoved, final OnMoveDownloadFilesListener onMoveDownloadFilesListener) {
+            if (onMoveDownloadFilesListener == null) {
+                return;
+            }
             final Handler handler = new Handler(Looper.getMainLooper());
             handler.post(new Runnable() {
                 @Override

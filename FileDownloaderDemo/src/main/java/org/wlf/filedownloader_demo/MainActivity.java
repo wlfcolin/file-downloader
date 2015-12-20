@@ -116,7 +116,8 @@ public class MainActivity extends Activity implements OnDetectUrlFileListener, O
     private void showNewDownloadDialog() {
 
         final EditText etUrl = new EditText(this);
-        etUrl.setText("http://182.254.149.157/ftp/image/shop/product/儿童英语升华&￥.apk");// apk file, the url with special
+        etUrl.setText("  http://182.254.149.157/ftp/image/shop/product/Kids Addition & Subtraction 1.0.apk ");// apk 
+        // file, the url with special
         // character
         etUrl.setFocusable(true);
 
@@ -150,9 +151,13 @@ public class MainActivity extends Activity implements OnDetectUrlFileListener, O
         etUrl3.setFocusable(true);
 
         final EditText etUrl4 = new EditText(this);
-        etUrl3.setText("http://mp4.28mtv.com/mp41/1862-刘德华-余生一起过[68mtv.com].mp4");// mp4 file,mv
-        etUrl3.setFocusable(true);
-        
+        etUrl4.setText("http://mp4.28mtv.com/mp41/1862-刘德华-余生一起过[68mtv.com].mp4");// mp4 file,mv
+        etUrl4.setFocusable(true);
+
+        final EditText etUrl5 = new EditText(this);
+        etUrl5.setText("http://182.254.149.157/ftp/image/shop/product/@#_% &.apk");// apk file, with special characters
+        etUrl5.setFocusable(true);
+
         LinearLayout linearLayout = new LinearLayout(this);
         linearLayout.setOrientation(LinearLayout.VERTICAL);
         LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 
@@ -161,6 +166,7 @@ public class MainActivity extends Activity implements OnDetectUrlFileListener, O
         linearLayout.addView(etUrl2, params);
         linearLayout.addView(etUrl3, params);
         linearLayout.addView(etUrl4, params);
+        linearLayout.addView(etUrl5, params);
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle(getString(R.string.main__please_input_multi_download_files)).setView(linearLayout)
@@ -171,11 +177,15 @@ public class MainActivity extends Activity implements OnDetectUrlFileListener, O
                 String url1 = etUrl1.getText().toString().trim();
                 String url2 = etUrl2.getText().toString().trim();
                 String url3 = etUrl3.getText().toString().trim();
+                String url4 = etUrl4.getText().toString().trim();
+                String url5 = etUrl5.getText().toString().trim();
 
                 List<String> urls = new ArrayList<String>();
                 urls.add(url1);
                 urls.add(url2);
                 urls.add(url3);
+                urls.add(url4);
+                urls.add(url5);
 
                 FileDownloader.start(urls);
             }
@@ -187,8 +197,11 @@ public class MainActivity extends Activity implements OnDetectUrlFileListener, O
     private void showCustomNewDownloadDialog() {
 
         final EditText etUrlCustom = new EditText(this);
-        etUrlCustom.setText("http://182.254.149.157/ftp/image/shop/product/儿童英语拓展篇HD_air.com.congcongbb.yingyue" + "" +
-                ".mi_1000000.apk");// apk file, the url with complex character
+        etUrlCustom.setText("http://183.57.151" +
+                ".208/download/videos/47CDA700A098E497/2015/12/17/1_1449832690_1449833760" +
+                ".mp4?a=836e48885e3a571404b85948aadb4797a4f6dec200407c1f48710c1a16fca32b&u" +
+                "=2819e7dec4dd32a780d6713df83b1b9df0c5bc193b52c5c1cacf932893b42327");// mp4 file, the url with 
+        // params
         etUrlCustom.setFocusable(true);
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);

@@ -51,6 +51,9 @@ public interface OnRenameDownloadFileListener {
          */
         public static void onRenameDownloadFilePrepared(final DownloadFileInfo downloadFileNeedRename, final 
         OnRenameDownloadFileListener onRenameDownloadFileListener) {
+            if (onRenameDownloadFileListener == null) {
+                return;
+            }
             final Handler handler = new Handler(Looper.getMainLooper());
             handler.post(new Runnable() {
                 @Override
@@ -68,6 +71,9 @@ public interface OnRenameDownloadFileListener {
          */
         public static void onRenameDownloadFileSuccess(final DownloadFileInfo downloadFileRenamed, final 
         OnRenameDownloadFileListener onRenameDownloadFileListener) {
+            if (onRenameDownloadFileListener == null) {
+                return;
+            }
             final Handler handler = new Handler(Looper.getMainLooper());
             handler.post(new Runnable() {
                 @Override
@@ -86,6 +92,9 @@ public interface OnRenameDownloadFileListener {
          */
         public static void onRenameDownloadFileFailed(final DownloadFileInfo downloadFileInfo, final 
         OnRenameDownloadFileFailReason failReason, final OnRenameDownloadFileListener onRenameDownloadFileListener) {
+            if (onRenameDownloadFileListener == null) {
+                return;
+            }
             final Handler handler = new Handler(Looper.getMainLooper());
             handler.post(new Runnable() {
                 @Override

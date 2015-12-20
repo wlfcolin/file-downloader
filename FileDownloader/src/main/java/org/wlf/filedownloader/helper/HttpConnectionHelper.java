@@ -56,13 +56,30 @@ public class HttpConnectionHelper {
      */
     public static HttpURLConnection createHttpUrlConnection(String url, int connectTimeout, String charset, int 
             rangeStartPos, int rangeEndPos) throws Exception {
+        return createHttpUrlConnectionInternal(url, connectTimeout, charset, rangeStartPos, rangeEndPos);
+    }
+
+    /**
+     * create http file Connection,use [rangeStartPos,rangeEndPos] for request range
+     *
+     * @param url
+     * @param connectTimeout
+     * @param charset
+     * @param rangeStartPos
+     * @param rangeEndPos
+     * @return HttpURLConnection
+     * @throws Exception any exception during connect
+     */
+    private static HttpURLConnection createHttpUrlConnectionInternal(String url, int connectTimeout, String charset, 
+                                                                     int rangeStartPos, int rangeEndPos) throws 
+            Exception {
 
         // up 4.0 can use if necessary
         // StrictMode.setThreadPolicy(new
         // StrictMode.ThreadPolicy.Builder().detectDiskReads().detectDiskWrites()
         // .detectNetwork().penaltyLog().build());
 
-        String encodedUrl = UrlUtil.getEncoderUrl(url, charset);
+        String encodedUrl = UrlUtil.getASCIIEncodedUrl(url);
         if (TextUtils.isEmpty(encodedUrl)) {
             throw new IllegalAccessException("URL Illegal");
         }

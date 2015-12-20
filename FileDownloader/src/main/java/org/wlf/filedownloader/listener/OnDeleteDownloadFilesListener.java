@@ -56,6 +56,9 @@ public interface OnDeleteDownloadFilesListener {
          */
         public static void onDeleteDownloadFilePrepared(final List<DownloadFileInfo> downloadFilesNeedDelete, final 
         OnDeleteDownloadFilesListener onDeleteDownloadFilesListener) {
+            if (onDeleteDownloadFilesListener == null) {
+                return;
+            }
             final Handler handler = new Handler(Looper.getMainLooper());
             handler.post(new Runnable() {
                 @Override
@@ -77,6 +80,9 @@ public interface OnDeleteDownloadFilesListener {
         public static void onDeletingDownloadFiles(final List<DownloadFileInfo> downloadFilesNeedDelete, final 
         List<DownloadFileInfo> downloadFilesDeleted, final List<DownloadFileInfo> downloadFilesSkip, final 
         DownloadFileInfo downloadFileDeleting, final OnDeleteDownloadFilesListener onDeleteDownloadFilesListener) {
+            if (onDeleteDownloadFilesListener == null) {
+                return;
+            }
             final Handler handler = new Handler(Looper.getMainLooper());
             handler.post(new Runnable() {
                 @Override
@@ -97,6 +103,9 @@ public interface OnDeleteDownloadFilesListener {
         public static void onDeleteDownloadFilesCompleted(final List<DownloadFileInfo> downloadFilesNeedDelete, final
         List<DownloadFileInfo> downloadFilesDeleted, final OnDeleteDownloadFilesListener 
                 onDeleteDownloadFilesListener) {
+            if (onDeleteDownloadFilesListener == null) {
+                return;
+            }
             final Handler handler = new Handler(Looper.getMainLooper());
             handler.post(new Runnable() {
                 @Override

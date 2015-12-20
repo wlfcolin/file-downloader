@@ -82,10 +82,16 @@ public interface OnFileDownloadStatusListener {
          */
         public static void onFileDownloadStatusWaiting(final DownloadFileInfo downloadFileInfo, final 
         OnFileDownloadStatusListener onFileDownloadStatusListener) {
+            if (onFileDownloadStatusListener == null) {
+                return;
+            }
             final Handler handler = new Handler(Looper.getMainLooper());
             handler.post(new Runnable() {
                 @Override
                 public void run() {
+                    if (onFileDownloadStatusListener == null) {
+                        return;
+                    }
                     onFileDownloadStatusListener.onFileDownloadStatusWaiting(downloadFileInfo);
                     handler.removeCallbacksAndMessages(null);
                 }
@@ -99,10 +105,16 @@ public interface OnFileDownloadStatusListener {
          */
         public static void onFileDownloadStatusPreparing(final DownloadFileInfo downloadFileInfo, final 
         OnFileDownloadStatusListener onFileDownloadStatusListener) {
+            if (onFileDownloadStatusListener == null) {
+                return;
+            }
             final Handler handler = new Handler(Looper.getMainLooper());
             handler.post(new Runnable() {
                 @Override
                 public void run() {
+                    if (onFileDownloadStatusListener == null) {
+                        return;
+                    }
                     onFileDownloadStatusListener.onFileDownloadStatusPreparing(downloadFileInfo);
                     handler.removeCallbacksAndMessages(null);
                 }
@@ -116,10 +128,16 @@ public interface OnFileDownloadStatusListener {
          */
         public static void onFileDownloadStatusPrepared(final DownloadFileInfo downloadFileInfo, final 
         OnFileDownloadStatusListener onFileDownloadStatusListener) {
+            if (onFileDownloadStatusListener == null) {
+                return;
+            }
             final Handler handler = new Handler(Looper.getMainLooper());
             handler.post(new Runnable() {
                 @Override
                 public void run() {
+                    if (onFileDownloadStatusListener == null) {
+                        return;
+                    }
                     onFileDownloadStatusListener.onFileDownloadStatusPrepared(downloadFileInfo);
                     handler.removeCallbacksAndMessages(null);
                 }
@@ -136,10 +154,16 @@ public interface OnFileDownloadStatusListener {
         public static void onFileDownloadStatusDownloading(final DownloadFileInfo downloadFileInfo, final float 
                 downloadSpeed, final long remainingTime, final OnFileDownloadStatusListener 
                 onFileDownloadStatusListener) {
+            if (onFileDownloadStatusListener == null) {
+                return;
+            }
             final Handler handler = new Handler(Looper.getMainLooper());
             handler.post(new Runnable() {
                 @Override
                 public void run() {
+                    if (onFileDownloadStatusListener == null) {
+                        return;
+                    }
                     onFileDownloadStatusListener.onFileDownloadStatusDownloading(downloadFileInfo, downloadSpeed, 
                             remainingTime);
                     handler.removeCallbacksAndMessages(null);
@@ -154,10 +178,16 @@ public interface OnFileDownloadStatusListener {
          */
         public static void onFileDownloadStatusPaused(final DownloadFileInfo downloadFileInfo, final 
         OnFileDownloadStatusListener onFileDownloadStatusListener) {
+            if (onFileDownloadStatusListener == null) {
+                return;
+            }
             final Handler handler = new Handler(Looper.getMainLooper());
             handler.post(new Runnable() {
                 @Override
                 public void run() {
+                    if (onFileDownloadStatusListener == null) {
+                        return;
+                    }
                     onFileDownloadStatusListener.onFileDownloadStatusPaused(downloadFileInfo);
                     handler.removeCallbacksAndMessages(null);
                 }
@@ -171,10 +201,16 @@ public interface OnFileDownloadStatusListener {
          */
         public static void onFileDownloadStatusCompleted(final DownloadFileInfo downloadFileInfo, final 
         OnFileDownloadStatusListener onFileDownloadStatusListener) {
+            if (onFileDownloadStatusListener == null) {
+                return;
+            }
             final Handler handler = new Handler(Looper.getMainLooper());
             handler.post(new Runnable() {
                 @Override
                 public void run() {
+                    if (onFileDownloadStatusListener == null) {
+                        return;
+                    }
                     onFileDownloadStatusListener.onFileDownloadStatusCompleted(downloadFileInfo);
                     handler.removeCallbacksAndMessages(null);
                 }
@@ -191,10 +227,16 @@ public interface OnFileDownloadStatusListener {
         public static void onFileDownloadStatusFailed(final String url, final DownloadFileInfo downloadFileInfo, 
                                                       final OnFileDownloadStatusFailReason failReason, final 
                                                       OnFileDownloadStatusListener onFileDownloadStatusListener) {
+            if (onFileDownloadStatusListener == null) {
+                return;
+            }
             final Handler handler = new Handler(Looper.getMainLooper());
             handler.post(new Runnable() {
                 @Override
                 public void run() {
+                    if (onFileDownloadStatusListener == null) {
+                        return;
+                    }
                     onFileDownloadStatusListener.onFileDownloadStatusFailed(url, downloadFileInfo, failReason);
                     handler.removeCallbacksAndMessages(null);
                 }

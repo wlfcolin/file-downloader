@@ -93,6 +93,9 @@ public interface OnMoveDownloadFileListener {
          */
         public static void onMoveDownloadFilePrepared(final DownloadFileInfo downloadFileNeedToMove, final 
         OnMoveDownloadFileListener onMoveDownloadFileListener) {
+            if (onMoveDownloadFileListener == null) {
+                return;
+            }
             final Handler handler = new Handler(Looper.getMainLooper());
             handler.post(new Runnable() {
                 @Override
@@ -110,6 +113,9 @@ public interface OnMoveDownloadFileListener {
          */
         public static void onMoveDownloadFileSuccess(final DownloadFileInfo downloadFileMoved, final 
         OnMoveDownloadFileListener onMoveDownloadFileListener) {
+            if (onMoveDownloadFileListener == null) {
+                return;
+            }
             final Handler handler = new Handler(Looper.getMainLooper());
             handler.post(new Runnable() {
                 @Override
@@ -128,6 +134,9 @@ public interface OnMoveDownloadFileListener {
          */
         public static void onMoveDownloadFileFailed(final DownloadFileInfo downloadFileInfo, final 
         OnMoveDownloadFileFailReason failReason, final OnMoveDownloadFileListener onMoveDownloadFileListener) {
+            if (onMoveDownloadFileListener == null) {
+                return;
+            }
             final Handler handler = new Handler(Looper.getMainLooper());
             handler.post(new Runnable() {
                 @Override
