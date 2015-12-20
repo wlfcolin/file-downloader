@@ -91,7 +91,7 @@ public class UrlUtil {
             }
         }
 
-        Log.e("wlf", "encodedUrl:" + encodedUrl);
+        // Log.e("wlf", "encodedUrl:" + encodedUrl);
 
         return encodedUrl;
     }

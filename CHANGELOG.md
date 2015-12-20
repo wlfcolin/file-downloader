@@ -1,5 +1,9 @@
 # file-downloader Version Change Log
 
+**0.2.2**
+* Fix the url bug which includes params
+* Fix crash when some listen callbacks are null 
+
 **0.2.1**
 * Fix can not multi operation in detect url file,delete file, move file and rename file
 * Fix the callback not correct when network error
