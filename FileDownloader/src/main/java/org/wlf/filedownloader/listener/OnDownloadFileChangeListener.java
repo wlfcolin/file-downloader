@@ -41,6 +41,14 @@ public interface OnDownloadFileChangeListener {
      */
     public static enum Type {
         /**
+         * download status changed
+         */
+        DOWNLOAD_STATUS,
+        /**
+         * downloaded size changed
+         */
+        DOWNLOADED_SIZE,
+        /**
          * save dir changed
          */
         SAVE_DIR,
@@ -49,7 +57,7 @@ public interface OnDownloadFileChangeListener {
          */
         SAVE_FILE_NAME,
         /**
-         * other，may be all
+         * other,except {@link #DOWNLOAD_STATUS},{@link #DOWNLOADED_SIZE},{@link #SAVE_DIR} and {@link #SAVE_FILE_NAME}
          */
         OTHER
     }

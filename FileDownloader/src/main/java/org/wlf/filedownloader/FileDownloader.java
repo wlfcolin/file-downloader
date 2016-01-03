@@ -1,8 +1,11 @@
 package org.wlf.filedownloader;
 
+import android.content.Context;
+
 import org.wlf.filedownloader.base.Control;
 import org.wlf.filedownloader.listener.OnDeleteDownloadFileListener;
 import org.wlf.filedownloader.listener.OnDeleteDownloadFilesListener;
+import org.wlf.filedownloader.listener.OnDetectBigUrlFileListener;
 import org.wlf.filedownloader.listener.OnDetectUrlFileListener;
 import org.wlf.filedownloader.listener.OnDownloadFileChangeListener;
 import org.wlf.filedownloader.listener.OnFileDownloadStatusListener;
@@ -25,29 +28,17 @@ import java.util.List;
 public final class FileDownloader {
 
     /**
-     * the context
-     */
-    private static FileDownloadConfiguration sConfiguration;
-
-    /**
      * get FileDownloadManager
      *
      * @return FileDownloadManager
      */
     private static FileDownloadManager getFileDownloadManager() {
-        
-        if(FileDownloadManager.getConfiguration() != null){
-            if (sConfiguration == null) {
-                sConfiguration = FileDownloadManager.getConfiguration();
-            }
-        }
-        
-        if (sConfiguration == null) {
+        if (FileDownloadManager.getConfiguration() == null) {
             throw new IllegalStateException("please init the file-downloader by using " + FileDownloader.class
                     .getSimpleName() + " or " + FileDownloadManager.class.getSimpleName() + " if the version is below" +
                     " 0.2.0");
         }
-        return FileDownloadManager.getInstance(sConfiguration.getContext());
+        return FileDownloadManager.getInstance(FileDownloadManager.getConfiguration().getContext());
     }
 
     /**
@@ -60,8 +51,8 @@ public final class FileDownloader {
         if (configuration == null) {
             return;
         }
-        sConfiguration = configuration;
-        getFileDownloadManager().init(configuration);
+        Context context = configuration.getContext();
+        FileDownloadManager.getInstance(context).init(configuration);
     }
 
     /**
@@ -71,6 +62,9 @@ public final class FileDownloader {
      * @see FileDownloadManager#isInit()
      */
     public static boolean isInit() {
+        if (FileDownloadManager.getConfiguration() == null) {
+            return false;
+        }
         return getFileDownloadManager().isInit();
     }
 
@@ -177,7 +171,8 @@ public final class FileDownloader {
      * detect url file
      *
      * @param url                     file url
-     * @param onDetectUrlFileListener DetectUrlFileListener
+     * @param onDetectUrlFileListener DetectUrlFileListener,recommend to use {@link OnDetectBigUrlFileListener} 
+     *                                instead to support downloading the file more than 2G
      * @see FileDownloadManager#detect(String, OnDetectUrlFileListener)
      */
     public static void detect(String url, OnDetectUrlFileListener onDetectUrlFileListener) {
@@ -362,7 +357,8 @@ public final class FileDownloader {
      * @see FileDownloadManager#release()
      */
     public static void release() {
-        getFileDownloadManager().release();
-        sConfiguration = null;
+        if (FileDownloadManager.getConfiguration() != null && isInit()) {
+            getFileDownloadManager().release();
+        }
     }
 }

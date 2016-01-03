@@ -36,50 +36,7 @@ public interface OnMoveDownloadFileListener {
      * @param downloadFileInfo download file needed to move,may be null
      * @param failReason       fail reason
      */
-    void onMoveDownloadFileFailed(DownloadFileInfo downloadFileInfo, OnMoveDownloadFileFailReason failReason);
-
-    /**
-     * OnMoveDownloadFileFailReason
-     */
-    public static class OnMoveDownloadFileFailReason extends FailReason {
-
-        private static final long serialVersionUID = -5988401984979760118L;
-
-        /**
-         * target file exist
-         */
-        public static final String TYPE_TARGET_FILE_EXIST = OnMoveDownloadFileFailReason.class.getName() + 
-                "_TYPE_TARGET_FILE_EXIST";
-        /**
-         * original file not exist
-         */
-        public static final String TYPE_ORIGINAL_FILE_NOT_EXIST = OnMoveDownloadFileFailReason.class.getName() + 
-                "_TYPE_ORIGINAL_FILE_NOT_EXIST";
-        /**
-         * update record error
-         */
-        public static final String TYPE_UPDATE_RECORD_ERROR = OnMoveDownloadFileFailReason.class.getName() + 
-                "_TYPE_UPDATE_RECORD_ERROR";
-        /**
-         * file status error
-         */
-        public static final String TYPE_FILE_STATUS_ERROR = OnMoveDownloadFileFailReason.class.getName() + 
-                "_TYPE_FILE_STATUS_ERROR";
-
-        public OnMoveDownloadFileFailReason(String detailMessage, String type) {
-            super(detailMessage, type);
-        }
-
-        public OnMoveDownloadFileFailReason(Throwable throwable) {
-            super(throwable);
-        }
-
-        @Override
-        protected void onInitTypeWithThrowable(Throwable throwable) {
-            super.onInitTypeWithThrowable(throwable);
-            // TODO
-        }
-    }
+    void onMoveDownloadFileFailed(DownloadFileInfo downloadFileInfo, MoveDownloadFileFailReason failReason);
 
     /**
      * Callback helper for main thread
@@ -100,6 +57,9 @@ public interface OnMoveDownloadFileListener {
             handler.post(new Runnable() {
                 @Override
                 public void run() {
+                    if (onMoveDownloadFileListener == null) {
+                        return;
+                    }
                     onMoveDownloadFileListener.onMoveDownloadFilePrepared(downloadFileNeedToMove);
                     handler.removeCallbacksAndMessages(null);
                 }
@@ -120,6 +80,9 @@ public interface OnMoveDownloadFileListener {
             handler.post(new Runnable() {
                 @Override
                 public void run() {
+                    if (onMoveDownloadFileListener == null) {
+                        return;
+                    }
                     onMoveDownloadFileListener.onMoveDownloadFileSuccess(downloadFileMoved);
                     handler.removeCallbacksAndMessages(null);
                 }
@@ -132,8 +95,7 @@ public interface OnMoveDownloadFileListener {
          * @param downloadFileInfo download file needed to move,may be null
          * @param failReason       fail reason
          */
-        public static void onMoveDownloadFileFailed(final DownloadFileInfo downloadFileInfo, final 
-        OnMoveDownloadFileFailReason failReason, final OnMoveDownloadFileListener onMoveDownloadFileListener) {
+        public static void onMoveDownloadFileFailed(final DownloadFileInfo downloadFileInfo, final MoveDownloadFileFailReason failReason, final OnMoveDownloadFileListener onMoveDownloadFileListener) {
             if (onMoveDownloadFileListener == null) {
                 return;
             }
@@ -141,10 +103,73 @@ public interface OnMoveDownloadFileListener {
             handler.post(new Runnable() {
                 @Override
                 public void run() {
+                    if (onMoveDownloadFileListener == null) {
+                        return;
+                    }
                     onMoveDownloadFileListener.onMoveDownloadFileFailed(downloadFileInfo, failReason);
                     handler.removeCallbacksAndMessages(null);
                 }
             });
+        }
+    }
+
+    /**
+     * MoveDownloadFileFailReason
+     *
+     * @deprecated use {@link MoveDownloadFileFailReason} instead
+     */
+    @Deprecated
+    public static class OnMoveDownloadFileFailReason extends MoveDownloadFileFailReason {
+
+        public OnMoveDownloadFileFailReason(String detailMessage, String type) {
+            super(detailMessage, type);
+        }
+
+        public OnMoveDownloadFileFailReason(Throwable throwable) {
+            super(throwable);
+        }
+    }
+
+    /**
+     * MoveDownloadFileFailReason
+     */
+    public static class MoveDownloadFileFailReason extends FailReason {
+
+        private static final long serialVersionUID = -5988401984979760118L;
+
+        /**
+         * target file exist
+         */
+        public static final String TYPE_TARGET_FILE_EXIST = MoveDownloadFileFailReason.class.getName() + 
+                "_TYPE_TARGET_FILE_EXIST";
+        /**
+         * original file not exist
+         */
+        public static final String TYPE_ORIGINAL_FILE_NOT_EXIST = MoveDownloadFileFailReason.class.getName() + 
+                "_TYPE_ORIGINAL_FILE_NOT_EXIST";
+        /**
+         * update record error
+         */
+        public static final String TYPE_UPDATE_RECORD_ERROR = MoveDownloadFileFailReason.class.getName() + 
+                "_TYPE_UPDATE_RECORD_ERROR";
+        /**
+         * file status error,can not move
+         */
+        public static final String TYPE_FILE_STATUS_ERROR = MoveDownloadFileFailReason.class.getName() + 
+                "_TYPE_FILE_STATUS_ERROR";
+
+        public MoveDownloadFileFailReason(String detailMessage, String type) {
+            super(detailMessage, type);
+        }
+
+        public MoveDownloadFileFailReason(Throwable throwable) {
+            super(throwable);
+        }
+
+        @Override
+        protected void onInitTypeWithThrowable(Throwable throwable) {
+            super.onInitTypeWithThrowable(throwable);
+            // TODO
         }
     }
 }

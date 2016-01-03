@@ -1,7 +1,6 @@
 package org.wlf.filedownloader.util;
 
 import android.text.TextUtils;
-import android.util.Log;
 
 import java.net.URI;
 import java.net.URLEncoder;
@@ -14,7 +13,7 @@ import java.net.URLEncoder;
  */
 public class UrlUtil {
 
-    private static final EncodeInfo[] ALL_ENCODER_MAP = new EncodeInfo[]{
+    private static final EncodeInfo[] SPECIAL_CHARACTER_ENCODER_MAP = new EncodeInfo[]{
             // % need first
             new EncodeInfo("%", URLEncoder.encode("%")),
             //
@@ -125,11 +124,11 @@ public class UrlUtil {
             e.printStackTrace();
         }
 
-        if (TextUtils.isEmpty(fileName)) {
-            fileName = url;
+        if (!TextUtils.isEmpty(fileName)) {
+            return fileName;
         }
 
-        return getUndoReplacedUrl(fileName);
+        return getUndoReplacedUrl(url);
     }
 
     private static String getReplacedUrl(String originalUrl) {
@@ -140,7 +139,7 @@ public class UrlUtil {
 
         String replacedUrl = originalUrl;
 
-        for (EncodeInfo encodeInfo : ALL_ENCODER_MAP) {
+        for (EncodeInfo encodeInfo : SPECIAL_CHARACTER_ENCODER_MAP) {
             if (encodeInfo == null) {
                 continue;
             }
@@ -165,8 +164,8 @@ public class UrlUtil {
 
         String originalUrl = replacedUrl;
 
-        for (int i = ALL_ENCODER_MAP.length - 1; i > 0; i--) {
-            EncodeInfo encodeInfo = ALL_ENCODER_MAP[i];
+        for (int i = SPECIAL_CHARACTER_ENCODER_MAP.length - 1; i > 0; i--) {
+            EncodeInfo encodeInfo = SPECIAL_CHARACTER_ENCODER_MAP[i];
             if (encodeInfo == null) {
                 continue;
             }

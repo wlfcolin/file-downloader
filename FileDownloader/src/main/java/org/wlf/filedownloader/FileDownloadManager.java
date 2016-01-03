@@ -3,12 +3,16 @@ package org.wlf.filedownloader;
 import android.content.Context;
 import android.util.Log;
 
-import org.wlf.filedownloader.DownloadFileCacher.DownloadStatusRecordException;
-import org.wlf.filedownloader.DownloadTaskManager.OnReleaseListener;
 import org.wlf.filedownloader.base.Control;
 import org.wlf.filedownloader.base.Status;
+import org.wlf.filedownloader.file_delete.DownloadDeleteManager;
+import org.wlf.filedownloader.file_download.DownloadTaskManager;
+import org.wlf.filedownloader.file_download.DownloadTaskManager.OnReleaseListener;
+import org.wlf.filedownloader.file_move.DownloadMoveManager;
+import org.wlf.filedownloader.file_rename.DownloadRenameManager;
 import org.wlf.filedownloader.listener.OnDeleteDownloadFileListener;
 import org.wlf.filedownloader.listener.OnDeleteDownloadFilesListener;
+import org.wlf.filedownloader.listener.OnDetectBigUrlFileListener;
 import org.wlf.filedownloader.listener.OnDetectUrlFileListener;
 import org.wlf.filedownloader.listener.OnDownloadFileChangeListener;
 import org.wlf.filedownloader.listener.OnFileDownloadStatusListener;
@@ -25,7 +29,7 @@ import java.util.List;
  * 文件下载管理器
  *
  * @author wlf
- * @deprecated use {@link FileDownloader} instead,if the version you are using is reach 0.2.0
+ * @deprecated use {@link FileDownloader} instead if the version you are using is reach 0.2.0
  */
 @Deprecated
 public final class FileDownloadManager {
@@ -51,7 +55,7 @@ public final class FileDownloadManager {
     /**
      * DownloadFileCacher,to storage download files
      */
-    private DownloadFileCacher mDownloadFileCacher;
+    private DownloadCacher mDownloadFileCacher;
     /**
      * DownloadTaskManager,to manage download tasks
      */
@@ -75,17 +79,17 @@ public final class FileDownloadManager {
         Context appContext = context.getApplicationContext();
 
         // init DownloadFileCacher
-        mDownloadFileCacher = new DownloadFileCacher(appContext);
+        mDownloadFileCacher = new DownloadCacher(appContext);
 
         // check the download status,if there is an exception status,try to recover it
         exceptionStateRecovery(getDownloadFiles());
     }
 
     /**
-     * get single instance
+     * get FileDownloadManager single instance
      *
      * @param context Context
-     * @return single instance
+     * @return the FileDownloadManager single instance
      */
     public static FileDownloadManager getInstance(Context context) {
         if (sInstance == null) {
@@ -101,13 +105,17 @@ public final class FileDownloadManager {
     // package access, FileDownloader use only
     static FileDownloadConfiguration getConfiguration() {
         if (sInstance != null) {
-            return sInstance.mConfiguration;
+            synchronized (sInstance.mInitLock) {
+                if (sInstance != null) {
+                    return sInstance.mConfiguration;
+                }
+            }
         }
         return null;
     }
 
     /**
-     * try to recover exceptionStates
+     * try to recover exception states
      */
     private void exceptionStateRecovery(List<DownloadFileInfo> downloadFileInfos) {
 
@@ -137,7 +145,7 @@ public final class FileDownloadManager {
                     // recover paused
                     try {
                         mDownloadFileCacher.recordStatus(url, Status.DOWNLOAD_STATUS_PAUSED, 0);
-                    } catch (DownloadStatusRecordException e) {
+                    } catch (Exception e) {
                         e.printStackTrace();
                     }
                     break;
@@ -151,7 +159,7 @@ public final class FileDownloadManager {
                     // recover error
                     try {
                         mDownloadFileCacher.recordStatus(url, Status.DOWNLOAD_STATUS_ERROR, 0);
-                    } catch (DownloadStatusRecordException e) {
+                    } catch (Exception e) {
                         e.printStackTrace();
                     }
                     break;
@@ -215,8 +223,8 @@ public final class FileDownloadManager {
     private DownloadMoveManager getDownloadMoveManager() {
         checkInit();
         if (mDownloadMoveManager == null) {
-            mDownloadMoveManager = new DownloadMoveManager(mConfiguration.getSupportEngine(), mDownloadFileCacher, 
-                    getDownloadTaskManager());
+            mDownloadMoveManager = new DownloadMoveManager(mConfiguration.getFileOperationEngine(), 
+                    mDownloadFileCacher, getDownloadTaskManager());
         }
         return mDownloadMoveManager;
     }
@@ -229,8 +237,7 @@ public final class FileDownloadManager {
     private DownloadDeleteManager getDownloadDeleteManager() {
         checkInit();
         if (mDownloadDeleteManager == null) {
-            mDownloadDeleteManager = new DownloadDeleteManager(mConfiguration.getSupportEngine(), 
-                    mDownloadFileCacher, getDownloadTaskManager());
+            mDownloadDeleteManager = new DownloadDeleteManager(mConfiguration.getFileOperationEngine(), mDownloadFileCacher, getDownloadTaskManager());
         }
         return mDownloadDeleteManager;
     }
@@ -243,7 +250,7 @@ public final class FileDownloadManager {
     private DownloadRenameManager getDownloadRenameManager() {
         checkInit();
         if (mDownloadRenameManager == null) {
-            mDownloadRenameManager = new DownloadRenameManager(mConfiguration.getSupportEngine(), 
+            mDownloadRenameManager = new DownloadRenameManager(mConfiguration.getFileOperationEngine(), 
                     mDownloadFileCacher, getDownloadTaskManager());
         }
         return mDownloadRenameManager;
@@ -298,7 +305,7 @@ public final class FileDownloadManager {
      * @param includeTempFilePath true means try use the savePath as temp file savePath if can not get DownloadFile
      *                            by savePath
      * @return DownloadFile
-     * @deprecated use {@link #getDownloadFileByTempPath(String)} instead
+     * @deprecated use {@link #getDownloadFileBySavePath(String)} and {@link #getDownloadFileByTempPath(String)} instead
      */
     @Deprecated
     public DownloadFileInfo getDownloadFileBySavePath(String savePath, boolean includeTempFilePath) {
@@ -330,8 +337,9 @@ public final class FileDownloadManager {
      * register an OnFileDownloadStatusListener
      *
      * @param onFileDownloadStatusListener the OnFileDownloadStatusListener impl
+     * @since 0.2.0
      */
-    public void registerDownloadStatusListener(OnFileDownloadStatusListener onFileDownloadStatusListener) {
+    void registerDownloadStatusListener(OnFileDownloadStatusListener onFileDownloadStatusListener) {
         getDownloadTaskManager().registerDownloadStatusListener(onFileDownloadStatusListener);
     }
 
@@ -339,8 +347,9 @@ public final class FileDownloadManager {
      * unregister an OnFileDownloadStatusListener
      *
      * @param onFileDownloadStatusListener the OnFileDownloadStatusListener impl
+     * @since 0.2.0
      */
-    public void unregisterDownloadStatusListener(OnFileDownloadStatusListener onFileDownloadStatusListener) {
+    void unregisterDownloadStatusListener(OnFileDownloadStatusListener onFileDownloadStatusListener) {
         getDownloadTaskManager().unregisterDownloadStatusListener(onFileDownloadStatusListener);
     }
 
@@ -348,17 +357,19 @@ public final class FileDownloadManager {
      * register an OnDownloadFileChangeListener
      *
      * @param onDownloadFileChangeListener the OnDownloadFileChangeListener impl
+     * @since 0.2.0
      */
-    public void registerDownloadFileChangeListener(OnDownloadFileChangeListener onDownloadFileChangeListener) {
-        mDownloadFileCacher.registerDownloadFileChangeListener(onDownloadFileChangeListener);
+    void registerDownloadFileChangeListener(OnDownloadFileChangeListener onDownloadFileChangeListener) {
+        mDownloadFileCacher.registerDownloadFileChangeListener(onDownloadFileChangeListener, null);
     }
 
     /**
      * unregister an OnDownloadFileChangeListener
      *
      * @param onDownloadFileChangeListener the OnDownloadFileChangeListener impl
+     * @since 0.2.0
      */
-    public void unregisterDownloadFileChangeListener(OnDownloadFileChangeListener onDownloadFileChangeListener) {
+    void unregisterDownloadFileChangeListener(OnDownloadFileChangeListener onDownloadFileChangeListener) {
         mDownloadFileCacher.unregisterDownloadFileChangeListener(onDownloadFileChangeListener);
     }
 
@@ -368,7 +379,8 @@ public final class FileDownloadManager {
      * detect url file
      *
      * @param url                     file url
-     * @param onDetectUrlFileListener DetectUrlFileListener
+     * @param onDetectUrlFileListener DetectUrlFileListener,recommend to use {@link OnDetectBigUrlFileListener}
+     *                                instead to support downloading the file more than 2G
      */
     public void detect(String url, OnDetectUrlFileListener onDetectUrlFileListener) {
         getDownloadTaskManager().detect(url, onDetectUrlFileListener);
@@ -606,6 +618,11 @@ public final class FileDownloadManager {
         getDownloadTaskManager().release(new OnReleaseListener() {
             @Override
             public void onReleased() {
+                if (mConfiguration != null) {
+                    mConfiguration.getFileDetectEngine().shutdown();
+                    mConfiguration.getFileDownloadEngine().shutdown();
+                    mConfiguration.getFileOperationEngine().shutdown();
+                }
                 mDownloadFileCacher.release();
                 sInstance = null;
             }

@@ -1,7 +1,7 @@
 package org.wlf.filedownloader.listener;
 
 import org.wlf.filedownloader.base.FailReason;
-import org.wlf.filedownloader.http_downlaoder.HttpDownloader.HttpDownloadException;
+import org.wlf.filedownloader.file_download.http_downloader.HttpDownloader.HttpDownloadException;
 import org.wlf.filedownloader.listener.OnDetectUrlFileListener.DetectUrlFileFailReason;
 
 import java.net.ConnectException;
@@ -15,7 +15,7 @@ import java.net.UnknownHostException;
  * @datetime 2015-11-27 11:55 GMT+8
  * @email 411086563@qq.com
  */
-public class HttpFailReason extends FailReason {
+class HttpFailReason extends FailReason {
 
     private static final long serialVersionUID = 6959079784746888591L;
 

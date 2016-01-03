@@ -63,6 +63,9 @@ public interface OnMoveDownloadFilesListener {
             handler.post(new Runnable() {
                 @Override
                 public void run() {
+                    if (onMoveDownloadFilesListener == null) {
+                        return;
+                    }
                     onMoveDownloadFilesListener.onMoveDownloadFilesPrepared(downloadFilesNeedMove);
                     handler.removeCallbacksAndMessages(null);
                 }
@@ -87,6 +90,9 @@ public interface OnMoveDownloadFilesListener {
             handler.post(new Runnable() {
                 @Override
                 public void run() {
+                    if (onMoveDownloadFilesListener == null) {
+                        return;
+                    }
                     onMoveDownloadFilesListener.onMovingDownloadFiles(downloadFilesNeedMove, downloadFilesMoved, 
                             downloadFilesSkip, downloadFileMoving);
                     handler.removeCallbacksAndMessages(null);
@@ -109,6 +115,9 @@ public interface OnMoveDownloadFilesListener {
             handler.post(new Runnable() {
                 @Override
                 public void run() {
+                    if (onMoveDownloadFilesListener == null) {
+                        return;
+                    }
                     onMoveDownloadFilesListener.onMoveDownloadFilesCompleted(downloadFilesNeedMove, downloadFilesMoved);
                     handler.removeCallbacksAndMessages(null);
                 }

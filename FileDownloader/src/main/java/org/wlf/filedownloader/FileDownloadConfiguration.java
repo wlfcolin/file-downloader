@@ -29,16 +29,20 @@ public class FileDownloadConfiguration {
      */
     private String mFileDownloadDir;
     /**
-     * download file engine
+     * engine use for downloading file
      */
     private ExecutorService mFileDownloadEngine;
     /**
-     * Support Engine to use for delete,move,detect
+     * engine use for detecting url file
      */
-    private ExecutorService mSupportEngine;
+    private ExecutorService mFileDetectEngine;
+    /**
+     * engine use for operate downloaded file
+     */
+    private ExecutorService mFileOperationEngine;
 
     /**
-     * create default configuration,use {@link Builder#build()} to create recommend
+     * create default configuration,use {@link Builder#build()} to create recommended
      *
      * @param context Context
      * @return default configuration
@@ -59,17 +63,18 @@ public class FileDownloadConfiguration {
         this.mContext = builder.mContext;
         this.mFileDownloadDir = builder.mFileDownloadDir;
         this.mFileDownloadEngine = Executors.newFixedThreadPool(builder.mDownloadTaskSize);
-        this.mSupportEngine = Executors.newCachedThreadPool();// no limit
+        this.mFileDetectEngine = Executors.newCachedThreadPool(); // no limit
+        this.mFileOperationEngine = Executors.newFixedThreadPool(3); // limit 3, for operations: move,delete,rename
     }
 
-    // getters,package use only
+    // getters
 
     /**
      * get Context
      *
      * @return Context
      */
-    Context getContext() {
+    public Context getContext() {
         return mContext;
     }
 
@@ -78,22 +83,30 @@ public class FileDownloadConfiguration {
      *
      * @return FileDownloadDir
      */
-    String getFileDownloadDir() {
+    public String getFileDownloadDir() {
         return mFileDownloadDir;
     }
 
     /**
      * get FileDownloadEngine
      */
-    ExecutorService getFileDownloadEngine() {
+    public ExecutorService getFileDownloadEngine() {
         return mFileDownloadEngine;
     }
 
     /**
-     * get SupportEngine
+     * get FileDetectEngine
      */
-    ExecutorService getSupportEngine() {
-        return mSupportEngine;
+    public ExecutorService getFileDetectEngine() {
+        return mFileDetectEngine;
+    }
+
+
+    /**
+     * get FileOperationEngine
+     */
+    public ExecutorService getFileOperationEngine() {
+        return mFileOperationEngine;
     }
 
     /**

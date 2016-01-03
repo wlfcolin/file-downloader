@@ -115,7 +115,8 @@ public class CustomDownloadFileListAdapter extends BaseAdapter implements OnFile
 
             DownloadFileInfo downloadFileInfo = customVideoInfo.getDownloadFileInfo();
 
-            float percent = ((float) downloadFileInfo.getDownloadedSize()) / ((float) downloadFileInfo.getFileSize());
+            double percent = ((double) downloadFileInfo.getDownloadedSizeLong()) / ((double) downloadFileInfo
+                    .getFileSizeLong());
             barProgress.setProgress((int) (percent * 100));
 
             switch (downloadFileInfo.getStatus()) {
@@ -158,7 +159,7 @@ public class CustomDownloadFileListAdapter extends BaseAdapter implements OnFile
 
     private void registerClickListener(View lnlyDownloadItem, final CustomVideoInfo customVideoInfo) {
 
-        Log.e("wlf", "registerClickListener,lnlyDownloadItem:" + lnlyDownloadItem + ",customVideoInfo:" + 
+        Log.e("wlf", "registerClickListener,lnlyDownloadItem:" + lnlyDownloadItem + ",customVideoInfo:" +
                 customVideoInfo.getUrl());
 
         if (lnlyDownloadItem == null || customVideoInfo == null) {
@@ -265,8 +266,7 @@ public class CustomDownloadFileListAdapter extends BaseAdapter implements OnFile
                         }
 
                         @Override
-                        public void onDeleteDownloadFileFailed(DownloadFileInfo downloadFileInfo, 
-                                                               OnDeleteDownloadFileFailReason failReason) {
+                        public void onDeleteDownloadFileFailed(DownloadFileInfo downloadFileInfo, DeleteDownloadFileFailReason failReason) {
 
                         }
                     });
@@ -333,7 +333,8 @@ public class CustomDownloadFileListAdapter extends BaseAdapter implements OnFile
             return;
         }
 
-        float percent = ((float) downloadFileInfo.getDownloadedSize()) / ((float) downloadFileInfo.getFileSize());
+        double percent = ((double) downloadFileInfo.getDownloadedSizeLong()) / ((double) downloadFileInfo
+                .getFileSizeLong());
         barProgress.setProgress((int) (percent * 100));
 
         Log.i("wlf", "update barProgress:" + percent);
@@ -358,8 +359,7 @@ public class CustomDownloadFileListAdapter extends BaseAdapter implements OnFile
     }
 
     @Override
-    public void onFileDownloadStatusFailed(String url, DownloadFileInfo downloadFileInfo, 
-                                           OnFileDownloadStatusFailReason failReason) {
+    public void onFileDownloadStatusFailed(String url, DownloadFileInfo downloadFileInfo, FileDownloadStatusFailReason failReason) {
 
         if (failReason != null) {
 

@@ -156,17 +156,25 @@ public class CourseDownloadAdapter extends RecyclerView.Adapter<CourseDownloadVi
             }
 
             // download progress
-            holder.mPbProgress.setMax(downloadFileInfo.getFileSize());
-            holder.mPbProgress.setProgress(downloadFileInfo.getDownloadedSize());
+            int totalSize = (int) downloadFileInfo.getFileSizeLong();
+            int downloaded = (int) downloadFileInfo.getDownloadedSizeLong();
+            double rate = (double) totalSize / Integer.MAX_VALUE;
+            if (rate > 1.0) {
+                totalSize = Integer.MAX_VALUE;
+                downloaded = (int) (downloaded / rate);
+            }
+
+            holder.mPbProgress.setMax(totalSize);
+            holder.mPbProgress.setProgress(downloaded);
 
             // downloaded size & file size
-            float downloadSize = downloadFileInfo.getDownloadedSize() / 1024f / 1024;
-            float fileSize = downloadFileInfo.getFileSize() / 1024f / 1024;
+            double downloadSize = downloadFileInfo.getDownloadedSizeLong() / 1024f / 1024;
+            double fileSize = downloadFileInfo.getFileSizeLong() / 1024f / 1024;
             holder.mTvDownloadSize.setText(MathUtil.formatNumber(downloadSize) + "M/");
             holder.mTvTotalSize.setText(MathUtil.formatNumber(fileSize) + "M");
 
             // downloaded percent
-            float percent = downloadSize / fileSize * 100;
+            double percent = downloadSize / fileSize * 100;
             holder.mTvPercent.setText(MathUtil.formatNumber(percent) + "%");
 
             final TextView tvText = holder.mTvText;
@@ -207,12 +215,12 @@ public class CourseDownloadAdapter extends RecyclerView.Adapter<CourseDownloadVi
                     String msg = context.getString(R.string.advanced_use__download_error);
 
                     if (payload != null && payload.mFailReason != null) {
-                        OnFileDownloadStatusFailReason failReason = payload.mFailReason;
-                        if (OnFileDownloadStatusFailReason.TYPE_NETWORK_DENIED.equals(failReason.getType())) {
+                        FileDownloadStatusFailReason failReason = payload.mFailReason;
+                        if (FileDownloadStatusFailReason.TYPE_NETWORK_DENIED.equals(failReason.getType())) {
                             msg += context.getString(R.string.advanced_use__check_network);
-                        } else if (OnFileDownloadStatusFailReason.TYPE_URL_ILLEGAL.equals(failReason.getType())) {
+                        } else if (FileDownloadStatusFailReason.TYPE_URL_ILLEGAL.equals(failReason.getType())) {
                             msg += context.getString(R.string.advanced_use__url_illegal);
-                        } else if (OnFileDownloadStatusFailReason.TYPE_NETWORK_TIMEOUT.equals(failReason.getType())) {
+                        } else if (FileDownloadStatusFailReason.TYPE_NETWORK_TIMEOUT.equals(failReason.getType())) {
                             msg += context.getString(R.string.advanced_use__network_timeout);
                         }
                     }
@@ -478,8 +486,7 @@ public class CourseDownloadAdapter extends RecyclerView.Adapter<CourseDownloadVi
     }
 
     @Override
-    public void onFileDownloadStatusFailed(String url, DownloadFileInfo downloadFileInfo, 
-                                           OnFileDownloadStatusFailReason failReason) {
+    public void onFileDownloadStatusFailed(String url, DownloadFileInfo downloadFileInfo, FileDownloadStatusFailReason failReason) {
         int position = findPosition(downloadFileInfo);
         if (position >= 0 && position < getItemCount()) {
             notifyItemChanged(position, new Payload(downloadFileInfo.getStatus(), downloadFileInfo.getUrl(), -1, -1, 
@@ -490,11 +497,11 @@ public class CourseDownloadAdapter extends RecyclerView.Adapter<CourseDownloadVi
         if (mContext != null) {
             String msg = mContext.getString(R.string.advanced_use__download_error);
 
-            if (OnFileDownloadStatusFailReason.TYPE_NETWORK_DENIED.equals(failReason.getType())) {
+            if (FileDownloadStatusFailReason.TYPE_NETWORK_DENIED.equals(failReason.getType())) {
                 msg += mContext.getString(R.string.advanced_use__check_network);
-            } else if (OnFileDownloadStatusFailReason.TYPE_URL_ILLEGAL.equals(failReason.getType())) {
+            } else if (FileDownloadStatusFailReason.TYPE_URL_ILLEGAL.equals(failReason.getType())) {
                 msg += mContext.getString(R.string.advanced_use__url_illegal);
-            } else if (OnFileDownloadStatusFailReason.TYPE_NETWORK_TIMEOUT.equals(failReason.getType())) {
+            } else if (FileDownloadStatusFailReason.TYPE_NETWORK_TIMEOUT.equals(failReason.getType())) {
                 msg += mContext.getString(R.string.advanced_use__network_timeout);
             }
 
@@ -552,10 +559,10 @@ public class CourseDownloadAdapter extends RecyclerView.Adapter<CourseDownloadVi
         private String mUrl;
         private float mDownloadSpeed;
         private long mRemainingTime;
-        private OnFileDownloadStatusFailReason mFailReason;
+        private FileDownloadStatusFailReason mFailReason;
 
-        public Payload(int status, String url, float downloadSpeed, long remainingTime, 
-                       OnFileDownloadStatusFailReason failReason) {
+        public Payload(int status, String url, float downloadSpeed, long remainingTime, FileDownloadStatusFailReason 
+                failReason) {
             this.mStatus = status;
             mUrl = url;
             mDownloadSpeed = downloadSpeed;

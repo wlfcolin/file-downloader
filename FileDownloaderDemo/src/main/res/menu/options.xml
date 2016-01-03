@@ -16,4 +16,10 @@
         android:showAsAction="never"
         android:title="@string/main__menu_new_custom_download"/>
 
+    <item
+        android:id="@+id/optionsNewBigFileWithDetect"
+        android:orderInCategory="100"
+        android:showAsAction="never"
+        android:title="@string/main__menu_new_big_file_download"/>
+
 </menu>

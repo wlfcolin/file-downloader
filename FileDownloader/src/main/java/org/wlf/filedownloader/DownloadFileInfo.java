@@ -4,11 +4,15 @@ import android.content.ContentValues;
 import android.database.Cursor;
 import android.text.TextUtils;
 
+import org.wlf.filedownloader.base.BaseUrlFileInfo;
 import org.wlf.filedownloader.base.Status;
+import org.wlf.filedownloader.file_download.DetectUrlFileInfo;
+import org.wlf.filedownloader.util.DateUtil;
 import org.wlf.filedownloader.util.FileUtil;
 import org.wlf.filedownloader.util.UrlUtil;
 
 import java.io.File;
+import java.util.Date;
 
 /**
  * download file Model,synchronous with database table
@@ -70,9 +74,13 @@ public class DownloadFileInfo extends BaseUrlFileInfo {
          * status field name
          */
         public static final String COLUMN_NAME_OF_FIELD_STATUS = "status";
+        /**
+         * create download datetime
+         */
+        public static final String COLUMN_NAME_OF_FIELD_CREATE_DATETIME = "create_datetime";
 
         /**
-         * the sql of create table
+         * the sql to create table
          */
         public static final String getCreateTableSql() {
 
@@ -88,9 +96,23 @@ public class DownloadFileInfo extends BaseUrlFileInfo {
                     + COLUMN_NAME_OF_FIELD_FILE_DIR + " TEXT,"//
                     + COLUMN_NAME_OF_FIELD_TEMP_FILE_NAME + " TEXT,"//
                     + COLUMN_NAME_OF_FIELD_FILE_NAME + " TEXT,"//
-                    + COLUMN_NAME_OF_FIELD_STATUS + " INTEGER" + ")";//
+                    + COLUMN_NAME_OF_FIELD_STATUS + " INTEGER,"//
+                    + COLUMN_NAME_OF_FIELD_CREATE_DATETIME + " TEXT" + ")";//            
 
             return createTableSql;
+        }
+
+        /**
+         * the sql to update table when db version is 1 to 2
+         */
+        public static final String getUpdateTableVersion1To2Sql() {
+
+            String updateTableVersion1To2Sql = "ALTER TABLE " //
+                    + TABLE_NAME_OF_DOWNLOAD_FILE //
+                    + " ADD " //
+                    + COLUMN_NAME_OF_FIELD_CREATE_DATETIME + " TEXT"; //
+
+            return updateTableVersion1To2Sql;
         }
     }
 
@@ -106,7 +128,7 @@ public class DownloadFileInfo extends BaseUrlFileInfo {
     /**
      * downloadedSize
      */
-    private int mDownloadedSize;
+    private long mDownloadedSize;
     /**
      * TempFileName
      */
@@ -115,10 +137,16 @@ public class DownloadFileInfo extends BaseUrlFileInfo {
      * download status，ref{@link Status}
      */
     private int mStatus = Status.DOWNLOAD_STATUS_UNKNOWN;
+    /**
+     * create download datetime, yyyy-MM-dd HH:mm:ss
+     */
+    private String mCreateDatetime;
 
     @SuppressWarnings("unused")
     private DownloadFileInfo() {
     }
+
+    // package use only
 
     /**
      * constructor of HttpDownloader,use DetectUrlFileInfo to create
@@ -128,12 +156,15 @@ public class DownloadFileInfo extends BaseUrlFileInfo {
     DownloadFileInfo(DetectUrlFileInfo detectUrlFileInfo) {
         this.mUrl = detectUrlFileInfo.getUrl();
         this.mFileName = detectUrlFileInfo.getFileName();
-        this.mFileSize = detectUrlFileInfo.getFileSize();
+        this.mFileSize = detectUrlFileInfo.getFileSizeLong();
         this.mAcceptRangeType = detectUrlFileInfo.getAcceptRangeType();
         this.mFileDir = detectUrlFileInfo.getFileDir();
         this.mTempFileName = mFileName + "." + TEMP_FILE_SUFFIX;
         // this.mStatus = Status.DOWNLOAD_STATUS_WAITING;// download status
+        this.mCreateDatetime = DateUtil.date2String_yyyy_MM_dd_HH_mm_ss(new Date());
     }
+
+    // package use only
 
     /**
      * constructor of HttpDownloader,use {@link Cursor} to create
@@ -144,14 +175,15 @@ public class DownloadFileInfo extends BaseUrlFileInfo {
         if (cursor != null && !cursor.isClosed()) {
             int id = -1;
             String url = null;
-            int downloadedSize = 0;
-            int fileSize = 0;
+            long downloadedSize = 0;
+            long fileSize = 0;
             String eTag = null;
             String acceptRangeType = null;
             String fileDir = null;
             String tempFileName = null;
             String fileName = null;
             int status = Status.DOWNLOAD_STATUS_UNKNOWN;
+            String createDatetime = null;
 
             int columnIndex = -1;
             columnIndex = cursor.getColumnIndex(Table.COLUMN_NAME_OF_FIELD_ID);
@@ -164,11 +196,11 @@ public class DownloadFileInfo extends BaseUrlFileInfo {
             }
             columnIndex = cursor.getColumnIndex(Table.COLUMN_NAME_OF_FIELD_DOWNLOADED_SIZE);
             if (columnIndex != -1) {
-                downloadedSize = cursor.getInt(columnIndex);
+                downloadedSize = cursor.getLong(columnIndex);
             }
             columnIndex = cursor.getColumnIndex(Table.COLUMN_NAME_OF_FIELD_FILE_SIZE);
             if (columnIndex != -1) {
-                fileSize = cursor.getInt(columnIndex);
+                fileSize = cursor.getLong(columnIndex);
             }
             columnIndex = cursor.getColumnIndex(Table.COLUMN_NAME_OF_FIELD_E_TAG);
             if (columnIndex != -1) {
@@ -194,6 +226,10 @@ public class DownloadFileInfo extends BaseUrlFileInfo {
             if (columnIndex != -1) {
                 status = cursor.getInt(columnIndex);
             }
+            columnIndex = cursor.getColumnIndex(Table.COLUMN_NAME_OF_FIELD_CREATE_DATETIME);
+            if (columnIndex != -1) {
+                createDatetime = cursor.getString(columnIndex);
+            }
             if (id > 0 && !TextUtils.isEmpty(url)) {
                 // init fields
                 this.mId = id;
@@ -206,8 +242,9 @@ public class DownloadFileInfo extends BaseUrlFileInfo {
                 this.mTempFileName = tempFileName;
                 this.mFileName = fileName;
                 this.mStatus = status;
+                this.mCreateDatetime = createDatetime;
             } else {
-                throw new IllegalArgumentException("id and url illegal!");
+                throw new IllegalArgumentException("id and url from cursor illegal!");
             }
         } else {
             throw new NullPointerException("cursor illegal!");
@@ -252,6 +289,9 @@ public class DownloadFileInfo extends BaseUrlFileInfo {
         if (downloadFileInfo.mStatus != this.mStatus) {
             this.mStatus = downloadFileInfo.mStatus;
         }
+        if (!TextUtils.isEmpty(downloadFileInfo.mCreateDatetime)) {
+            this.mCreateDatetime = downloadFileInfo.mCreateDatetime;
+        }
     }
 
     // package use only
@@ -270,6 +310,7 @@ public class DownloadFileInfo extends BaseUrlFileInfo {
         values.put(Table.COLUMN_NAME_OF_FIELD_TEMP_FILE_NAME, mTempFileName);
         values.put(Table.COLUMN_NAME_OF_FIELD_FILE_NAME, mFileName);
         values.put(Table.COLUMN_NAME_OF_FIELD_STATUS, mStatus);
+        values.put(Table.COLUMN_NAME_OF_FIELD_CREATE_DATETIME, mCreateDatetime);
         return values;
     }
 
@@ -306,7 +347,7 @@ public class DownloadFileInfo extends BaseUrlFileInfo {
     /**
      * set download size
      */
-    void setDownloadedSize(int downloadedSize) {
+    void setDownloadedSize(long downloadedSize) {
         this.mDownloadedSize = downloadedSize;
     }
 
@@ -316,6 +357,28 @@ public class DownloadFileInfo extends BaseUrlFileInfo {
     void setStatus(int status) {
         this.mStatus = status;
     }
+
+    /**
+     * set create download datetime
+     */
+    void setCreateDatetime(String createDatetime) {
+        this.mCreateDatetime = createDatetime;
+    }
+
+    /**
+     * set save file dir
+     */
+    protected void setFileDir(String fileDir) {
+        setFileDir(fileDir);
+    }
+
+    /**
+     * set file name
+     */
+    protected void setFileName(String fileName) {
+        setFileName(fileName);
+    }
+
 
     // getters
 
@@ -332,8 +395,19 @@ public class DownloadFileInfo extends BaseUrlFileInfo {
      * get Downloaded Size
      *
      * @return Downloaded Size
+     * @deprecated use {@link #getDownloadedSizeLong} instead
      */
+    @Deprecated
     public int getDownloadedSize() {
+        return (int) mDownloadedSize;
+    }
+
+    /**
+     * get Downloaded Size
+     *
+     * @return Downloaded Size
+     */
+    public long getDownloadedSizeLong() {
         return mDownloadedSize;
     }
 
@@ -355,28 +429,16 @@ public class DownloadFileInfo extends BaseUrlFileInfo {
         return mStatus;
     }
 
-    // other getters
-
-    @Override
-    public String getFilePath() {
-        return getFilePath(false);
-    }
-
     /**
-     * get FilePath
+     * get create download datetime
      *
-     * @param includeTempFilePath whether return the TempFilePath if Necessary
-     * @return
+     * @return create download datetime
      */
-    public String getFilePath(boolean includeTempFilePath) {
-        String filePath = getFileDir() + File.separator + mFileName;
-        if (TextUtils.isEmpty(filePath) || !new File(filePath).exists()) {
-            if (includeTempFilePath) {
-                filePath = getTempFilePath();
-            }
-        }
-        return filePath;
+    public String getCreateDatetime() {
+        return mCreateDatetime;
     }
+
+    // other getters
 
     /**
      * get TempFilePath

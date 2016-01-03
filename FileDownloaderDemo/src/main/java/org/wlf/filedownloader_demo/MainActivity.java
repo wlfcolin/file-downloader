@@ -23,6 +23,7 @@ import org.wlf.filedownloader.DownloadFileInfo;
 import org.wlf.filedownloader.FileDownloader;
 import org.wlf.filedownloader.listener.OnDeleteDownloadFileListener;
 import org.wlf.filedownloader.listener.OnDeleteDownloadFilesListener;
+import org.wlf.filedownloader.listener.OnDetectBigUrlFileListener;
 import org.wlf.filedownloader.listener.OnDetectUrlFileListener;
 import org.wlf.filedownloader.listener.OnMoveDownloadFileListener;
 import org.wlf.filedownloader.listener.OnMoveDownloadFilesListener;
@@ -40,7 +41,7 @@ import java.util.List;
  * @author wlf(Andy)
  * @email 411086563@qq.com
  */
-public class MainActivity extends Activity implements OnDetectUrlFileListener, OnItemSelectListener {
+public class MainActivity extends Activity implements OnItemSelectListener {
 
     // adapter
     private DownloadFileListAdapter mDownloadFileListAdapter;
@@ -108,6 +109,10 @@ public class MainActivity extends Activity implements OnDetectUrlFileListener, O
                 // show new download(custom) dialog
                 showCustomNewDownloadDialog();
                 return true;
+            // new big file download
+            case R.id.optionsNewBigFileWithDetect:
+                showNewBigDownloadDialog();
+                return true;
         }
         return super.onOptionsItemSelected(item);
     }
@@ -116,9 +121,8 @@ public class MainActivity extends Activity implements OnDetectUrlFileListener, O
     private void showNewDownloadDialog() {
 
         final EditText etUrl = new EditText(this);
-        etUrl.setText("  http://182.254.149.157/ftp/image/shop/product/Kids Addition & Subtraction 1.0.apk ");// apk 
-        // file, the url with special
-        // character
+        // apk file, the url with special character
+        etUrl.setText("  http://182.254.149.157/ftp/image/shop/product/Kids Addition & Subtraction 1.0.apk ");
         etUrl.setFocusable(true);
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -197,11 +201,11 @@ public class MainActivity extends Activity implements OnDetectUrlFileListener, O
     private void showCustomNewDownloadDialog() {
 
         final EditText etUrlCustom = new EditText(this);
+        // mp4 file, the url with params
         etUrlCustom.setText("http://183.57.151" +
                 ".208/download/videos/47CDA700A098E497/2015/12/17/1_1449832690_1449833760" +
                 ".mp4?a=836e48885e3a571404b85948aadb4797a4f6dec200407c1f48710c1a16fca32b&u" +
-                "=2819e7dec4dd32a780d6713df83b1b9df0c5bc193b52c5c1cacf932893b42327");// mp4 file, the url with 
-        // params
+                "=2819e7dec4dd32a780d6713df83b1b9df0c5bc193b52c5c1cacf932893b42327");
         etUrlCustom.setFocusable(true);
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -211,7 +215,180 @@ public class MainActivity extends Activity implements OnDetectUrlFileListener, O
             public void onClick(DialogInterface dialog, int which) {
                 // file url
                 String url = etUrlCustom.getText().toString().trim();
-                FileDownloader.detect(url, MainActivity.this);
+                FileDownloader.detect(url, new OnDetectUrlFileListener() {
+                    // ----------------------detect url file callback----------------------
+                    @Override
+                    public void onDetectNewDownloadFile(final String url, String fileName, final String saveDir, int 
+                            fileSize) {
+                        final TextView tvFileDir = new TextView(MainActivity.this);
+                        tvFileDir.setText(getString(R.string.main__save_path));
+
+                        final EditText etFileDir = new EditText(MainActivity.this);
+                        etFileDir.setText(saveDir);
+                        etFileDir.setFocusable(true);
+
+                        final TextView tvFileName = new TextView(MainActivity.this);
+                        tvFileName.setText(getString(R.string.main__save_file_name));
+
+                        final EditText etFileName = new EditText(MainActivity.this);
+                        etFileName.setText(fileName);
+                        etFileName.setFocusable(true);
+
+                        final TextView tvFileSize = new TextView(MainActivity.this);
+                        float size = fileSize / 1024f / 1024f;
+                        tvFileSize.setText(getString(R.string.main__file_size) + ((float) (Math.round(size * 100)) / 
+                                100) + "M");
+
+                        LinearLayout linearLayout = new LinearLayout(MainActivity.this);
+                        linearLayout.setOrientation(LinearLayout.VERTICAL);
+                        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(LinearLayout.LayoutParams
+                                .MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+                        linearLayout.addView(tvFileDir, params);
+                        linearLayout.addView(etFileDir, params);
+                        linearLayout.addView(tvFileName, params);
+                        linearLayout.addView(etFileName, params);
+                        linearLayout.addView(tvFileSize, params);
+
+                        AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+                        builder.setTitle(getString(R.string.main__confirm_save_path_and_name)).setView(linearLayout)
+                                .setNegativeButton(getString(R.string.main__dialog_btn_cancel), null);
+                        builder.setPositiveButton(getString(R.string.main__dialog_btn_confirm), new DialogInterface
+                                .OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+                                // save file dir
+                                String newFileDir = etFileDir.getText().toString().trim();
+                                // save file name
+                                String newFileName = etFileName.getText().toString().trim();
+                                // create download
+                                showToast(getString(R.string.main__new_download) + url);
+                                Log.e("wlf", "探测文件，新建下载：" + url);
+                                FileDownloader.createAndStart(url, newFileDir, newFileName);
+                            }
+                        });
+                        builder.show();
+                    }
+
+                    @Override
+                    public void onDetectUrlFileExist(String url) {
+                        showToast(getString(R.string.main__continue_download) + url);
+                        Log.e("wlf", "探测文件，继续下载：" + url);
+                        // continue download
+                        FileDownloader.start(url);
+                    }
+
+                    @Override
+                    public void onDetectUrlFileFailed(String url, DetectUrlFileFailReason failReason) {
+                        String msg = null;
+                        if (failReason != null) {
+                            msg = failReason.getMessage();
+                            if (TextUtils.isEmpty(msg)) {
+                                Throwable t = failReason.getCause();
+                                if (t != null) {
+                                    msg = t.getLocalizedMessage();
+                                }
+                            }
+                        }
+                        showToast(getString(R.string.main__detect_file_error) + msg + "," + url);
+                        Log.e("wlf", "出错回调，探测文件出错：" + msg + "," + url);
+                    }
+                });
+            }
+        });
+        builder.show();
+    }
+
+    // show new download(big file download) dialog
+    private void showNewBigDownloadDialog() {
+
+        final EditText etUrlCustom = new EditText(this);
+        // big download file witch bigger than 2G to download
+        etUrlCustom.setText("http://dx500.downyouxi.com/minglingyuzhengfu4.rar");
+        etUrlCustom.setFocusable(true);
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle(getString(R.string.main__please_input_download_file)).setView(etUrlCustom).setNegativeButton
+                (getString(R.string.main__dialog_btn_cancel), null);
+        builder.setPositiveButton(getString(R.string.main__dialog_btn_confirm), new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int which) {
+                // file url
+                String url = etUrlCustom.getText().toString().trim();
+                FileDownloader.detect(url, new OnDetectBigUrlFileListener() {
+                    // ----------------------detect url file callback----------------------
+                    @Override
+                    public void onDetectNewDownloadFile(final String url, String fileName, final String saveDir, long
+                            fileSize) {
+                        final TextView tvFileDir = new TextView(MainActivity.this);
+                        tvFileDir.setText(getString(R.string.main__save_path));
+
+                        final EditText etFileDir = new EditText(MainActivity.this);
+                        etFileDir.setText(saveDir);
+                        etFileDir.setFocusable(true);
+
+                        final TextView tvFileName = new TextView(MainActivity.this);
+                        tvFileName.setText(getString(R.string.main__save_file_name));
+
+                        final EditText etFileName = new EditText(MainActivity.this);
+                        etFileName.setText(fileName);
+                        etFileName.setFocusable(true);
+
+                        final TextView tvFileSize = new TextView(MainActivity.this);
+                        float size = fileSize / 1024f / 1024f;
+                        tvFileSize.setText(getString(R.string.main__file_size) + ((float) (Math.round(size * 100)) / 
+                                100) + "M");
+
+                        LinearLayout linearLayout = new LinearLayout(MainActivity.this);
+                        linearLayout.setOrientation(LinearLayout.VERTICAL);
+                        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(LinearLayout.LayoutParams
+                                .MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+                        linearLayout.addView(tvFileDir, params);
+                        linearLayout.addView(etFileDir, params);
+                        linearLayout.addView(tvFileName, params);
+                        linearLayout.addView(etFileName, params);
+                        linearLayout.addView(tvFileSize, params);
+
+                        AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+                        builder.setTitle(getString(R.string.main__confirm_save_path_and_name)).setView(linearLayout)
+                                .setNegativeButton(getString(R.string.main__dialog_btn_cancel), null);
+                        builder.setPositiveButton(getString(R.string.main__dialog_btn_confirm), new DialogInterface
+                                .OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+                                // save file dir
+                                String newFileDir = etFileDir.getText().toString().trim();
+                                // save file name
+                                String newFileName = etFileName.getText().toString().trim();
+                                // create download
+                                showToast(getString(R.string.main__new_download) + url);
+                                Log.e("wlf", "探测文件，新建下载：" + url);
+                                FileDownloader.createAndStart(url, newFileDir, newFileName);
+                            }
+                        });
+                        builder.show();
+                    }
+
+                    @Override
+                    public void onDetectUrlFileExist(String url) {
+                        showToast(getString(R.string.main__continue_download) + url);
+                        Log.e("wlf", "探测文件，继续下载：" + url);
+                        // continue download
+                        FileDownloader.start(url);
+                    }
+
+                    @Override
+                    public void onDetectUrlFileFailed(String url, DetectUrlFileFailReason failReason) {
+                        String msg = null;
+                        if (failReason != null) {
+                            msg = failReason.getMessage();
+                            if (TextUtils.isEmpty(msg)) {
+                                Throwable t = failReason.getCause();
+                                if (t != null) {
+                                    msg = t.getLocalizedMessage();
+                                }
+                            }
+                        }
+                        showToast(getString(R.string.main__detect_file_error) + msg + "," + url);
+                        Log.e("wlf", "出错回调，探测文件出错：" + msg + "," + url);
+                    }
+                });
             }
         });
         builder.show();
@@ -236,82 +413,6 @@ public class MainActivity extends Activity implements OnDetectUrlFileListener, O
             mToast = Toast.makeText(getApplicationContext(), text, Toast.LENGTH_SHORT);
         }
         mToast.show();
-    }
-
-    // ///////////////////////////////////////////////////////////
-
-    // ----------------------detect url file callback----------------------
-
-    @Override
-    public void onDetectNewDownloadFile(final String url, String fileName, final String saveDir, int fileSize) {
-        final TextView tvFileDir = new TextView(MainActivity.this);
-        tvFileDir.setText(getString(R.string.main__save_path));
-
-        final EditText etFileDir = new EditText(MainActivity.this);
-        etFileDir.setText(saveDir);
-        etFileDir.setFocusable(true);
-
-        final TextView tvFileName = new TextView(MainActivity.this);
-        tvFileName.setText(getString(R.string.main__save_file_name));
-
-        final EditText etFileName = new EditText(MainActivity.this);
-        etFileName.setText(fileName);
-        etFileName.setFocusable(true);
-
-        final TextView tvFileSize = new TextView(MainActivity.this);
-        float size = fileSize / 1024f / 1024f;
-        tvFileSize.setText(getString(R.string.main__file_size) + ((float) (Math.round(size * 100)) / 100) + "M");
-
-        LinearLayout linearLayout = new LinearLayout(MainActivity.this);
-        linearLayout.setOrientation(LinearLayout.VERTICAL);
-        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 
-                LinearLayout.LayoutParams.WRAP_CONTENT);
-        linearLayout.addView(tvFileDir, params);
-        linearLayout.addView(etFileDir, params);
-        linearLayout.addView(tvFileName, params);
-        linearLayout.addView(etFileName, params);
-        linearLayout.addView(tvFileSize, params);
-
-        AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
-        builder.setTitle(getString(R.string.main__confirm_save_path_and_name)).setView(linearLayout)
-                .setNegativeButton(getString(R.string.main__dialog_btn_cancel), null);
-        builder.setPositiveButton(getString(R.string.main__dialog_btn_confirm), new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int which) {
-                // save file dir
-                String newFileDir = etFileDir.getText().toString().trim();
-                // save file name
-                String newFileName = etFileName.getText().toString().trim();
-                // create download
-                showToast(getString(R.string.main__new_download) + url);
-                Log.e("wlf", "探测文件，新建下载：" + url);
-                FileDownloader.createAndStart(url, newFileDir, newFileName);
-            }
-        });
-        builder.show();
-    }
-
-    @Override
-    public void onDetectUrlFileExist(String url) {
-        showToast(getString(R.string.main__continue_download) + url);
-        Log.e("wlf", "探测文件，继续下载：" + url);
-        // continue download
-        FileDownloader.start(url);
-    }
-
-    @Override
-    public void onDetectUrlFileFailed(String url, DetectUrlFileFailReason failReason) {
-        String msg = null;
-        if (failReason != null) {
-            msg = failReason.getMessage();
-            if (TextUtils.isEmpty(msg)) {
-                Throwable t = failReason.getCause();
-                if (t != null) {
-                    msg = t.getLocalizedMessage();
-                }
-            }
-        }
-        showToast(getString(R.string.main__detect_file_error) + msg + "," + url);
-        Log.e("wlf", "出错回调，探测文件出错：" + msg + "," + url);
     }
 
     private void updateAdapter() {
@@ -373,8 +474,7 @@ public class MainActivity extends Activity implements OnDetectUrlFileListener, O
                         }
 
                         @Override
-                        public void onDeleteDownloadFileFailed(DownloadFileInfo downloadFileInfo, 
-                                                               OnDeleteDownloadFileFailReason failReason) {
+                        public void onDeleteDownloadFileFailed(DownloadFileInfo downloadFileInfo, DeleteDownloadFileFailReason failReason) {
                             showToast(getString(R.string.main__delete) + downloadFileInfo.getFileName() + getString(R
                                     .string.main__failed));
                             Log.e("wlf", "出错回调，删除" + downloadFileInfo.getFileName() + "失败");
@@ -468,8 +568,7 @@ public class MainActivity extends Activity implements OnDetectUrlFileListener, O
                                 }
 
                                 @Override
-                                public void onMoveDownloadFileFailed(DownloadFileInfo downloadFileInfo, 
-                                                                     OnMoveDownloadFileFailReason failReason) {
+                                public void onMoveDownloadFileFailed(DownloadFileInfo downloadFileInfo, MoveDownloadFileFailReason failReason) {
                                     showToast(getString(R.string.main__move) + downloadFileInfo.getFileName() +
                                             getString(R.string.main__failed));
                                     Log.e("wlf", "出错回调，移动" + downloadFileInfo.getFileName() + "失败");
@@ -595,8 +694,7 @@ public class MainActivity extends Activity implements OnDetectUrlFileListener, O
                                 }
 
                                 @Override
-                                public void onRenameDownloadFileFailed(DownloadFileInfo downloadFileInfo, 
-                                                                       OnRenameDownloadFileFailReason failReason) {
+                                public void onRenameDownloadFileFailed(DownloadFileInfo downloadFileInfo, RenameDownloadFileFailReason failReason) {
                                     showToast(getString(R.string.main__rename_failed));
                                     Log.e("wlf", "出错回调，重命名失败");
                                 }

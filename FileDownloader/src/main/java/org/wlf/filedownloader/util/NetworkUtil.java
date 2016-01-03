@@ -15,7 +15,7 @@ public class NetworkUtil {
     /**
      * is network available
      *
-     * @param context
+     * @param context Context
      * @return true means network is available
      */
     public static boolean isNetworkAvailable(Context context) {

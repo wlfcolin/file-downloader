@@ -1,8 +1,10 @@
 package org.wlf.filedownloader;
 
-import org.wlf.filedownloader.listener.OnDownloadFileChangeListener;
+import android.text.TextUtils;
 
-import java.lang.ref.WeakReference;
+import org.wlf.filedownloader.listener.OnDownloadFileChangeListener;
+import org.wlf.filedownloader.util.UrlUtil;
+
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 
@@ -15,31 +17,35 @@ import java.util.concurrent.CopyOnWriteArraySet;
  */
 class DownloadFileChangeObserver implements OnDownloadFileChangeListener {
 
-    private Set<WeakReference<OnDownloadFileChangeListener>> mWeakOnDownloadFileChangeListeners = new 
-            CopyOnWriteArraySet<WeakReference<OnDownloadFileChangeListener>>();
+    private Set<DownloadFileChangeListenerInfo> mOnDownloadFileChangeListeners = new 
+            CopyOnWriteArraySet<DownloadFileChangeListenerInfo>();
 
     /**
      * add a DownloadFileChangeListener
      *
      * @param onDownloadFileChangeListener DownloadFileChangeListener
+     * @param downloadFileChangeConfiguration          the Configuration for the DownloadFileChangeListener
      */
-    void addOnDownloadFileChangeListener(OnDownloadFileChangeListener onDownloadFileChangeListener) {
-        for (WeakReference<OnDownloadFileChangeListener> weakReference : mWeakOnDownloadFileChangeListeners) {
-            if (weakReference == null) {
-                continue;
+    public void addOnDownloadFileChangeListener(OnDownloadFileChangeListener onDownloadFileChangeListener, 
+                                                DownloadFileChangeConfiguration downloadFileChangeConfiguration) {
+        if (onDownloadFileChangeListener == null) {
+            return;
+        }
+        // find whether is added 
+        for (DownloadFileChangeListenerInfo listenerInfo : mOnDownloadFileChangeListeners) {
+            if (listenerInfo == null) {
+                return;
             }
-            OnDownloadFileChangeListener weakListener = weakReference.get();
-            if (weakListener == null) {
-                continue;
-            }
-            if (weakListener == onDownloadFileChangeListener) {
+
+            if (listenerInfo.mListener == onDownloadFileChangeListener) {
                 return;// has been added
             }
         }
-        WeakReference<OnDownloadFileChangeListener> weakReference = new WeakReference<OnDownloadFileChangeListener>
-                (onDownloadFileChangeListener);
-        // add listeners weakly
-        mWeakOnDownloadFileChangeListeners.add(weakReference);
+
+        // need add
+        DownloadFileChangeListenerInfo listenerInfo = new DownloadFileChangeListenerInfo
+                (downloadFileChangeConfiguration, onDownloadFileChangeListener);
+        mOnDownloadFileChangeListeners.add(listenerInfo);
     }
 
     /**
@@ -47,69 +53,149 @@ class DownloadFileChangeObserver implements OnDownloadFileChangeListener {
      *
      * @param onDownloadFileChangeListener DownloadFileChangeListener
      */
-    void removeOnDownloadFileChangeListener(OnDownloadFileChangeListener onDownloadFileChangeListener) {
-        for (WeakReference<OnDownloadFileChangeListener> weakReference : mWeakOnDownloadFileChangeListeners) {
-            if (weakReference == null) {
+    public void removeOnDownloadFileChangeListener(OnDownloadFileChangeListener onDownloadFileChangeListener) {
+        if (onDownloadFileChangeListener == null) {
+            return;
+        }
+        // find and remove
+        for (DownloadFileChangeListenerInfo listenerInfo : mOnDownloadFileChangeListeners) {
+            if (listenerInfo == null) {
                 continue;
             }
-            OnDownloadFileChangeListener weakListener = weakReference.get();
-            if (weakListener == null) {
-                // not need to remove may has been removed
-            } else {
-                if (weakListener == onDownloadFileChangeListener) {
-                    mWeakOnDownloadFileChangeListeners.remove(weakListener);
-                    break;
-                }
+            if (listenerInfo.mListener == onDownloadFileChangeListener) {
+                // find, remove
+                mOnDownloadFileChangeListeners.remove(listenerInfo);
+                break;
             }
         }
-    }
-
-    void release() {
-        mWeakOnDownloadFileChangeListeners.clear();
     }
 
     @Override
     public void onDownloadFileCreated(DownloadFileInfo downloadFileInfo) {
-        // notify all registered listeners
-        for (WeakReference<OnDownloadFileChangeListener> weakReference : mWeakOnDownloadFileChangeListeners) {
-            if (weakReference == null) {
-                continue;
-            }
-            OnDownloadFileChangeListener weakListener = weakReference.get();
-            if (weakListener == null || weakListener == this) {
-                continue;
-            }
-            OnDownloadFileChangeListener.MainThreadHelper.onDownloadFileCreated(downloadFileInfo, weakListener);
+        // notify all match registered listeners
+        if (downloadFileInfo == null || !UrlUtil.isUrl(downloadFileInfo.getUrl())) {
+            return;
         }
+
+        String url = downloadFileInfo.getUrl();
+
+        for (DownloadFileChangeListenerInfo listenerInfo : mOnDownloadFileChangeListeners) {
+            if (listenerInfo == null) {
+                continue;
+            }
+            if (listenerInfo.mDownloadFileChangeConfiguration != null && url.equals(listenerInfo
+                    .mDownloadFileChangeConfiguration.mUrl)) {
+                // find match url,notify
+                if (listenerInfo.mListener != null && listenerInfo.mListener != this) {
+                    OnDownloadFileChangeListener.MainThreadHelper.onDownloadFileCreated(downloadFileInfo, 
+                            listenerInfo.mListener);
+                }
+            } else {
+                // others
+                // global register listener,notify
+                if (listenerInfo.mDownloadFileChangeConfiguration == null || TextUtils.isEmpty(listenerInfo
+                        .mDownloadFileChangeConfiguration.mUrl)) {
+                    if (listenerInfo.mListener != null && listenerInfo.mListener != this) {
+                        OnDownloadFileChangeListener.MainThreadHelper.onDownloadFileCreated(downloadFileInfo, 
+                                listenerInfo.mListener);
+                    }
+                } else {
+                    // do not notify because not match
+                }
+            }
+        }
+
     }
 
     @Override
     public void onDownloadFileUpdated(DownloadFileInfo downloadFileInfo, Type type) {
-        // notify all registered listeners
-        for (WeakReference<OnDownloadFileChangeListener> weakReference : mWeakOnDownloadFileChangeListeners) {
-            if (weakReference == null) {
-                continue;
-            }
-            OnDownloadFileChangeListener weakListener = weakReference.get();
-            if (weakListener == null || weakListener == this) {
-                continue;
-            }
-            OnDownloadFileChangeListener.MainThreadHelper.onDownloadFileUpdated(downloadFileInfo, type, weakListener);
+        // notify all match registered listeners
+        if (downloadFileInfo == null || !UrlUtil.isUrl(downloadFileInfo.getUrl())) {
+            return;
         }
+
+        String url = downloadFileInfo.getUrl();
+
+        for (DownloadFileChangeListenerInfo listenerInfo : mOnDownloadFileChangeListeners) {
+            if (listenerInfo == null) {
+                continue;
+            }
+            if (listenerInfo.mDownloadFileChangeConfiguration != null && url.equals(listenerInfo
+                    .mDownloadFileChangeConfiguration.mUrl)) {
+                // find match url,notify
+                if (listenerInfo.mListener != null && listenerInfo.mListener != this) {
+                    OnDownloadFileChangeListener.MainThreadHelper.onDownloadFileUpdated(downloadFileInfo, type, 
+                            listenerInfo.mListener);
+                }
+            } else {
+                // others
+                // global register listener,notify
+                if (listenerInfo.mDownloadFileChangeConfiguration == null || TextUtils.isEmpty(listenerInfo
+                        .mDownloadFileChangeConfiguration.mUrl)) {
+                    if (listenerInfo.mListener != null && listenerInfo.mListener != this) {
+                        OnDownloadFileChangeListener.MainThreadHelper.onDownloadFileUpdated(downloadFileInfo, type, 
+                                listenerInfo.mListener);
+                    }
+                } else {
+                    // do not notify because not match
+                }
+            }
+        }
+
     }
 
     @Override
     public void onDownloadFileDeleted(DownloadFileInfo downloadFileInfo) {
-        // notify all registered listeners
-        for (WeakReference<OnDownloadFileChangeListener> weakReference : mWeakOnDownloadFileChangeListeners) {
-            if (weakReference == null) {
+        // notify all match registered listeners
+        if (downloadFileInfo == null || !UrlUtil.isUrl(downloadFileInfo.getUrl())) {
+            return;
+        }
+
+        String url = downloadFileInfo.getUrl();
+
+        for (DownloadFileChangeListenerInfo listenerInfo : mOnDownloadFileChangeListeners) {
+            if (listenerInfo == null) {
                 continue;
             }
-            OnDownloadFileChangeListener weakListener = weakReference.get();
-            if (weakListener == null || weakListener == this) {
-                continue;
+            if (listenerInfo.mDownloadFileChangeConfiguration != null && url.equals(listenerInfo
+                    .mDownloadFileChangeConfiguration.mUrl)) {
+                // find match url,notify
+                if (listenerInfo.mListener != null && listenerInfo.mListener != this) {
+                    OnDownloadFileChangeListener.MainThreadHelper.onDownloadFileDeleted(downloadFileInfo, 
+                            listenerInfo.mListener);
+                }
+            } else {
+                // others
+                // global register listener,notify
+                if (listenerInfo.mDownloadFileChangeConfiguration == null || TextUtils.isEmpty(listenerInfo
+                        .mDownloadFileChangeConfiguration.mUrl)) {
+                    if (listenerInfo.mListener != null && listenerInfo.mListener != this) {
+                        OnDownloadFileChangeListener.MainThreadHelper.onDownloadFileDeleted(downloadFileInfo, 
+                                listenerInfo.mListener);
+                    }
+                } else {
+                    // do not notify because not match
+                }
             }
-            OnDownloadFileChangeListener.MainThreadHelper.onDownloadFileDeleted(downloadFileInfo, weakListener);
+        }
+
+    }
+
+
+    public void release() {
+        mOnDownloadFileChangeListeners.clear();
+    }
+
+    private class DownloadFileChangeListenerInfo {
+
+        private DownloadFileChangeConfiguration mDownloadFileChangeConfiguration;
+        private OnDownloadFileChangeListener mListener;
+
+        public DownloadFileChangeListenerInfo(DownloadFileChangeConfiguration downloadFileChangeConfiguration, 
+                                              OnDownloadFileChangeListener listener) {
+            mDownloadFileChangeConfiguration = downloadFileChangeConfiguration;
+            mListener = listener;
         }
     }
+
 }

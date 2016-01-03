@@ -63,6 +63,9 @@ public interface OnDeleteDownloadFilesListener {
             handler.post(new Runnable() {
                 @Override
                 public void run() {
+                    if (onDeleteDownloadFilesListener == null) {
+                        return;
+                    }
                     onDeleteDownloadFilesListener.onDeleteDownloadFilesPrepared(downloadFilesNeedDelete);
                     handler.removeCallbacksAndMessages(null);
                 }
@@ -87,6 +90,9 @@ public interface OnDeleteDownloadFilesListener {
             handler.post(new Runnable() {
                 @Override
                 public void run() {
+                    if (onDeleteDownloadFilesListener == null) {
+                        return;
+                    }
                     onDeleteDownloadFilesListener.onDeletingDownloadFiles(downloadFilesNeedDelete, 
                             downloadFilesDeleted, downloadFilesSkip, downloadFileDeleting);
                     handler.removeCallbacksAndMessages(null);
@@ -110,6 +116,9 @@ public interface OnDeleteDownloadFilesListener {
             handler.post(new Runnable() {
                 @Override
                 public void run() {
+                    if (onDeleteDownloadFilesListener == null) {
+                        return;
+                    }
                     onDeleteDownloadFilesListener.onDeleteDownloadFilesCompleted(downloadFilesNeedDelete, 
                             downloadFilesDeleted);
                     handler.removeCallbacksAndMessages(null);

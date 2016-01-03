@@ -10,7 +10,9 @@ import android.os.Looper;
  *
  * @author wlf(Andy)
  * @email 411086563@qq.com
+ * @deprecated use {@link OnDetectBigUrlFileListener} instead to support downloading the file more than 2G
  */
+@Deprecated
 public interface OnDetectUrlFileListener {
 
     /**
@@ -51,9 +53,7 @@ public interface OnDetectUrlFileListener {
          * @param saveDir  saveDir
          * @param fileSize fileSize
          */
-        public static void onDetectNewDownloadFile(final String url, final String fileName, final String saveDir, 
-                                                   final int fileSize, final OnDetectUrlFileListener 
-                                                           onDetectUrlFileListener) {
+        public static void onDetectNewDownloadFile(final String url, final String fileName, final String saveDir, final long fileSize, final OnDetectUrlFileListener onDetectUrlFileListener) {
             if (onDetectUrlFileListener == null) {
                 return;
             }
@@ -61,7 +61,15 @@ public interface OnDetectUrlFileListener {
             handler.post(new Runnable() {
                 @Override
                 public void run() {
-                    onDetectUrlFileListener.onDetectNewDownloadFile(url, fileName, saveDir, fileSize);
+                    if (onDetectUrlFileListener == null) {
+                        return;
+                    }
+                    if (onDetectUrlFileListener instanceof OnDetectBigUrlFileListener) {
+                        ((OnDetectBigUrlFileListener) onDetectUrlFileListener).onDetectNewDownloadFile(url, fileName,
+                                saveDir, fileSize);
+                    } else {
+                        onDetectUrlFileListener.onDetectNewDownloadFile(url, fileName, saveDir, (int) fileSize);
+                    }
                     handler.removeCallbacksAndMessages(null);
                 }
             });
@@ -81,6 +89,9 @@ public interface OnDetectUrlFileListener {
             handler.post(new Runnable() {
                 @Override
                 public void run() {
+                    if (onDetectUrlFileListener == null) {
+                        return;
+                    }
                     onDetectUrlFileListener.onDetectUrlFileExist(url);
                     handler.removeCallbacksAndMessages(null);
                 }
@@ -102,6 +113,9 @@ public interface OnDetectUrlFileListener {
             handler.post(new Runnable() {
                 @Override
                 public void run() {
+                    if (onDetectUrlFileListener == null) {
+                        return;
+                    }
                     onDetectUrlFileListener.onDetectUrlFileFailed(url, failReason);
                     handler.removeCallbacksAndMessages(null);
                 }

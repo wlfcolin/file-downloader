@@ -148,18 +148,26 @@ public class DownloadFileListAdapter extends BaseAdapter implements OnFileDownlo
         tvFileName.setText(downloadFileInfo.getFileName());
 
         // download progress
-        pbProgress.setMax(downloadFileInfo.getFileSize());
-        pbProgress.setProgress(downloadFileInfo.getDownloadedSize());
+        int totalSize = (int) downloadFileInfo.getFileSizeLong();
+        int downloaded = (int) downloadFileInfo.getDownloadedSizeLong();
+        double rate = (double) totalSize / Integer.MAX_VALUE;
+        if (rate > 1.0) {
+            totalSize = Integer.MAX_VALUE;
+            downloaded = (int) (downloaded / rate);
+        }
+
+        pbProgress.setMax(totalSize);
+        pbProgress.setProgress(downloaded);
 
         // file size
-        float downloadSize = downloadFileInfo.getDownloadedSize() / 1024f / 1024;
-        float fileSize = downloadFileInfo.getFileSize() / 1024f / 1024;
+        double downloadSize = downloadFileInfo.getDownloadedSizeLong() / 1024f / 1024;
+        double fileSize = downloadFileInfo.getFileSizeLong() / 1024f / 1024;
 
         tvDownloadSize.setText(((float) (Math.round(downloadSize * 100)) / 100) + "M/");
         tvTotalSize.setText(((float) (Math.round(fileSize * 100)) / 100) + "M");
 
         // downloaded percent
-        float percent = downloadSize / fileSize * 100;
+        double percent = downloadSize / fileSize * 100;
         tvPercent.setText(((float) (Math.round(percent * 100)) / 100) + "%");
 
         final Context context = cacheConvertView.getContext();
@@ -480,18 +488,25 @@ public class DownloadFileListAdapter extends BaseAdapter implements OnFileDownlo
             TextView tvText = (TextView) cacheConvertView.findViewById(R.id.tvText);
 
             // download progress
-            // pbProgress.setMax(downloadFileInfo.getFileSize());
-            pbProgress.setProgress(downloadFileInfo.getDownloadedSize());
+            int totalSize = (int) downloadFileInfo.getFileSizeLong();
+            int downloaded = (int) downloadFileInfo.getDownloadedSizeLong();
+            double rate = (double) totalSize / Integer.MAX_VALUE;
+            if (rate > 1.0) {
+                totalSize = Integer.MAX_VALUE;
+                downloaded = (int) (downloaded / rate);
+            }
+            // pbProgress.setMax(totalSize);
+            pbProgress.setProgress(downloaded);
 
             // download size
-            float downloadSize = downloadFileInfo.getDownloadedSize() / 1024f / 1024f;
-            float fileSize = downloadFileInfo.getFileSize() / 1024f / 1024f;
+            double downloadSize = downloadFileInfo.getDownloadedSizeLong() / 1024f / 1024f;
+            double fileSize = downloadFileInfo.getFileSizeLong() / 1024f / 1024f;
 
             tvDownloadSize.setText(((float) (Math.round(downloadSize * 100)) / 100) + "M/");
             tvTotalSize.setText(((float) (Math.round(fileSize * 100)) / 100) + "M");
 
             // download percent
-            float percent = downloadSize / fileSize * 100;
+            double percent = downloadSize / fileSize * 100;
             tvPercent.setText(((float) (Math.round(percent * 100)) / 100) + "%");
 
             // download speed and remain times
@@ -584,8 +599,7 @@ public class DownloadFileListAdapter extends BaseAdapter implements OnFileDownlo
     }
 
     @Override
-    public void onFileDownloadStatusFailed(String url, DownloadFileInfo downloadFileInfo, 
-                                           OnFileDownloadStatusFailReason failReason) {
+    public void onFileDownloadStatusFailed(String url, DownloadFileInfo downloadFileInfo, FileDownloadStatusFailReason failReason) {
 
         if (downloadFileInfo == null) {
             //
@@ -602,17 +616,17 @@ public class DownloadFileListAdapter extends BaseAdapter implements OnFileDownlo
             String msg = cacheConvertView.getContext().getString(R.string.main__download_error);
 
             if (failReason != null) {
-                if (OnFileDownloadStatusFailReason.TYPE_NETWORK_DENIED.equals(failReason.getType())) {
+                if (FileDownloadStatusFailReason.TYPE_NETWORK_DENIED.equals(failReason.getType())) {
                     msg += cacheConvertView.getContext().getString(R.string.main__check_network);
                     tvText.setText(msg);
-                } else if (OnFileDownloadStatusFailReason.TYPE_FILE_IS_DOWNLOADING.equals(failReason.getType())) {
+                } else if (FileDownloadStatusFailReason.TYPE_FILE_IS_DOWNLOADING.equals(failReason.getType())) {
                     msg = downloadFileInfo.getFileName() + cacheConvertView.getContext().getString(R.string
                             .main__downloading);
                     showToast(msg);
-                } else if (OnFileDownloadStatusFailReason.TYPE_URL_ILLEGAL.equals(failReason.getType())) {
+                } else if (FileDownloadStatusFailReason.TYPE_URL_ILLEGAL.equals(failReason.getType())) {
                     msg = cacheConvertView.getContext().getString(R.string.main__url_illegal);
                     showToast(msg);
-                } else if (OnFileDownloadStatusFailReason.TYPE_NETWORK_TIMEOUT.equals(failReason.getType())) {
+                } else if (FileDownloadStatusFailReason.TYPE_NETWORK_TIMEOUT.equals(failReason.getType())) {
                     msg = cacheConvertView.getContext().getString(R.string.main__network_timeout);
                     showToast(msg);
                 }

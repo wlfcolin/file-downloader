@@ -36,7 +36,7 @@ public interface OnRenameDownloadFileListener {
      * @param downloadFileInfo download files needed to rename
      * @param failReason       fail reason
      */
-    void onRenameDownloadFileFailed(DownloadFileInfo downloadFileInfo, OnRenameDownloadFileFailReason failReason);
+    void onRenameDownloadFileFailed(DownloadFileInfo downloadFileInfo, RenameDownloadFileFailReason failReason);
 
 
     /**
@@ -58,6 +58,9 @@ public interface OnRenameDownloadFileListener {
             handler.post(new Runnable() {
                 @Override
                 public void run() {
+                    if (onRenameDownloadFileListener == null) {
+                        return;
+                    }
                     onRenameDownloadFileListener.onRenameDownloadFilePrepared(downloadFileNeedRename);
                     handler.removeCallbacksAndMessages(null);
                 }
@@ -78,6 +81,9 @@ public interface OnRenameDownloadFileListener {
             handler.post(new Runnable() {
                 @Override
                 public void run() {
+                    if (onRenameDownloadFileListener == null) {
+                        return;
+                    }
                     onRenameDownloadFileListener.onRenameDownloadFileSuccess(downloadFileRenamed);
                     handler.removeCallbacksAndMessages(null);
                 }
@@ -90,8 +96,7 @@ public interface OnRenameDownloadFileListener {
          * @param downloadFileInfo download files needed to rename
          * @param failReason       fail reason
          */
-        public static void onRenameDownloadFileFailed(final DownloadFileInfo downloadFileInfo, final 
-        OnRenameDownloadFileFailReason failReason, final OnRenameDownloadFileListener onRenameDownloadFileListener) {
+        public static void onRenameDownloadFileFailed(final DownloadFileInfo downloadFileInfo, final RenameDownloadFileFailReason failReason, final OnRenameDownloadFileListener onRenameDownloadFileListener) {
             if (onRenameDownloadFileListener == null) {
                 return;
             }
@@ -99,6 +104,9 @@ public interface OnRenameDownloadFileListener {
             handler.post(new Runnable() {
                 @Override
                 public void run() {
+                    if (onRenameDownloadFileListener == null) {
+                        return;
+                    }
                     onRenameDownloadFileListener.onRenameDownloadFileFailed(downloadFileInfo, failReason);
                     handler.removeCallbacksAndMessages(null);
                 }
@@ -108,9 +116,26 @@ public interface OnRenameDownloadFileListener {
     }
 
     /**
-     * OnRenameDownloadFileFailReason
+     * RenameDownloadFileFailReason
+     *
+     * @deprecated use {@link RenameDownloadFileFailReason} instead
      */
-    public static class OnRenameDownloadFileFailReason extends FailReason {
+    @Deprecated
+    public static class OnRenameDownloadFileFailReason extends RenameDownloadFileFailReason {
+
+        public OnRenameDownloadFileFailReason(String detailMessage, String type) {
+            super(detailMessage, type);
+        }
+
+        public OnRenameDownloadFileFailReason(Throwable throwable) {
+            super(throwable);
+        }
+    }
+
+    /**
+     * RenameDownloadFileFailReason
+     */
+    public static class RenameDownloadFileFailReason extends FailReason {
 
         private static final long serialVersionUID = 4959079784745889291L;
 
@@ -118,34 +143,33 @@ public interface OnRenameDownloadFileListener {
         /**
          * the download file is not exist
          */
-        public static final String TYPE_FILE_RECORD_IS_NOT_EXIST = OnRenameDownloadFileFailReason.class.getName() + 
+        public static final String TYPE_FILE_RECORD_IS_NOT_EXIST = RenameDownloadFileFailReason.class.getName() + 
                 "_TYPE_FILE_RECORD_IS_NOT_EXIST";
         /**
          * original file not exist
          */
-        public static final String TYPE_ORIGINAL_FILE_NOT_EXIST = OnRenameDownloadFileFailReason.class.getName() + 
+        public static final String TYPE_ORIGINAL_FILE_NOT_EXIST = RenameDownloadFileFailReason.class.getName() + 
                 "_TYPE_ORIGINAL_FILE_NOT_EXIST";
         /**
          * new file name is empty
          */
-        public static final String TYPE_NEW_FILE_NAME_IS_EMPTY = OnRenameDownloadFileFailReason.class.getName() + 
+        public static final String TYPE_NEW_FILE_NAME_IS_EMPTY = RenameDownloadFileFailReason.class.getName() + 
                 "_TYPE_NEW_FILE_NAME_IS_EMPTY";
         /**
-         * file status error
+         * file status error,can not rename
          */
-        public static final String TYPE_FILE_STATUS_ERROR = OnRenameDownloadFileFailReason.class.getName() + 
-                "_TYPE_FILE_STATUS_ERROR";
+        public static final String TYPE_FILE_STATUS_ERROR = RenameDownloadFileFailReason.class.getName() + "_TYPE_FILE_STATUS_ERROR";
         /**
          * the new file has been exist
          */
-        public static final String TYPE_NEW_FILE_HAS_BEEN_EXIST = OnRenameDownloadFileFailReason.class.getName() + 
+        public static final String TYPE_NEW_FILE_HAS_BEEN_EXIST = RenameDownloadFileFailReason.class.getName() + 
                 "_TYPE_NEW_FILE_HAS_BEEN_EXIST";
 
-        public OnRenameDownloadFileFailReason(String detailMessage, String type) {
+        public RenameDownloadFileFailReason(String detailMessage, String type) {
             super(detailMessage, type);
         }
 
-        public OnRenameDownloadFileFailReason(Throwable throwable) {
+        public RenameDownloadFileFailReason(Throwable throwable) {
             super(throwable);
         }
 

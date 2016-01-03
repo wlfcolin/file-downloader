@@ -36,7 +36,7 @@ public interface OnDeleteDownloadFileListener {
      * @param downloadFileInfo download file needed to delete,may be null
      * @param failReason       fail reason
      */
-    void onDeleteDownloadFileFailed(DownloadFileInfo downloadFileInfo, OnDeleteDownloadFileFailReason failReason);
+    void onDeleteDownloadFileFailed(DownloadFileInfo downloadFileInfo, DeleteDownloadFileFailReason failReason);
 
     /**
      * Callback helper for main thread
@@ -57,6 +57,9 @@ public interface OnDeleteDownloadFileListener {
             handler.post(new Runnable() {
                 @Override
                 public void run() {
+                    if (onDeleteDownloadFileListener == null) {
+                        return;
+                    }
                     onDeleteDownloadFileListener.onDeleteDownloadFilePrepared(downloadFileNeedDelete);
                     handler.removeCallbacksAndMessages(null);
                 }
@@ -77,6 +80,9 @@ public interface OnDeleteDownloadFileListener {
             handler.post(new Runnable() {
                 @Override
                 public void run() {
+                    if (onDeleteDownloadFileListener == null) {
+                        return;
+                    }
                     onDeleteDownloadFileListener.onDeleteDownloadFileSuccess(downloadFileDeleted);
                     handler.removeCallbacksAndMessages(null);
                 }
@@ -89,8 +95,7 @@ public interface OnDeleteDownloadFileListener {
          * @param downloadFileInfo download file needed to delete,may be null
          * @param failReason       fail reason
          */
-        public static void onDeleteDownloadFileFailed(final DownloadFileInfo downloadFileInfo, final 
-        OnDeleteDownloadFileFailReason failReason, final OnDeleteDownloadFileListener onDeleteDownloadFileListener) {
+        public static void onDeleteDownloadFileFailed(final DownloadFileInfo downloadFileInfo, final DeleteDownloadFileFailReason failReason, final OnDeleteDownloadFileListener onDeleteDownloadFileListener) {
             if (onDeleteDownloadFileListener == null) {
                 return;
             }
@@ -98,6 +103,9 @@ public interface OnDeleteDownloadFileListener {
             handler.post(new Runnable() {
                 @Override
                 public void run() {
+                    if (onDeleteDownloadFileListener == null) {
+                        return;
+                    }
                     onDeleteDownloadFileListener.onDeleteDownloadFileFailed(downloadFileInfo, failReason);
                     handler.removeCallbacksAndMessages(null);
                 }
@@ -106,23 +114,40 @@ public interface OnDeleteDownloadFileListener {
     }
 
     /**
-     * OnDeleteDownloadFileFailReason
+     * DeleteDownloadFileFailReason
+     *
+     * @deprecated use {@link DeleteDownloadFileFailReason} instead
      */
-    public static class OnDeleteDownloadFileFailReason extends FailReason {
-
-        private static final long serialVersionUID = 6959079784746889291L;
-
-        /**
-         * the download file record is not exist
-         */
-        public static final String TYPE_FILE_RECORD_IS_NOT_EXIST = OnDeleteDownloadFileFailReason.class.getName() + 
-                "_TYPE_FILE_RECORD_IS_NOT_EXIST";
+    @Deprecated
+    public static class OnDeleteDownloadFileFailReason extends DeleteDownloadFileFailReason {
 
         public OnDeleteDownloadFileFailReason(String detailMessage, String type) {
             super(detailMessage, type);
         }
 
         public OnDeleteDownloadFileFailReason(Throwable throwable) {
+            super(throwable);
+        }
+    }
+
+    /**
+     * DeleteDownloadFileFailReason
+     */
+    public static class DeleteDownloadFileFailReason extends FailReason {
+
+        private static final long serialVersionUID = 6959079784746889291L;
+
+        /**
+         * the download file record doest not exist
+         */
+        public static final String TYPE_FILE_RECORD_IS_NOT_EXIST = DeleteDownloadFileFailReason.class.getName() + 
+                "_TYPE_FILE_RECORD_IS_NOT_EXIST";
+
+        public DeleteDownloadFileFailReason(String detailMessage, String type) {
+            super(detailMessage, type);
+        }
+
+        public DeleteDownloadFileFailReason(Throwable throwable) {
             super(throwable);
         }
 
