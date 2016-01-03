@@ -28,6 +28,7 @@ import org.wlf.filedownloader_demo2.R;
 import org.wlf.filedownloader_demo2.ToastUtil;
 import org.wlf.filedownloader_demo2.advanced_use.course_download.CourseDownloadAdapter.CourseDownloadViewHolder;
 import org.wlf.filedownloader_demo2.advanced_use.model.CoursePreviewInfo;
+import org.wlf.filedownloader_demo2.custom_model.CustomVideoInfo;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -590,6 +591,15 @@ public class CourseDownloadAdapter extends RecyclerView.Adapter<CourseDownloadVi
         void onSelected(List<CoursePreviewInfo> selectCoursePreviewInfos);
 
         void onNoneSelect();
+    }
+
+    public void release() {
+        for (CoursePreviewInfo coursePreviewInfo : mCoursePreviewInfos) {
+            if (coursePreviewInfo == null) {
+                continue;
+            }
+            coursePreviewInfo.release();
+        }
     }
 
 }

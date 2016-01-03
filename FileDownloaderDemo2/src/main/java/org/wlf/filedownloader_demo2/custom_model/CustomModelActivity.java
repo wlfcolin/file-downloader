@@ -70,5 +70,9 @@ public class CustomModelActivity extends Activity {
 
         // unregisterDownloadStatusListener
         FileDownloader.unregisterDownloadStatusListener(mCustomDownloadFileListAdapter);
+
+        if (mCustomDownloadFileListAdapter != null) {
+            mCustomDownloadFileListAdapter.release();
+        }
     }
 }

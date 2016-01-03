@@ -122,4 +122,13 @@ public class CoursePreviewAdapter extends RecyclerView.Adapter<CoursePreviewView
             mTvCourseName = (TextView) itemView.findViewById(R.id.tvCourseName);
         }
     }
+
+    public void release() {
+        for (CoursePreviewInfo coursePreviewInfo : mCoursePreviewInfos) {
+            if (coursePreviewInfo == null) {
+                continue;
+            }
+            coursePreviewInfo.release();
+        }
+    }
 }

@@ -53,12 +53,23 @@ public class CoursePreviewFragment extends Fragment {
             mRvCoursePreview.setHasFixedSize(true);
             mRvCoursePreview.setLayoutManager(new GridLayoutManager(getActivity(), 2));
 
+            if (mCoursePreviewAdapter != null) {
+                mCoursePreviewAdapter.release();
+            }
             mCoursePreviewAdapter = new CoursePreviewAdapter(null);
             mRvCoursePreview.setAdapter(mCoursePreviewAdapter);
 
             initCoursePreviewData();
         }
         return rootView;
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        if (mCoursePreviewAdapter != null) {
+            mCoursePreviewAdapter.release();
+        }
     }
 
     private void initCoursePreviewData() {

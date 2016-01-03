@@ -74,6 +74,9 @@ public class CourseDownloadFragment extends Fragment implements OnItemSelectList
             // set layoutManager
             mRvCourseDownload.setLayoutManager(layoutManager);
 
+            if (mCourseDownloadAdapter != null) {
+                mCourseDownloadAdapter.release();
+            }
             mCourseDownloadAdapter = new CourseDownloadAdapter(getActivity(), null);
             mRvCourseDownload.setAdapter(mCourseDownloadAdapter);
 
@@ -114,6 +117,9 @@ public class CourseDownloadFragment extends Fragment implements OnItemSelectList
         super.onDestroy();
         FileDownloader.unregisterDownloadStatusListener(mCourseDownloadAdapter);
         FileDownloader.unregisterDownloadFileChangeListener(this);
+        if (mCourseDownloadAdapter != null) {
+            mCourseDownloadAdapter.release();
+        }   
     }
 
     @Override

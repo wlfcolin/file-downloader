@@ -36,11 +36,9 @@ public class CustomVideoInfo implements OnDownloadFileChangeListener {
         mDownloadFileInfo = FileDownloader.getDownloadFile(mUrl);
     }
 
-    @Override
-    protected void finalize() throws Throwable {
-        // unregister, optional,not require
+    public void release() {
+        // unregister
         FileDownloader.unregisterDownloadFileChangeListener(this);
-        super.finalize();
     }
 
     // getters

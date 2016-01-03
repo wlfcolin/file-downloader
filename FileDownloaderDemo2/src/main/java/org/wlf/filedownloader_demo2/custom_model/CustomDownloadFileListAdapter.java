@@ -373,4 +373,13 @@ public class CustomDownloadFileListAdapter extends BaseAdapter implements OnFile
         }
 
     }
+
+    public void release() {
+        for (CustomVideoInfo customVideoInfo : mCustomVideoInfos) {
+            if (customVideoInfo == null) {
+                continue;
+            }
+            customVideoInfo.release();
+        }
+    }
 }
