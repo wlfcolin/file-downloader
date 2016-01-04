@@ -41,6 +41,7 @@
 
     <string name="main__can_not_download">Can not download, please delete the file</string>
     <string name="main__getting_resource">Getting resource</string>
+    <string name="main__retrying_connect_resource">Retrying connect resource</string>
     <string name="main__connected_resource">Connected resource</string>
     <string name="main__paused">Paused</string>
     <string name="main__downloading">Downloading</string>

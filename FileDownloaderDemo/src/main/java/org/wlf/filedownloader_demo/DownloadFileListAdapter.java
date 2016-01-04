@@ -23,7 +23,7 @@ import android.widget.Toast;
 import org.wlf.filedownloader.DownloadFileInfo;
 import org.wlf.filedownloader.FileDownloader;
 import org.wlf.filedownloader.base.Status;
-import org.wlf.filedownloader.listener.OnFileDownloadStatusListener;
+import org.wlf.filedownloader.listener.OnFileDownloadStatusListener2;
 import org.wlf.filedownloader.util.FileUtil;
 import org.wlf.filedownloader_demo.util.ApkUtil;
 import org.wlf.filedownloader_demo.util.TimeUtil;
@@ -42,7 +42,7 @@ import java.util.Map;
  * @author wlf(Andy)
  * @email 411086563@qq.com
  */
-public class DownloadFileListAdapter extends BaseAdapter implements OnFileDownloadStatusListener {
+public class DownloadFileListAdapter extends BaseAdapter implements OnFileDownloadStatusListener2 {
 
     /**
      * LOG TAG
@@ -177,6 +177,10 @@ public class DownloadFileListAdapter extends BaseAdapter implements OnFileDownlo
             case Status.DOWNLOAD_STATUS_UNKNOWN:
                 tvText.setText(context.getString(R.string.main__can_not_download));
                 break;
+            // download file status:retrying
+            case Status.DOWNLOAD_STATUS_RETRYING:
+                tvText.setText(context.getString(R.string.main__retrying_connect_resource));
+                break;
             // download file status:preparing
             case Status.DOWNLOAD_STATUS_PREPARING:
                 tvText.setText(context.getString(R.string.main__getting_resource));
@@ -297,7 +301,8 @@ public class DownloadFileListAdapter extends BaseAdapter implements OnFileDownlo
                             });
                             builder.show();
                             break;
-                        // download file status:waiting & preparing & prepared & downloading
+                        // download file status:retrying & waiting & preparing & prepared & downloading
+                        case Status.DOWNLOAD_STATUS_RETRYING:
                         case Status.DOWNLOAD_STATUS_WAITING:
                         case Status.DOWNLOAD_STATUS_PREPARING:
                         case Status.DOWNLOAD_STATUS_PREPARED:
@@ -443,6 +448,27 @@ public class DownloadFileListAdapter extends BaseAdapter implements OnFileDownlo
 
             Log.d(TAG, "onFileDownloadStatusPreparing url：" + url + "，status(正常应该是" + Status
                     .DOWNLOAD_STATUS_PREPARING + ")：" + downloadFileInfo.getStatus());
+        } else {
+            updateShow();
+        }
+    }
+
+    @Override
+    public void onFileDownloadStatusRetrying(DownloadFileInfo downloadFileInfo, int retryTimes) {
+
+        if (downloadFileInfo == null) {
+            return;
+        }
+
+        String url = downloadFileInfo.getUrl();
+        View cacheConvertView = mConvertViews.get(url);
+        if (cacheConvertView != null) {
+            TextView tvText = (TextView) cacheConvertView.findViewById(R.id.tvText);
+            tvText.setText(cacheConvertView.getContext().getString(R.string.main__retrying_connect_resource) + "(" +
+                    retryTimes + ")");
+
+            Log.d(TAG, "onFileDownloadStatusRetrying url：" + url + "，status(正常应该是" + Status.DOWNLOAD_STATUS_RETRYING 
+                    + ")：" + downloadFileInfo.getStatus());
         } else {
             updateShow();
         }
@@ -599,7 +625,8 @@ public class DownloadFileListAdapter extends BaseAdapter implements OnFileDownlo
     }
 
     @Override
-    public void onFileDownloadStatusFailed(String url, DownloadFileInfo downloadFileInfo, FileDownloadStatusFailReason failReason) {
+    public void onFileDownloadStatusFailed(String url, DownloadFileInfo downloadFileInfo, 
+                                           FileDownloadStatusFailReason failReason) {
 
         if (downloadFileInfo == null) {
             //

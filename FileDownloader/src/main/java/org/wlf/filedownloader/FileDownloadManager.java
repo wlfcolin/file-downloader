@@ -16,6 +16,7 @@ import org.wlf.filedownloader.listener.OnDetectBigUrlFileListener;
 import org.wlf.filedownloader.listener.OnDetectUrlFileListener;
 import org.wlf.filedownloader.listener.OnDownloadFileChangeListener;
 import org.wlf.filedownloader.listener.OnFileDownloadStatusListener;
+import org.wlf.filedownloader.listener.OnFileDownloadStatusListener2;
 import org.wlf.filedownloader.listener.OnMoveDownloadFileListener;
 import org.wlf.filedownloader.listener.OnMoveDownloadFilesListener;
 import org.wlf.filedownloader.listener.OnRenameDownloadFileListener;
@@ -155,6 +156,7 @@ public final class FileDownloadManager {
                     // ignore
                     break;
                 case Status.DOWNLOAD_STATUS_UNKNOWN:
+                case Status.DOWNLOAD_STATUS_RETRYING:
                 default:
                     // recover error
                     try {
@@ -237,7 +239,8 @@ public final class FileDownloadManager {
     private DownloadDeleteManager getDownloadDeleteManager() {
         checkInit();
         if (mDownloadDeleteManager == null) {
-            mDownloadDeleteManager = new DownloadDeleteManager(mConfiguration.getFileOperationEngine(), mDownloadFileCacher, getDownloadTaskManager());
+            mDownloadDeleteManager = new DownloadDeleteManager(mConfiguration.getFileOperationEngine(), 
+                    mDownloadFileCacher, getDownloadTaskManager());
         }
         return mDownloadDeleteManager;
     }
@@ -336,7 +339,8 @@ public final class FileDownloadManager {
     /**
      * register an OnFileDownloadStatusListener
      *
-     * @param onFileDownloadStatusListener the OnFileDownloadStatusListener impl
+     * @param onFileDownloadStatusListener OnFileDownloadStatusListener,recommend to use {@link
+     *                                     OnFileDownloadStatusListener2} instead to support retrying download status
      * @since 0.2.0
      */
     void registerDownloadStatusListener(OnFileDownloadStatusListener onFileDownloadStatusListener) {
@@ -346,7 +350,8 @@ public final class FileDownloadManager {
     /**
      * unregister an OnFileDownloadStatusListener
      *
-     * @param onFileDownloadStatusListener the OnFileDownloadStatusListener impl
+     * @param onFileDownloadStatusListener OnFileDownloadStatusListener,recommend to use {@link
+     *                                     OnFileDownloadStatusListener2} instead to support retrying download status
      * @since 0.2.0
      */
     void unregisterDownloadStatusListener(OnFileDownloadStatusListener onFileDownloadStatusListener) {

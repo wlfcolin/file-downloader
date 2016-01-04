@@ -42,6 +42,11 @@ public class FileDownloadConfiguration {
     private ExecutorService mFileOperationEngine;
 
     /**
+     * retry download times when failed
+     */
+    private int mRetryDownloadTimes = Builder.DEFAULT_RETRY_DOWNLOAD_TIMES;
+
+    /**
      * create default configuration,use {@link Builder#build()} to create recommended
      *
      * @param context Context
@@ -65,6 +70,7 @@ public class FileDownloadConfiguration {
         this.mFileDownloadEngine = Executors.newFixedThreadPool(builder.mDownloadTaskSize);
         this.mFileDetectEngine = Executors.newCachedThreadPool(); // no limit
         this.mFileOperationEngine = Executors.newFixedThreadPool(3); // limit 3, for operations: move,delete,rename
+        this.mRetryDownloadTimes = builder.mRetryDownloadTimes;
     }
 
     // getters
@@ -110,6 +116,15 @@ public class FileDownloadConfiguration {
     }
 
     /**
+     * get RetryDownloadTimes
+     *
+     * @return retry download times
+     */
+    public int getRetryDownloadTimes() {
+        return mRetryDownloadTimes;
+    }
+
+    /**
      * Configuration Builder
      */
     public static class Builder {
@@ -123,9 +138,19 @@ public class FileDownloadConfiguration {
          */
         public static final int DEFAULT_DOWNLOAD_TASK_SIZE = 2;
 
+        /**
+         * max retry download times,max 5
+         */
+        public static final int MAX_RETRY_DOWNLOAD_TIMES = 5;
+        /**
+         * default retry download times,default 0
+         */
+        public static final int DEFAULT_RETRY_DOWNLOAD_TIMES = 0;
+
         private Context mContext;
         private String mFileDownloadDir;
-        private int mDownloadTaskSize = -1;
+        private int mDownloadTaskSize;
+        private int mRetryDownloadTimes;
 
         public Builder(Context context) {
             super();
@@ -140,6 +165,7 @@ public class FileDownloadConfiguration {
                 mFileDownloadDir = this.mContext.getFilesDir().getAbsolutePath() + File.separator + "file_downloader";
             }
             mDownloadTaskSize = DEFAULT_DOWNLOAD_TASK_SIZE;
+            mRetryDownloadTimes = DEFAULT_RETRY_DOWNLOAD_TIMES;
         }
 
         /**
@@ -186,6 +212,25 @@ public class FileDownloadConfiguration {
                 this.mDownloadTaskSize = MAX_DOWNLOAD_TASK_SIZE;
             } else {
                 Log.i(TAG, "configDownloadTaskSize 配置同时下载任务的数量失败，downloadTaskSize：" + downloadTaskSize);
+            }
+            return this;
+        }
+
+        /**
+         * config RetryDownloadTimes
+         *
+         * @param retryDownloadTimes DownloadTaskSize at the same time,please set 1 to {@link
+         * #MAX_RETRY_DOWNLOAD_TIMES},
+         *                           if not set,default is {@link #DEFAULT_RETRY_DOWNLOAD_TIMES}
+         * @return the builder
+         */
+        public Builder configRetryDownloadTimes(int retryDownloadTimes) {
+            if (retryDownloadTimes > 0 && retryDownloadTimes <= MAX_RETRY_DOWNLOAD_TIMES) {
+                this.mRetryDownloadTimes = retryDownloadTimes;
+            } else if (retryDownloadTimes > MAX_RETRY_DOWNLOAD_TIMES) {
+                this.mRetryDownloadTimes = MAX_RETRY_DOWNLOAD_TIMES;
+            } else {
+                Log.i(TAG, "configRetryDownloadTimes 配置下载失败重试次数失败，retryDownloadTimes：" + retryDownloadTimes);
             }
             return this;
         }

@@ -9,6 +9,7 @@ import org.wlf.filedownloader.listener.OnDetectBigUrlFileListener;
 import org.wlf.filedownloader.listener.OnDetectUrlFileListener;
 import org.wlf.filedownloader.listener.OnDownloadFileChangeListener;
 import org.wlf.filedownloader.listener.OnFileDownloadStatusListener;
+import org.wlf.filedownloader.listener.OnFileDownloadStatusListener2;
 import org.wlf.filedownloader.listener.OnMoveDownloadFileListener;
 import org.wlf.filedownloader.listener.OnMoveDownloadFilesListener;
 import org.wlf.filedownloader.listener.OnRenameDownloadFileListener;
@@ -128,7 +129,8 @@ public final class FileDownloader {
     /**
      * register an OnFileDownloadStatusListener
      *
-     * @param onFileDownloadStatusListener the OnFileDownloadStatusListener impl
+     * @param onFileDownloadStatusListener OnFileDownloadStatusListener,recommend to use {@link
+     *                                     OnFileDownloadStatusListener2} instead to support retrying download status
      * @see FileDownloadManager#registerDownloadStatusListener(OnFileDownloadStatusListener)
      */
     public static void registerDownloadStatusListener(OnFileDownloadStatusListener onFileDownloadStatusListener) {
@@ -138,7 +140,8 @@ public final class FileDownloader {
     /**
      * unregister an OnFileDownloadStatusListener
      *
-     * @param onFileDownloadStatusListener the OnFileDownloadStatusListener impl
+     * @param onFileDownloadStatusListener OnFileDownloadStatusListener,recommend to use {@link
+     *                                     OnFileDownloadStatusListener2} instead to support retrying download status
      * @see FileDownloadManager#unregisterDownloadStatusListener(OnFileDownloadStatusListener)
      */
     public static void unregisterDownloadStatusListener(OnFileDownloadStatusListener onFileDownloadStatusListener) {
@@ -171,7 +174,7 @@ public final class FileDownloader {
      * detect url file
      *
      * @param url                     file url
-     * @param onDetectUrlFileListener DetectUrlFileListener,recommend to use {@link OnDetectBigUrlFileListener} 
+     * @param onDetectUrlFileListener DetectUrlFileListener,recommend to use {@link OnDetectBigUrlFileListener}
      *                                instead to support downloading the file more than 2G
      * @see FileDownloadManager#detect(String, OnDetectUrlFileListener)
      */

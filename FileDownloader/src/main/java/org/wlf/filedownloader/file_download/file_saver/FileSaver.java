@@ -243,6 +243,7 @@ public class FileSaver implements Save, Stoppable {
             }
         } catch (Exception e) {
             e.printStackTrace();
+            mIsNotifyEnd = true;
             if (e instanceof FileSaveException) {
                 throw (FileSaveException) e;
             } else {

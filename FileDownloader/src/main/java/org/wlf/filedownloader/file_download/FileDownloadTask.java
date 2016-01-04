@@ -17,11 +17,11 @@ import org.wlf.filedownloader.file_download.http_downloader.HttpDownloader.HttpD
 import org.wlf.filedownloader.file_download.http_downloader.HttpDownloader.OnHttpDownloadListener;
 import org.wlf.filedownloader.listener.OnFileDownloadStatusListener;
 import org.wlf.filedownloader.listener.OnFileDownloadStatusListener.FileDownloadStatusFailReason;
+import org.wlf.filedownloader.listener.OnFileDownloadStatusListener2;
 import org.wlf.filedownloader.util.FileUtil;
 import org.wlf.filedownloader.util.UrlUtil;
 
 import java.io.File;
-import java.io.InputStream;
 
 /**
  * File Download Task
@@ -54,6 +54,12 @@ public class FileDownloadTask implements Runnable, Stoppable, OnHttpDownloadList
     private long mLastDownloadingTime = -1;
 
     private boolean mIsNotifyTaskFinish;// whether task is finish
+
+    private int mRetryDownloadTimes = 0;
+    private boolean mIsSyncCallback = false;
+    private long mDownloadedSize = 0;
+    private int mHasRetryTimes = 0;
+    private boolean mIsUserStop = false;
 
     /**
      * create by DownloadFile
@@ -95,7 +101,7 @@ public class FileDownloadTask implements Runnable, Stoppable, OnHttpDownloadList
         Log.i(TAG, "init 1、初始化下载任务，url：" + mTaskParamInfo.mUrl);
 
         // init Downloader
-        Range range = new Range(mTaskParamInfo.mStartPosInTotal, mTaskParamInfo.mFileTotalSize);
+        Range range = new Range(mTaskParamInfo.mStartPosInTotal - mDownloadedSize, mTaskParamInfo.mFileTotalSize);
         mDownloader = new HttpDownloader(mTaskParamInfo.mUrl, range, mTaskParamInfo.mAcceptRangeType, mTaskParamInfo
                 .mETag);
         mDownloader.setOnHttpDownloadListener(this);
@@ -113,6 +119,22 @@ public class FileDownloadTask implements Runnable, Stoppable, OnHttpDownloadList
      */
     public void setOnStopFileDownloadTaskListener(OnStopFileDownloadTaskListener onStopFileDownloadTaskListener) {
         this.mOnStopFileDownloadTaskListener = onStopFileDownloadTaskListener;
+    }
+
+    /**
+     * set RetryDownloadTimes
+     *
+     * @param retryDownloadTimes
+     */
+    public void setRetryDownloadTimes(int retryDownloadTimes) {
+        mRetryDownloadTimes = retryDownloadTimes;
+    }
+
+    /**
+     * enable the callback sync
+     */
+    public void enableSyncCallback() {
+        mIsSyncCallback = true;
     }
 
     /**
@@ -149,6 +171,10 @@ public class FileDownloadTask implements Runnable, Stoppable, OnHttpDownloadList
                 stop();
             }
             return;
+        }
+
+        if (mHasRetryTimes < mRetryDownloadTimes && mRetryDownloadTimes > 0) {
+            enableSyncCallback();
         }
 
         mLastDownloadingTime = -1;
@@ -285,6 +311,9 @@ public class FileDownloadTask implements Runnable, Stoppable, OnHttpDownloadList
         if (!canNext) {
             return;
         }
+
+        // new download size
+        mDownloadedSize += increaseSize;
     }
 
     // 6.save end
@@ -322,14 +351,43 @@ public class FileDownloadTask implements Runnable, Stoppable, OnHttpDownloadList
      */
     private boolean notifyStatusWaiting() {
         try {
-
             mDownloadRecorder.recordStatus(mTaskParamInfo.mUrl, Status.DOWNLOAD_STATUS_WAITING, 0);
-            if (mOnFileDownloadStatusListener != null) {
+            if (!mIsSyncCallback) {
                 OnFileDownloadStatusListener.MainThreadHelper.onFileDownloadStatusWaiting(getDownloadFile(), 
                         mOnFileDownloadStatusListener);
+            } else {
+                if (mOnFileDownloadStatusListener != null) {
+                    mOnFileDownloadStatusListener.onFileDownloadStatusWaiting(getDownloadFile());
+                }
             }
 
             Log.e(TAG, "记录等待状态成功，url：" + mTaskParamInfo.mUrl);
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            notifyTaskFinish(Status.DOWNLOAD_STATUS_ERROR, 0, new FileDownloadStatusFailReason(e));
+            return false;
+        }
+    }
+
+    /**
+     * notify retrying status to callback
+     *
+     * @return true means can go on,otherwise need to stop all the operations that will occur
+     */
+    private boolean notifyStatusRetrying() {
+        try {
+            if (!(mOnFileDownloadStatusListener instanceof OnFileDownloadStatusListener2) || !mIsSyncCallback) {
+                // notifyStatusWaiting();
+            } else {
+                // only OnFileDownloadStatusListener2 and SyncCallback can do retry
+                OnFileDownloadStatusListener2 onFileDownloadStatusListener2 = (OnFileDownloadStatusListener2) 
+                        mOnFileDownloadStatusListener;
+                mDownloadRecorder.recordStatus(mTaskParamInfo.mUrl, Status.DOWNLOAD_STATUS_RETRYING, 0);
+                if (onFileDownloadStatusListener2 != null) {
+                    onFileDownloadStatusListener2.onFileDownloadStatusRetrying(getDownloadFile(), mHasRetryTimes);
+                }
+            }
             return true;
         } catch (Exception e) {
             e.printStackTrace();
@@ -346,9 +404,13 @@ public class FileDownloadTask implements Runnable, Stoppable, OnHttpDownloadList
     private boolean notifyStatusPreparing() {
         try {
             mDownloadRecorder.recordStatus(mTaskParamInfo.mUrl, Status.DOWNLOAD_STATUS_PREPARING, 0);
-            if (mOnFileDownloadStatusListener != null) {
+            if (!mIsSyncCallback) {
                 OnFileDownloadStatusListener.MainThreadHelper.onFileDownloadStatusPreparing(getDownloadFile(), 
                         mOnFileDownloadStatusListener);
+            } else {
+                if (mOnFileDownloadStatusListener != null) {
+                    mOnFileDownloadStatusListener.onFileDownloadStatusPreparing(getDownloadFile());
+                }
             }
             return true;
         } catch (Exception e) {
@@ -366,9 +428,13 @@ public class FileDownloadTask implements Runnable, Stoppable, OnHttpDownloadList
     private boolean notifyStatusPrepared() {
         try {
             mDownloadRecorder.recordStatus(mTaskParamInfo.mUrl, Status.DOWNLOAD_STATUS_PREPARED, 0);
-            if (mOnFileDownloadStatusListener != null) {
+            if (!mIsSyncCallback) {
                 OnFileDownloadStatusListener.MainThreadHelper.onFileDownloadStatusPrepared(getDownloadFile(), 
                         mOnFileDownloadStatusListener);
+            } else {
+                if (mOnFileDownloadStatusListener != null) {
+                    mOnFileDownloadStatusListener.onFileDownloadStatusPrepared(getDownloadFile());
+                }
             }
             return true;
         } catch (Exception e) {
@@ -415,8 +481,15 @@ public class FileDownloadTask implements Runnable, Stoppable, OnHttpDownloadList
                 }
                 mLastDownloadingTime = curDownloadingTime;
 
-                OnFileDownloadStatusListener.MainThreadHelper.onFileDownloadStatusDownloading(downloadFileInfo, 
-                        (float) downloadSpeed, remainingTime, mOnFileDownloadStatusListener);
+                if (!mIsSyncCallback) {
+                    OnFileDownloadStatusListener.MainThreadHelper.onFileDownloadStatusDownloading(downloadFileInfo, 
+                            (float) downloadSpeed, remainingTime, mOnFileDownloadStatusListener);
+                } else {
+                    if (mOnFileDownloadStatusListener != null) {
+                        mOnFileDownloadStatusListener.onFileDownloadStatusDownloading(downloadFileInfo, (float) 
+                                downloadSpeed, remainingTime);
+                    }
+                }
             }
             return true;
         } catch (Exception e) {
@@ -443,35 +516,98 @@ public class FileDownloadTask implements Runnable, Stoppable, OnHttpDownloadList
                 boolean notify = false;
                 try {
                     mDownloadRecorder.recordStatus(mTaskParamInfo.mUrl, status, increaseSize);
-                    if (mOnFileDownloadStatusListener != null) {
-                        switch (status) {
-                            case Status.DOWNLOAD_STATUS_PAUSED:
+                    switch (status) {
+                        case Status.DOWNLOAD_STATUS_PAUSED:
+                            if (!mIsSyncCallback) {
                                 OnFileDownloadStatusListener.MainThreadHelper.onFileDownloadStatusPaused
                                         (getDownloadFile(), mOnFileDownloadStatusListener);
-                                // notifyStopSucceed
-                                notifyStopSucceed();
-                                notify = true;
-                                break;
-                            case Status.DOWNLOAD_STATUS_COMPLETED:
+                            } else {
+                                if (mOnFileDownloadStatusListener != null) {
+                                    mOnFileDownloadStatusListener.onFileDownloadStatusPaused(getDownloadFile());
+                                }
+                            }
+                            // notifyStopSucceed
+                            notifyStopSucceed();
+                            notify = true;
+                            break;
+                        case Status.DOWNLOAD_STATUS_COMPLETED:
+                            if (!mIsSyncCallback) {
                                 OnFileDownloadStatusListener.MainThreadHelper.onFileDownloadStatusCompleted
                                         (getDownloadFile(), mOnFileDownloadStatusListener);
-                                // notifyStopSucceed
-                                notifyStopSucceed();
-                                notify = true;
-                                break;
-                            case Status.DOWNLOAD_STATUS_ERROR:
+                            } else {
+                                if (mOnFileDownloadStatusListener != null) {
+                                    mOnFileDownloadStatusListener.onFileDownloadStatusCompleted(getDownloadFile());
+                                }
+                            }
+                            // notifyStopSucceed
+                            notifyStopSucceed();
+                            notify = true;
+                            break;
+                        case Status.DOWNLOAD_STATUS_ERROR:
+                            if (!mIsSyncCallback) {
                                 OnFileDownloadStatusListener.MainThreadHelper.onFileDownloadStatusFailed(getUrl(), 
                                         getDownloadFile(), failReason, mOnFileDownloadStatusListener);
-                                // notifyStopFailed
-                                notifyStopFailed(new OnStopDownloadFileTaskFailReason(failReason));
-                                break;
-                        }
+                            } else {
+                                if (mHasRetryTimes < mRetryDownloadTimes && mRetryDownloadTimes > 0 && !mIsUserStop) {
+                                    mHasRetryTimes++;
+
+                                    init();
+                                    // retry
+                                    notifyStatusRetrying();
+
+                                    Log.w(TAG, "出现异常" + (failReason == null ? "" : "：" + failReason.getMessage()) +
+                                            "，重试中....还可以重试：" + mHasRetryTimes + "次");
+
+                                    try {
+                                        Thread.sleep(5000);// TEST only FIXME
+                                    } catch (InterruptedException e1) {
+                                        e1.printStackTrace();
+                                    }
+
+                                    run();
+                                    return;
+                                }
+                                if (mOnFileDownloadStatusListener != null) {
+                                    mOnFileDownloadStatusListener.onFileDownloadStatusFailed(getUrl(), 
+                                            getDownloadFile(), failReason);
+                                }
+                            }
+                            // notifyStopFailed
+                            notifyStopFailed(new OnStopDownloadFileTaskFailReason(failReason));
+                            break;
                     }
                     mIsNotifyTaskFinish = true;
                 } catch (Exception e) {
                     e.printStackTrace();
                     // error
-                    OnFileDownloadStatusListener.MainThreadHelper.onFileDownloadStatusFailed(getUrl(), getDownloadFile(), new FileDownloadStatusFailReason(e), mOnFileDownloadStatusListener);
+                    if (!mIsSyncCallback) {
+                        OnFileDownloadStatusListener.MainThreadHelper.onFileDownloadStatusFailed(getUrl(), 
+                                getDownloadFile(), new FileDownloadStatusFailReason(e), mOnFileDownloadStatusListener);
+                    } else {
+                        if (mHasRetryTimes < mRetryDownloadTimes && mRetryDownloadTimes > 0 && !mIsUserStop) {
+                            mHasRetryTimes++;
+                            mIsNotifyTaskFinish = false;
+                            init();
+                            // retry
+                            notifyStatusRetrying();
+
+                            Log.w(TAG, "出现异常" + (e == null ? "" : "：" + e.getMessage()) +
+                                    "，重试中....还可以重试：" + mHasRetryTimes + "次");
+
+                            try {
+                                Thread.sleep(5000);// TEST only FIXME
+                            } catch (InterruptedException e1) {
+                                e1.printStackTrace();
+                            }
+
+                            run();
+                            return;
+                        }
+                        if (mOnFileDownloadStatusListener != null) {
+                            mOnFileDownloadStatusListener.onFileDownloadStatusFailed(getUrl(), getDownloadFile(), new
+                                    FileDownloadStatusFailReason(e));
+                        }
+                    }
                     mIsNotifyTaskFinish = true;
                 } finally {
                     // if notify task finish,force stop if necessary
@@ -592,6 +728,7 @@ public class FileDownloadTask implements Runnable, Stoppable, OnHttpDownloadList
      */
     @Override
     public void stop() {
+        mIsUserStop = true;
         // if it is stopped,notify stop failed
         if (isStopped()) {
             notifyStopFailed(new OnStopDownloadFileTaskFailReason("the task has been stopped!", 

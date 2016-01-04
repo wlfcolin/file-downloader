@@ -4,6 +4,7 @@ import android.text.TextUtils;
 
 import org.wlf.filedownloader.DownloadFileInfo;
 import org.wlf.filedownloader.listener.OnFileDownloadStatusListener;
+import org.wlf.filedownloader.listener.OnFileDownloadStatusListener2;
 import org.wlf.filedownloader.util.CollectionUtil;
 import org.wlf.filedownloader.util.UrlUtil;
 
@@ -18,7 +19,7 @@ import java.util.concurrent.CopyOnWriteArraySet;
  * @datetime 2015-12-09 17:55 GMT+8
  * @email 411086563@qq.com
  */
-class DownloadStatusObserver implements OnFileDownloadStatusListener {
+class DownloadStatusObserver implements OnFileDownloadStatusListener2 {
 
     private static final String TAG = DownloadStatusObserver.class.getSimpleName();
 
@@ -32,8 +33,8 @@ class DownloadStatusObserver implements OnFileDownloadStatusListener {
      * @param onFileDownloadStatusListener OnFileDownloadStatusListener
      * @param downloadStatusConfiguration
      */
-    void addOnFileDownloadStatusListener(OnFileDownloadStatusListener onFileDownloadStatusListener, 
-                                         DownloadStatusConfiguration downloadStatusConfiguration) {
+    public void addOnFileDownloadStatusListener(OnFileDownloadStatusListener onFileDownloadStatusListener, 
+                                                DownloadStatusConfiguration downloadStatusConfiguration) {
         if (onFileDownloadStatusListener == null) {
             return;
         }
@@ -59,7 +60,7 @@ class DownloadStatusObserver implements OnFileDownloadStatusListener {
      *
      * @param onFileDownloadStatusListener OnFileDownloadStatusListener
      */
-    void removeOnFileDownloadStatusListener(OnFileDownloadStatusListener onFileDownloadStatusListener) {
+    public void removeOnFileDownloadStatusListener(OnFileDownloadStatusListener onFileDownloadStatusListener) {
         if (onFileDownloadStatusListener == null) {
             return;
         }
@@ -82,7 +83,7 @@ class DownloadStatusObserver implements OnFileDownloadStatusListener {
      *
      * @param url
      */
-    void removeOnFileDownloadStatusListener(String url) {
+    public void removeOnFileDownloadStatusListener(String url) {
         if (!UrlUtil.isUrl(url)) {
             return;
         }
@@ -107,10 +108,8 @@ class DownloadStatusObserver implements OnFileDownloadStatusListener {
 
     @Override
     public void onFileDownloadStatusWaiting(DownloadFileInfo downloadFileInfo) {
-
-
         // notify all match registered listeners
-        if (downloadFileInfo == null || UrlUtil.isUrl(downloadFileInfo.getUrl())) {
+        if (downloadFileInfo == null || !UrlUtil.isUrl(downloadFileInfo.getUrl())) {
             return;
         }
 
@@ -144,9 +143,47 @@ class DownloadStatusObserver implements OnFileDownloadStatusListener {
     }
 
     @Override
+    public void onFileDownloadStatusRetrying(DownloadFileInfo downloadFileInfo, int retryTimes) {
+        // notify all match registered listeners
+        if (downloadFileInfo == null || !UrlUtil.isUrl(downloadFileInfo.getUrl())) {
+            return;
+        }
+        String url = downloadFileInfo.getUrl();
+
+        for (DownloadStatusListenerInfo listenerInfo : mDownloadStatusListenerInfos) {
+            if (listenerInfo == null) {
+                continue;
+            }
+            if (listenerInfo.mDownloadStatusConfiguration != null && url.equals(listenerInfo
+                    .mDownloadStatusConfiguration.mUrl)) {
+                // find match url,notify
+                if (listenerInfo.mListener != null && listenerInfo.mListener != this && listenerInfo.mListener 
+                        instanceof OnFileDownloadStatusListener2) {
+                    OnFileDownloadStatusListener.MainThreadHelper.onFileDownloadStatusRetrying(downloadFileInfo, 
+                            retryTimes, (OnFileDownloadStatusListener2) listenerInfo.mListener);
+                }
+            } else {
+                // others
+                // global register listener,notify
+                if (listenerInfo.mDownloadStatusConfiguration == null || TextUtils.isEmpty(listenerInfo
+                        .mDownloadStatusConfiguration.mUrl)) {
+                    if (listenerInfo.mListener != null && listenerInfo.mListener != this && listenerInfo.mListener 
+                            instanceof OnFileDownloadStatusListener2) {
+                        OnFileDownloadStatusListener.MainThreadHelper.onFileDownloadStatusRetrying(downloadFileInfo, 
+                                retryTimes, (OnFileDownloadStatusListener2) listenerInfo.mListener);
+                    }
+                } else {
+                    // do not notify
+                }
+            }
+        }
+    }
+
+
+    @Override
     public void onFileDownloadStatusPreparing(DownloadFileInfo downloadFileInfo) {
         // notify all match registered listeners
-        if (downloadFileInfo == null || UrlUtil.isUrl(downloadFileInfo.getUrl())) {
+        if (downloadFileInfo == null || !UrlUtil.isUrl(downloadFileInfo.getUrl())) {
             return;
         }
 
@@ -182,7 +219,7 @@ class DownloadStatusObserver implements OnFileDownloadStatusListener {
     @Override
     public void onFileDownloadStatusPrepared(DownloadFileInfo downloadFileInfo) {
         // notify all match registered listeners
-        if (downloadFileInfo == null || UrlUtil.isUrl(downloadFileInfo.getUrl())) {
+        if (downloadFileInfo == null || !UrlUtil.isUrl(downloadFileInfo.getUrl())) {
             return;
         }
 
@@ -255,7 +292,7 @@ class DownloadStatusObserver implements OnFileDownloadStatusListener {
     @Override
     public void onFileDownloadStatusPaused(DownloadFileInfo downloadFileInfo) {
         // notify all match registered listeners
-        if (downloadFileInfo == null || UrlUtil.isUrl(downloadFileInfo.getUrl())) {
+        if (downloadFileInfo == null || !UrlUtil.isUrl(downloadFileInfo.getUrl())) {
             return;
         }
 
@@ -295,7 +332,7 @@ class DownloadStatusObserver implements OnFileDownloadStatusListener {
     @Override
     public void onFileDownloadStatusCompleted(DownloadFileInfo downloadFileInfo) {
         // notify all match registered listeners
-        if (downloadFileInfo == null || UrlUtil.isUrl(downloadFileInfo.getUrl())) {
+        if (downloadFileInfo == null || !UrlUtil.isUrl(downloadFileInfo.getUrl())) {
             return;
         }
 
@@ -371,7 +408,7 @@ class DownloadStatusObserver implements OnFileDownloadStatusListener {
         }
     }
 
-    void release() {
+    public void release() {
         mDownloadStatusListenerInfos.clear();
     }
 

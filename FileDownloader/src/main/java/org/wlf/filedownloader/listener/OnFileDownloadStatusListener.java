@@ -13,7 +13,9 @@ import org.wlf.filedownloader.file_download.file_saver.FileSaver.FileSaveExcepti
  *
  * @author wlf(Andy)
  * @email 411086563@qq.com
+ * @deprecated use {@link OnFileDownloadStatusListener2} instead to support retrying download status
  */
+@Deprecated
 public interface OnFileDownloadStatusListener {
 
     /**
@@ -67,12 +69,37 @@ public interface OnFileDownloadStatusListener {
      * @param downloadFileInfo download file info,may null
      * @param failReason       fail reason
      */
-    void onFileDownloadStatusFailed(String url, DownloadFileInfo downloadFileInfo, FileDownloadStatusFailReason failReason);
+    void onFileDownloadStatusFailed(String url, DownloadFileInfo downloadFileInfo, FileDownloadStatusFailReason 
+            failReason);
 
     /**
      * Callback helper for main thread
      */
     public static class MainThreadHelper {
+
+        /**
+         * retry download
+         *
+         * @param downloadFileInfo download file info
+         * @param retryTimes       the times to retry
+         */
+        public static void onFileDownloadStatusRetrying(final DownloadFileInfo downloadFileInfo, final int 
+                retryTimes, final OnFileDownloadStatusListener2 onFileDownloadStatusListener2) {
+            if (onFileDownloadStatusListener2 == null) {
+                return;
+            }
+            final Handler handler = new Handler(Looper.getMainLooper());
+            handler.post(new Runnable() {
+                @Override
+                public void run() {
+                    if (onFileDownloadStatusListener2 == null) {
+                        return;
+                    }
+                    onFileDownloadStatusListener2.onFileDownloadStatusRetrying(downloadFileInfo, retryTimes);
+                    handler.removeCallbacksAndMessages(null);
+                }
+            });
+        }
 
         /**
          * waiting download
@@ -223,7 +250,9 @@ public interface OnFileDownloadStatusListener {
          * @param downloadFileInfo download file info
          * @param failReason       fail reason
          */
-        public static void onFileDownloadStatusFailed(final String url, final DownloadFileInfo downloadFileInfo, final FileDownloadStatusFailReason failReason, final OnFileDownloadStatusListener onFileDownloadStatusListener) {
+        public static void onFileDownloadStatusFailed(final String url, final DownloadFileInfo downloadFileInfo, 
+                                                      final FileDownloadStatusFailReason failReason, final 
+                                                      OnFileDownloadStatusListener onFileDownloadStatusListener) {
             if (onFileDownloadStatusListener == null) {
                 return;
             }
@@ -269,19 +298,23 @@ public interface OnFileDownloadStatusListener {
         /**
          * URL illegal
          */
-        public static final String TYPE_URL_ILLEGAL = FileDownloadStatusFailReason.class.getName() + "_TYPE_URL_ILLEGAL";
+        public static final String TYPE_URL_ILLEGAL = FileDownloadStatusFailReason.class.getName() + 
+                "_TYPE_URL_ILLEGAL";
         /**
          * file save path illegal
          */
-        public static final String TYPE_FILE_SAVE_PATH_ILLEGAL = FileDownloadStatusFailReason.class.getName() + "_TYPE_FILE_SAVE_PATH_ILLEGAL";
+        public static final String TYPE_FILE_SAVE_PATH_ILLEGAL = FileDownloadStatusFailReason.class.getName() + 
+                "_TYPE_FILE_SAVE_PATH_ILLEGAL";
         /**
          * storage space can not write
          */
-        public static final String TYPE_STORAGE_SPACE_CAN_NOT_WRITE = FileDownloadStatusFailReason.class.getName() + "_TYPE_STORAGE_SPACE_CAN_NOT_WRITE";
+        public static final String TYPE_STORAGE_SPACE_CAN_NOT_WRITE = FileDownloadStatusFailReason.class.getName() + 
+                "_TYPE_STORAGE_SPACE_CAN_NOT_WRITE";
         /**
          * storage space is full
          */
-        public static final String TYPE_STORAGE_SPACE_IS_FULL = FileDownloadStatusFailReason.class.getName() + "_TYPE_STORAGE_SPACE_IS_FULL";
+        public static final String TYPE_STORAGE_SPACE_IS_FULL = FileDownloadStatusFailReason.class.getName() + 
+                "_TYPE_STORAGE_SPACE_IS_FULL";
 
         // in file downloader
         /**
@@ -294,16 +327,19 @@ public interface OnFileDownloadStatusListener {
          *
          * @deprecated not an error,not use since 0.2.0
          */
-        public static final String TYPE_FILE_IS_DOWNLOADING = FileDownloadStatusFailReason.class.getName() + "_TYPE_FILE_IS_DOWNLOADING";
+        public static final String TYPE_FILE_IS_DOWNLOADING = FileDownloadStatusFailReason.class.getName() + 
+                "_TYPE_FILE_IS_DOWNLOADING";
         /**
          * download file error
          */
-        public static final String TYPE_DOWNLOAD_FILE_ERROR = FileDownloadStatusFailReason.class.getName() + "_TYPE_DOWNLOAD_FILE_ERROR";
+        public static final String TYPE_DOWNLOAD_FILE_ERROR = FileDownloadStatusFailReason.class.getName() + 
+                "_TYPE_DOWNLOAD_FILE_ERROR";
 
         /**
          * the file need to save does not exist
          */
-        public static final String TYPE_SAVE_FILE_NOT_EXIST = FileDownloadStatusFailReason.class.getName() + "_TYPE_SAVE_FILE_NOT_EXIST";
+        public static final String TYPE_SAVE_FILE_NOT_EXIST = FileDownloadStatusFailReason.class.getName() + 
+                "_TYPE_SAVE_FILE_NOT_EXIST";
 
         public FileDownloadStatusFailReason(String detailMessage, String type) {
             super(detailMessage, type);

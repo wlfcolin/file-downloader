@@ -40,6 +40,7 @@
 
     <string name="main__can_not_download">无法下载，请删除后重新下载</string>
     <string name="main__getting_resource">正在获取资源</string>
+    <string name="main__retrying_connect_resource">重试：重新连接资源</string>
     <string name="main__connected_resource">已连接资源</string>
     <string name="main__paused">已暂停</string>
     <string name="main__downloading">正在下载</string>
