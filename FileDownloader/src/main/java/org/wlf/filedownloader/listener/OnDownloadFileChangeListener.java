@@ -77,7 +77,7 @@ public interface OnDownloadFileChangeListener {
             if (onDownloadFileChangeListener == null) {
                 return;
             }
-            final Handler handler = new Handler(Looper.getMainLooper());
+            Handler handler = new Handler(Looper.getMainLooper());
             handler.post(new Runnable() {
                 @Override
                 public void run() {
@@ -85,7 +85,6 @@ public interface OnDownloadFileChangeListener {
                         return;
                     }
                     onDownloadFileChangeListener.onDownloadFileCreated(downloadFileInfo);
-                    handler.removeCallbacksAndMessages(null);
                 }
             });
         }
@@ -101,7 +100,7 @@ public interface OnDownloadFileChangeListener {
             if (onDownloadFileChangeListener == null) {
                 return;
             }
-            final Handler handler = new Handler(Looper.getMainLooper());
+            Handler handler = new Handler(Looper.getMainLooper());
             handler.post(new Runnable() {
                 @Override
                 public void run() {
@@ -109,7 +108,6 @@ public interface OnDownloadFileChangeListener {
                         return;
                     }
                     onDownloadFileChangeListener.onDownloadFileUpdated(downloadFileInfo, type);
-                    handler.removeCallbacksAndMessages(null);
                 }
             });
         }
@@ -124,7 +122,7 @@ public interface OnDownloadFileChangeListener {
             if (onDownloadFileChangeListener == null) {
                 return;
             }
-            final Handler handler = new Handler(Looper.getMainLooper());
+            Handler handler = new Handler(Looper.getMainLooper());
             handler.post(new Runnable() {
                 @Override
                 public void run() {
@@ -132,7 +130,6 @@ public interface OnDownloadFileChangeListener {
                         return;
                     }
                     onDownloadFileChangeListener.onDownloadFileDeleted(downloadFileInfo);
-                    handler.removeCallbacksAndMessages(null);
                 }
             });
         }

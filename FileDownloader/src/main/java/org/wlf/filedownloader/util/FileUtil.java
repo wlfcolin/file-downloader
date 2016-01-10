@@ -5,6 +5,11 @@ import android.os.StatFs;
 import android.text.TextUtils;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 
 /**
  * Util for {@link File}
@@ -122,6 +127,52 @@ public class FileUtil {
         } catch (Exception e) {
             e.printStackTrace();
             return -1;
+        }
+    }
+
+    /**
+     * copy a file to another one
+     *
+     * @param fromFile
+     * @param toFile
+     * @param forceOverwrite
+     * @return
+     * @throws IOException
+     */
+    public static boolean copyFile(File fromFile, File toFile, boolean forceOverwrite) {
+
+        if (fromFile == null || !fromFile.exists() || toFile == null) {
+            return false;
+        }
+
+        if (toFile.exists() && !forceOverwrite) {
+            return false;
+        }
+
+        try {
+            InputStream fosFrom = new FileInputStream(fromFile);
+            OutputStream fosTo = new FileOutputStream(toFile);
+            byte bytes[] = new byte[1024];
+
+            int writeSize = 0;
+            int startIndex = 0;
+            int readCount = 0;
+
+            while ((readCount = fosFrom.read(bytes)) != -1) {
+                fosTo.write(bytes, startIndex, readCount);
+                writeSize += (readCount - startIndex);
+            }
+            fosFrom.close();
+            fosTo.close();
+
+            if (writeSize > 0) {
+                return true;
+            } else {
+                return false;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
         }
     }
 

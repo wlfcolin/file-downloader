@@ -3,8 +3,11 @@ package org.wlf.filedownloader.file_download;
 import android.text.TextUtils;
 
 import org.wlf.filedownloader.base.BaseUrlFileInfo;
+import org.wlf.filedownloader.util.DateUtil;
 import org.wlf.filedownloader.util.FileUtil;
 import org.wlf.filedownloader.util.UrlUtil;
+
+import java.util.Date;
 
 /**
  * DetectUrlFile Info
@@ -38,9 +41,8 @@ public class DetectUrlFileInfo extends BaseUrlFileInfo {
         this.mAcceptRangeType = acceptRangeType;
         this.mFileDir = fileDir;
         this.mFileName = fileName;
+        this.mCreateDatetime = DateUtil.date2String_yyyy_MM_dd_HH_mm_ss(new Date());
     }
-
-    // package use only
 
     /**
      * update DetectUrlFileInfo with new DetectUrlFileInfo
@@ -66,13 +68,16 @@ public class DetectUrlFileInfo extends BaseUrlFileInfo {
         if (!TextUtils.isEmpty(detectUrlFileInfo.mFileName)) {
             this.mFileName = detectUrlFileInfo.mFileName;
         }
+        if (!TextUtils.isEmpty(detectUrlFileInfo.mCreateDatetime)) {
+            this.mCreateDatetime = detectUrlFileInfo.mCreateDatetime;
+        }
     }
 
-    protected void setFileDir(String fileDir) {
-        super.setFileDir(fileDir);
+    void setFileDir(String fileDir) {
+        this.mFileDir = fileDir;
     }
 
-    protected void setFileName(String fileName) {
-        super.setFileName(fileName);
+    void setFileName(String fileName) {
+        this.mFileName = fileName;
     }
 }

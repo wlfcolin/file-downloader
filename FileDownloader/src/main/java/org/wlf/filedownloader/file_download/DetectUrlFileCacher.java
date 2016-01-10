@@ -26,7 +26,7 @@ class DetectUrlFileCacher {
      * @param detectUrlFileInfo DetectUrlFile
      * @return true means update succeed
      */
-    boolean addOrUpdateDetectUrlFile(DetectUrlFileInfo detectUrlFileInfo) {
+    public boolean addOrUpdateDetectUrlFile(DetectUrlFileInfo detectUrlFileInfo) {
 
         if (detectUrlFileInfo == null) {
             return false;
@@ -52,24 +52,20 @@ class DetectUrlFileCacher {
         }
     }
 
-    // package use only
-
     /**
      * get DetectUrlFile by url
      *
      * @param url file url
      * @return DetectUrlFile
      */
-    DetectUrlFileInfo getDetectUrlFile(String url) {
+    public DetectUrlFileInfo getDetectUrlFile(String url) {
         return mDetectUrlFileInfoMap.get(url);
     }
-
-    // package use only
 
     /**
      * release cache
      */
-    void release() {
+    public void release() {
         synchronized (mModifyLock) {// lock
             mDetectUrlFileInfoMap.clear();
         }

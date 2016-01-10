@@ -9,12 +9,12 @@ import android.util.Log;
 import org.wlf.filedownloader.DownloadFileInfo.Table;
 import org.wlf.filedownloader.base.Status;
 import org.wlf.filedownloader.db.ContentDbDao;
-import org.wlf.filedownloader.file_delete.DeleteDownloadFileTask.DownloadFileDeleter;
+import org.wlf.filedownloader.file_delete.DownloadFileDeleter;
 import org.wlf.filedownloader.file_download.DetectUrlFileInfo;
-import org.wlf.filedownloader.file_download.DownloadTaskManager.DownloadRecorder;
+import org.wlf.filedownloader.file_download.base.DownloadRecorder;
 import org.wlf.filedownloader.file_download.db_recorder.DownloadFileDbHelper;
-import org.wlf.filedownloader.file_move.MoveDownloadFileTask.DownloadFileMover;
-import org.wlf.filedownloader.file_rename.RenameDownloadFileTask.DownloadFileRenamer;
+import org.wlf.filedownloader.file_move.DownloadFileMover;
+import org.wlf.filedownloader.file_rename.DownloadFileRenamer;
 import org.wlf.filedownloader.listener.OnDownloadFileChangeListener;
 import org.wlf.filedownloader.listener.OnDownloadFileChangeListener.Type;
 import org.wlf.filedownloader.util.CollectionUtil;
@@ -70,6 +70,7 @@ public class DownloadCacher implements DownloadRecorder, DownloadFileMover, Down
      *
      * @param onDownloadFileChangeListener    the OnDownloadFileChangeListener impl
      * @param downloadFileChangeConfiguration the Configuration for the DownloadFileChangeListener
+     * @since 0.3.0
      */
     public void registerDownloadFileChangeListener(OnDownloadFileChangeListener onDownloadFileChangeListener, 
                                                    DownloadFileChangeConfiguration downloadFileChangeConfiguration) {

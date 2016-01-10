@@ -21,10 +21,6 @@ public enum DownloadNoticeStrategy {
         this.mValue = value;
     }
 
-    public void setValue(long value) {
-        this.mValue = value;
-    }
-
     public long getValue() {
         return mValue;
     }

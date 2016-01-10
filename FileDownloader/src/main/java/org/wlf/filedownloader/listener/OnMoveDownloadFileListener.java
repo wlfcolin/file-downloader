@@ -53,7 +53,7 @@ public interface OnMoveDownloadFileListener {
             if (onMoveDownloadFileListener == null) {
                 return;
             }
-            final Handler handler = new Handler(Looper.getMainLooper());
+            Handler handler = new Handler(Looper.getMainLooper());
             handler.post(new Runnable() {
                 @Override
                 public void run() {
@@ -61,7 +61,6 @@ public interface OnMoveDownloadFileListener {
                         return;
                     }
                     onMoveDownloadFileListener.onMoveDownloadFilePrepared(downloadFileNeedToMove);
-                    handler.removeCallbacksAndMessages(null);
                 }
             });
         }
@@ -76,7 +75,7 @@ public interface OnMoveDownloadFileListener {
             if (onMoveDownloadFileListener == null) {
                 return;
             }
-            final Handler handler = new Handler(Looper.getMainLooper());
+            Handler handler = new Handler(Looper.getMainLooper());
             handler.post(new Runnable() {
                 @Override
                 public void run() {
@@ -84,7 +83,6 @@ public interface OnMoveDownloadFileListener {
                         return;
                     }
                     onMoveDownloadFileListener.onMoveDownloadFileSuccess(downloadFileMoved);
-                    handler.removeCallbacksAndMessages(null);
                 }
             });
         }
@@ -95,11 +93,12 @@ public interface OnMoveDownloadFileListener {
          * @param downloadFileInfo download file needed to move,may be null
          * @param failReason       fail reason
          */
-        public static void onMoveDownloadFileFailed(final DownloadFileInfo downloadFileInfo, final MoveDownloadFileFailReason failReason, final OnMoveDownloadFileListener onMoveDownloadFileListener) {
+        public static void onMoveDownloadFileFailed(final DownloadFileInfo downloadFileInfo, final 
+        MoveDownloadFileFailReason failReason, final OnMoveDownloadFileListener onMoveDownloadFileListener) {
             if (onMoveDownloadFileListener == null) {
                 return;
             }
-            final Handler handler = new Handler(Looper.getMainLooper());
+            Handler handler = new Handler(Looper.getMainLooper());
             handler.post(new Runnable() {
                 @Override
                 public void run() {
@@ -107,7 +106,6 @@ public interface OnMoveDownloadFileListener {
                         return;
                     }
                     onMoveDownloadFileListener.onMoveDownloadFileFailed(downloadFileInfo, failReason);
-                    handler.removeCallbacksAndMessages(null);
                 }
             });
         }
@@ -135,8 +133,6 @@ public interface OnMoveDownloadFileListener {
      */
     public static class MoveDownloadFileFailReason extends FailReason {
 
-        private static final long serialVersionUID = -5988401984979760118L;
-
         /**
          * target file exist
          */
@@ -158,6 +154,7 @@ public interface OnMoveDownloadFileListener {
         public static final String TYPE_FILE_STATUS_ERROR = MoveDownloadFileFailReason.class.getName() + 
                 "_TYPE_FILE_STATUS_ERROR";
 
+
         public MoveDownloadFileFailReason(String detailMessage, String type) {
             super(detailMessage, type);
         }
@@ -166,10 +163,5 @@ public interface OnMoveDownloadFileListener {
             super(throwable);
         }
 
-        @Override
-        protected void onInitTypeWithThrowable(Throwable throwable) {
-            super.onInitTypeWithThrowable(throwable);
-            // TODO
-        }
     }
 }

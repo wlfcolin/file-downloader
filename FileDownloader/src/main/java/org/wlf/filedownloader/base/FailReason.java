@@ -13,9 +13,6 @@ import android.text.TextUtils;
  * @email 411086563@qq.com
  */
 public class FailReason extends Exception {
-
-    private static final long serialVersionUID = -4866361177405722970L;
-
     /**
      * UNKNOWN
      */
@@ -148,17 +145,63 @@ public class FailReason extends Exception {
     }
 
     /**
-     * init type by fail reason,for child to override
+     * init type by any throwable, for child to override
      *
-     * @param throwable fail reason
+     * @param throwable any throwable
      */
     protected void onInitTypeWithThrowable(Throwable throwable) {
 
-        if (throwable == null) {
+        if (isTypeInit() || throwable == null) {
             return;
         }
 
-        String throwableClassName = throwable.getClass().getName();
+        if (throwable instanceof FailReason) {
+            FailReason failReason = (FailReason) throwable;
+            onInitTypeWithOriginalThrowable(failReason.getOriginalCause());
+            if (isTypeInit()) {
+                return;
+            }
+            onInitTypeWithFailReasonInternal(failReason);
+        } else {
+            onInitTypeWithOriginalThrowable(throwable);
+        }
+    }
+
+    // init type with all possible FailReason cause
+    private void onInitTypeWithFailReasonInternal(FailReason failReason) {
+        if (failReason == null) {
+            return;
+        }
+
+        onInitTypeWithFailReason(failReason);
+
+        if (!isTypeInit()) {
+            Throwable cause = failReason.getCause();
+            if (cause instanceof FailReason) {
+                onInitTypeWithFailReasonInternal((FailReason) cause);
+            }
+        }
+    }
+
+    /**
+     * init type by fail reason, for child to override
+     *
+     * @param failReason fail reason
+     */
+    protected void onInitTypeWithFailReason(FailReason failReason) {
+    }
+
+    /**
+     * init type by original throwable, for child to override
+     *
+     * @param originalThrowable original throwable
+     */
+    protected void onInitTypeWithOriginalThrowable(Throwable originalThrowable) {
+        if (originalThrowable == null) {
+            return;
+        }
+
+        String throwableClassName = originalThrowable.getClass().getName();
 
         if (TextUtils.isEmpty(throwableClassName)) {
             return;

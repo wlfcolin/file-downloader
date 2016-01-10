@@ -23,7 +23,7 @@ import android.widget.Toast;
 import org.wlf.filedownloader.DownloadFileInfo;
 import org.wlf.filedownloader.FileDownloader;
 import org.wlf.filedownloader.base.Status;
-import org.wlf.filedownloader.listener.OnFileDownloadStatusListener2;
+import org.wlf.filedownloader.listener.OnBigFileDownloadStatusListener;
 import org.wlf.filedownloader.util.FileUtil;
 import org.wlf.filedownloader_demo.util.ApkUtil;
 import org.wlf.filedownloader_demo.util.TimeUtil;
@@ -42,12 +42,12 @@ import java.util.Map;
  * @author wlf(Andy)
  * @email 411086563@qq.com
  */
-public class DownloadFileListAdapter extends BaseAdapter implements OnFileDownloadStatusListener2 {
+public class DownloadBigFileListAdapter extends BaseAdapter implements OnBigFileDownloadStatusListener {
 
     /**
      * LOG TAG
      */
-    private static final String TAG = DownloadFileListAdapter.class.getSimpleName();
+    private static final String TAG = DownloadBigFileListAdapter.class.getSimpleName();
 
     // all download infos
     private List<DownloadFileInfo> mDownloadFileInfos = Collections.synchronizedList(new ArrayList<DownloadFileInfo>());
@@ -62,7 +62,7 @@ public class DownloadFileListAdapter extends BaseAdapter implements OnFileDownlo
 
     private OnItemSelectListener mOnItemSelectListener;
 
-    public DownloadFileListAdapter(Activity activity) {
+    public DownloadBigFileListAdapter(Activity activity) {
         super();
         this.mActivity = activity;
         initDownloadFileInfos();

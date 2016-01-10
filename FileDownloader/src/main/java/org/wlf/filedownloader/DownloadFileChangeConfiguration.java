@@ -1,5 +1,13 @@
 package org.wlf.filedownloader;
 
+import org.wlf.filedownloader.util.CollectionUtil;
+import org.wlf.filedownloader.util.UrlUtil;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 /**
  * DownloadFileChange Configuration
  * <br/>
@@ -10,9 +18,99 @@ package org.wlf.filedownloader;
  */
 public class DownloadFileChangeConfiguration {
 
-    String mUrl;
+    /**
+     * Configuration Builder
+     */
+    public static class Builder {
 
-    public DownloadFileChangeConfiguration(String url) {
-        mUrl = url;
+        private Set<String> mListenUrls = new HashSet<String>();
+
+        // whether the caller hope the callback method is sync 
+        private boolean mIsSyncCallback = false;
+
+        /**
+         * add the url for listening
+         *
+         * @param url file url
+         * @return the Builder
+         */
+        public Builder addListenUrl(String url) {
+            if (UrlUtil.isUrl(url)) {
+                mListenUrls.add(url);
+            }
+            return this;
+        }
+
+        /**
+         * add the urls for listening
+         *
+         * @param urls file url
+         * @return the Builder
+         */
+        public Builder addListenUrls(List<String> urls) {
+
+            List<String> needAdd = new ArrayList<String>();
+
+            for (String url : urls) {
+                if (!UrlUtil.isUrl(url)) {
+                    continue;
+                }
+                needAdd.add(url);
+            }
+
+            if (!CollectionUtil.isEmpty(needAdd)) {
+                mListenUrls.addAll(needAdd);
+            }
+            return this;
+        }
+
+        /**
+         * config whether the caller hope the callback method is sync
+         *
+         * @param isSyncCallback true means the callback method is sync, default is false
+         * @return the Builder
+         */
+        public Builder configSyncCallback(boolean isSyncCallback) {
+            this.mIsSyncCallback = isSyncCallback;
+            return this;
+        }
+
+        /**
+         * build DownloadFileChangeConfiguration
+         *
+         * @return the DownloadFileChangeConfiguration
+         */
+        public DownloadFileChangeConfiguration build() {
+            return new DownloadFileChangeConfiguration(this);
+        }
+
+    }
+
+    // builder
+    private Builder mBuilder;
+
+    private DownloadFileChangeConfiguration(Builder builder) {
+        mBuilder = builder;
+    }
+
+    /**
+     * get listen urls
+     *
+     * @return listen urls
+     */
+    public Set<String> getListenUrls() {
+        if (mBuilder == null) {
+            return null;
+        }
+        return mBuilder.mListenUrls;
+    }
+
+    /**
+     * whether the callback method is sync
+     *
+     * @return true means the callback method is sync, default is false
+     */
+    public boolean isSyncCallback() {
+        return mBuilder.mIsSyncCallback;
     }
 }

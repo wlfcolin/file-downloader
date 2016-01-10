@@ -40,22 +40,10 @@ public abstract class BaseUrlFileInfo {
      * save file name
      */
     protected String mFileName;
-
-    // setters
-
     /**
-     * set save file dir
+     * create download datetime, yyyy-MM-dd HH:mm:ss
      */
-    protected void setFileDir(String fileDir) {
-        this.mFileDir = fileDir;
-    }
-
-    /**
-     * set file name
-     */
-    protected void setFileName(String fileName) {
-        this.mFileName = fileName;
-    }
+    protected String mCreateDatetime;
 
     // getters
 
@@ -123,6 +111,17 @@ public abstract class BaseUrlFileInfo {
     public String getFileName() {
         return mFileName;
     }
+
+    /**
+     * get create download datetime
+     *
+     * @return create download datetime
+     */
+    public String getCreateDatetime() {
+        return mCreateDatetime;
+    }
+
+    // other getters
 
     /**
      * get file path

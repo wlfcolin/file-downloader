@@ -4,7 +4,10 @@ import android.os.Handler;
 import android.os.Looper;
 
 import org.wlf.filedownloader.DownloadFileInfo;
+import org.wlf.filedownloader.base.FailReason;
+import org.wlf.filedownloader.file_download.base.HttpFailReason;
 import org.wlf.filedownloader.file_download.file_saver.FileSaver.FileSaveException;
+import org.wlf.filedownloader.file_download.http_downloader.HttpDownloader.HttpDownloadException;
 
 /**
  * OnFileDownloadStatusListener
@@ -13,9 +16,7 @@ import org.wlf.filedownloader.file_download.file_saver.FileSaver.FileSaveExcepti
  *
  * @author wlf(Andy)
  * @email 411086563@qq.com
- * @deprecated use {@link OnFileDownloadStatusListener2} instead to support retrying download status
  */
-@Deprecated
 public interface OnFileDownloadStatusListener {
 
     /**
@@ -84,19 +85,18 @@ public interface OnFileDownloadStatusListener {
          * @param retryTimes       the times to retry
          */
         public static void onFileDownloadStatusRetrying(final DownloadFileInfo downloadFileInfo, final int 
-                retryTimes, final OnFileDownloadStatusListener2 onFileDownloadStatusListener2) {
-            if (onFileDownloadStatusListener2 == null) {
+                retryTimes, final OnBigFileDownloadStatusListener onBigFileDownloadStatusListener) {
+            if (onBigFileDownloadStatusListener == null) {
                 return;
             }
-            final Handler handler = new Handler(Looper.getMainLooper());
+            Handler handler = new Handler(Looper.getMainLooper());
             handler.post(new Runnable() {
                 @Override
                 public void run() {
-                    if (onFileDownloadStatusListener2 == null) {
+                    if (onBigFileDownloadStatusListener == null) {
                         return;
                     }
-                    onFileDownloadStatusListener2.onFileDownloadStatusRetrying(downloadFileInfo, retryTimes);
-                    handler.removeCallbacksAndMessages(null);
+                    onBigFileDownloadStatusListener.onFileDownloadStatusRetrying(downloadFileInfo, retryTimes);
                 }
             });
         }
@@ -111,7 +111,7 @@ public interface OnFileDownloadStatusListener {
             if (onFileDownloadStatusListener == null) {
                 return;
             }
-            final Handler handler = new Handler(Looper.getMainLooper());
+            Handler handler = new Handler(Looper.getMainLooper());
             handler.post(new Runnable() {
                 @Override
                 public void run() {
@@ -119,7 +119,6 @@ public interface OnFileDownloadStatusListener {
                         return;
                     }
                     onFileDownloadStatusListener.onFileDownloadStatusWaiting(downloadFileInfo);
-                    handler.removeCallbacksAndMessages(null);
                 }
             });
         }
@@ -134,7 +133,7 @@ public interface OnFileDownloadStatusListener {
             if (onFileDownloadStatusListener == null) {
                 return;
             }
-            final Handler handler = new Handler(Looper.getMainLooper());
+            Handler handler = new Handler(Looper.getMainLooper());
             handler.post(new Runnable() {
                 @Override
                 public void run() {
@@ -142,7 +141,6 @@ public interface OnFileDownloadStatusListener {
                         return;
                     }
                     onFileDownloadStatusListener.onFileDownloadStatusPreparing(downloadFileInfo);
-                    handler.removeCallbacksAndMessages(null);
                 }
             });
         }
@@ -157,7 +155,7 @@ public interface OnFileDownloadStatusListener {
             if (onFileDownloadStatusListener == null) {
                 return;
             }
-            final Handler handler = new Handler(Looper.getMainLooper());
+            Handler handler = new Handler(Looper.getMainLooper());
             handler.post(new Runnable() {
                 @Override
                 public void run() {
@@ -165,7 +163,6 @@ public interface OnFileDownloadStatusListener {
                         return;
                     }
                     onFileDownloadStatusListener.onFileDownloadStatusPrepared(downloadFileInfo);
-                    handler.removeCallbacksAndMessages(null);
                 }
             });
         }
@@ -183,7 +180,7 @@ public interface OnFileDownloadStatusListener {
             if (onFileDownloadStatusListener == null) {
                 return;
             }
-            final Handler handler = new Handler(Looper.getMainLooper());
+            Handler handler = new Handler(Looper.getMainLooper());
             handler.post(new Runnable() {
                 @Override
                 public void run() {
@@ -192,7 +189,6 @@ public interface OnFileDownloadStatusListener {
                     }
                     onFileDownloadStatusListener.onFileDownloadStatusDownloading(downloadFileInfo, downloadSpeed, 
                             remainingTime);
-                    handler.removeCallbacksAndMessages(null);
                 }
             });
         }
@@ -207,7 +203,7 @@ public interface OnFileDownloadStatusListener {
             if (onFileDownloadStatusListener == null) {
                 return;
             }
-            final Handler handler = new Handler(Looper.getMainLooper());
+            Handler handler = new Handler(Looper.getMainLooper());
             handler.post(new Runnable() {
                 @Override
                 public void run() {
@@ -215,7 +211,6 @@ public interface OnFileDownloadStatusListener {
                         return;
                     }
                     onFileDownloadStatusListener.onFileDownloadStatusPaused(downloadFileInfo);
-                    handler.removeCallbacksAndMessages(null);
                 }
             });
         }
@@ -230,7 +225,7 @@ public interface OnFileDownloadStatusListener {
             if (onFileDownloadStatusListener == null) {
                 return;
             }
-            final Handler handler = new Handler(Looper.getMainLooper());
+            Handler handler = new Handler(Looper.getMainLooper());
             handler.post(new Runnable() {
                 @Override
                 public void run() {
@@ -238,7 +233,6 @@ public interface OnFileDownloadStatusListener {
                         return;
                     }
                     onFileDownloadStatusListener.onFileDownloadStatusCompleted(downloadFileInfo);
-                    handler.removeCallbacksAndMessages(null);
                 }
             });
         }
@@ -256,7 +250,7 @@ public interface OnFileDownloadStatusListener {
             if (onFileDownloadStatusListener == null) {
                 return;
             }
-            final Handler handler = new Handler(Looper.getMainLooper());
+            Handler handler = new Handler(Looper.getMainLooper());
             handler.post(new Runnable() {
                 @Override
                 public void run() {
@@ -264,7 +258,6 @@ public interface OnFileDownloadStatusListener {
                         return;
                     }
                     onFileDownloadStatusListener.onFileDownloadStatusFailed(url, downloadFileInfo, failReason);
-                    handler.removeCallbacksAndMessages(null);
                 }
             });
         }
@@ -291,15 +284,26 @@ public interface OnFileDownloadStatusListener {
      * FileDownloadStatusFailReason
      */
     public static class FileDownloadStatusFailReason extends HttpFailReason {
-
-        private static final long serialVersionUID = -8178297554707996481L;
-
-        // in task
         /**
          * URL illegal
          */
         public static final String TYPE_URL_ILLEGAL = FileDownloadStatusFailReason.class.getName() + 
                 "_TYPE_URL_ILLEGAL";
+        /**
+         * url over redirect count
+         */
+        public static final String TYPE_URL_OVER_REDIRECT_COUNT = FileDownloadStatusFailReason.class.getName() + 
+                "_TYPE_URL_OVER_REDIRECT_COUNT";
+        /**
+         * bad http response code, not 2XX
+         */
+        public static final String TYPE_BAD_HTTP_RESPONSE_CODE = FileDownloadStatusFailReason.class.getName() + 
+                "_TYPE_BAD_HTTP_RESPONSE_CODE";
+        /**
+         * the file need to download does not exist
+         */
+        public static final String TYPE_HTTP_FILE_NOT_EXIST = FileDownloadStatusFailReason.class.getName() + 
+                "_TYPE_HTTP_FILE_NOT_EXIST";
         /**
          * file save path illegal
          */
@@ -311,35 +315,38 @@ public interface OnFileDownloadStatusListener {
         public static final String TYPE_STORAGE_SPACE_CAN_NOT_WRITE = FileDownloadStatusFailReason.class.getName() + 
                 "_TYPE_STORAGE_SPACE_CAN_NOT_WRITE";
         /**
+         * rename temp file failed
+         */
+        public static final String TYPE_RENAME_TEMP_FILE_ERROR = FileDownloadStatusFailReason.class.getName() + 
+                "_TYPE_RENAME_TEMP_FILE_ERROR";
+        /**
          * storage space is full
          */
         public static final String TYPE_STORAGE_SPACE_IS_FULL = FileDownloadStatusFailReason.class.getName() + 
                 "_TYPE_STORAGE_SPACE_IS_FULL";
-
-        // in file downloader
+        /**
+         * the file need to save does not exist
+         */
+        public static final String TYPE_SAVE_FILE_NOT_EXIST = FileDownloadStatusFailReason.class.getName() + 
+                "_TYPE_SAVE_FILE_NOT_EXIST";
         /**
          * url file does not detect
          */
         public static final String TYPE_FILE_NOT_DETECT = FileDownloadStatusFailReason.class.getName() + 
                 "_TYPE_FILE_NOT_DETECT";
         /**
+         * the download file error
+         */
+        public static final String TYPE_DOWNLOAD_FILE_ERROR = FileDownloadStatusFailReason.class.getName() + 
+                "_TYPE_DOWNLOAD_FILE_ERROR";
+        /**
          * file is downloading
          *
          * @deprecated not an error,not use since 0.2.0
          */
+        @Deprecated
         public static final String TYPE_FILE_IS_DOWNLOADING = FileDownloadStatusFailReason.class.getName() + 
                 "_TYPE_FILE_IS_DOWNLOADING";
-        /**
-         * download file error
-         */
-        public static final String TYPE_DOWNLOAD_FILE_ERROR = FileDownloadStatusFailReason.class.getName() + 
-                "_TYPE_DOWNLOAD_FILE_ERROR";
-
-        /**
-         * the file need to save does not exist
-         */
-        public static final String TYPE_SAVE_FILE_NOT_EXIST = FileDownloadStatusFailReason.class.getName() + 
-                "_TYPE_SAVE_FILE_NOT_EXIST";
 
         public FileDownloadStatusFailReason(String detailMessage, String type) {
             super(detailMessage, type);
@@ -350,26 +357,54 @@ public interface OnFileDownloadStatusListener {
         }
 
         @Override
-        protected void onInitTypeWithThrowable(Throwable throwable) {
-            super.onInitTypeWithThrowable(throwable);
-            if (isTypeInit()) {
+        protected void onInitTypeWithFailReason(FailReason failReason) {
+            super.onInitTypeWithFailReason(failReason);
+
+            if (failReason == null) {
                 return;
             }
 
-            // FileSaveException
-            if (throwable instanceof FileSaveException) {
-                FileSaveException fileSaveException = (FileSaveException) throwable;
+            // other FailReason exceptions that need cast to FileDownloadStatusFailReason
+
+            // cast FileSaveException
+            if (failReason instanceof FileSaveException) {
+
+                FileSaveException fileSaveException = (FileSaveException) failReason;
                 String type = fileSaveException.getType();
-                if (FileSaveException.TYPE_FILE_DOES_NOT_EXIST.equals(type)) {
+
+                if (FileSaveException.TYPE_FILE_CAN_NOT_STORAGE.equals(type)) {
+                    setType(TYPE_STORAGE_SPACE_CAN_NOT_WRITE);
+                } else if (FileSaveException.TYPE_RENAME_TEMP_FILE_ERROR.equals(type)) {
+                    setType(TYPE_RENAME_TEMP_FILE_ERROR);
+                } else if (FileSaveException.TYPE_SAVER_HAS_BEEN_STOPPED.equals(type)) {
+                    // ignore
+                } else if (FileSaveException.TYPE_TEMP_FILE_DOES_NOT_EXIST.equals(type)) {
                     setType(TYPE_SAVE_FILE_NOT_EXIST);
-                } else if (FileSaveException.TYPE_SAVER_IS_STOPPED.equals(type)) {
-                    //....
-                } else {
-                    //....
                 }
             }
-        }
+            // case HttpDownloadException
+            else if (failReason instanceof HttpDownloadException) {
 
-        //....
+                HttpDownloadException httpDownloadException = (HttpDownloadException) failReason;
+                String type = httpDownloadException.getType();
+
+                if (HttpDownloadException.TYPE_NETWORK_TIMEOUT.equals(type)) {
+                    setType(TYPE_NETWORK_TIMEOUT);
+                } else if (HttpDownloadException.TYPE_NETWORK_DENIED.equals(type)) {
+                    setType(TYPE_NETWORK_DENIED);
+                } else if (HttpDownloadException.TYPE_CONTENT_RANGE_VALIDATE_FAIL.equals(type)) {
+                    // ignore
+                } else if (HttpDownloadException.TYPE_ETAG_CHANGED.equals(type)) {
+                    setType(TYPE_DOWNLOAD_FILE_ERROR);
+                } else if (HttpDownloadException.TYPE_REDIRECT_COUNT_OVER_LIMITS.equals(type)) {
+                    setType(TYPE_URL_OVER_REDIRECT_COUNT);
+                } else if (HttpDownloadException.TYPE_RESOURCES_SIZE_ILLEGAL.equals(type)) {
+                    setType(TYPE_DOWNLOAD_FILE_ERROR);
+                } else if (HttpDownloadException.TYPE_RESPONSE_CODE_ERROR.equals(type)) {
+                    setType(TYPE_BAD_HTTP_RESPONSE_CODE);
+                }
+            }
+            // cast DetectUrlFileFailReason
+        }
     }
 }

@@ -11,7 +11,7 @@ import org.wlf.filedownloader.DownloadFileInfo;
  * @datetime 2016-01-04 11:30 GMT+8
  * @email 411086563@qq.com
  */
-public interface OnFileDownloadStatusListener2 extends OnFileDownloadStatusListener {
+public interface OnBigFileDownloadStatusListener extends OnFileDownloadStatusListener {
 
     /**
      * retry download

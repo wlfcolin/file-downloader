@@ -3,6 +3,8 @@ package org.wlf.filedownloader.listener;
 import android.os.Handler;
 import android.os.Looper;
 
+import org.wlf.filedownloader.file_download.base.HttpFailReason;
+
 /**
  * OnDetectUrlFileListener
  * <br/>
@@ -10,9 +12,7 @@ import android.os.Looper;
  *
  * @author wlf(Andy)
  * @email 411086563@qq.com
- * @deprecated use {@link OnDetectBigUrlFileListener} instead to support downloading the file more than 2G
  */
-@Deprecated
 public interface OnDetectUrlFileListener {
 
     /**
@@ -53,11 +53,13 @@ public interface OnDetectUrlFileListener {
          * @param saveDir  saveDir
          * @param fileSize fileSize
          */
-        public static void onDetectNewDownloadFile(final String url, final String fileName, final String saveDir, final long fileSize, final OnDetectUrlFileListener onDetectUrlFileListener) {
+        public static void onDetectNewDownloadFile(final String url, final String fileName, final String saveDir, 
+                                                   final long fileSize, final OnDetectUrlFileListener 
+                                                           onDetectUrlFileListener) {
             if (onDetectUrlFileListener == null) {
                 return;
             }
-            final Handler handler = new Handler(Looper.getMainLooper());
+            Handler handler = new Handler(Looper.getMainLooper());
             handler.post(new Runnable() {
                 @Override
                 public void run() {
@@ -70,7 +72,6 @@ public interface OnDetectUrlFileListener {
                     } else {
                         onDetectUrlFileListener.onDetectNewDownloadFile(url, fileName, saveDir, (int) fileSize);
                     }
-                    handler.removeCallbacksAndMessages(null);
                 }
             });
         }
@@ -85,7 +86,7 @@ public interface OnDetectUrlFileListener {
             if (onDetectUrlFileListener == null) {
                 return;
             }
-            final Handler handler = new Handler(Looper.getMainLooper());
+            Handler handler = new Handler(Looper.getMainLooper());
             handler.post(new Runnable() {
                 @Override
                 public void run() {
@@ -93,7 +94,6 @@ public interface OnDetectUrlFileListener {
                         return;
                     }
                     onDetectUrlFileListener.onDetectUrlFileExist(url);
-                    handler.removeCallbacksAndMessages(null);
                 }
             });
         }
@@ -109,7 +109,7 @@ public interface OnDetectUrlFileListener {
             if (onDetectUrlFileListener == null) {
                 return;
             }
-            final Handler handler = new Handler(Looper.getMainLooper());
+            Handler handler = new Handler(Looper.getMainLooper());
             handler.post(new Runnable() {
                 @Override
                 public void run() {
@@ -117,7 +117,6 @@ public interface OnDetectUrlFileListener {
                         return;
                     }
                     onDetectUrlFileListener.onDetectUrlFileFailed(url, failReason);
-                    handler.removeCallbacksAndMessages(null);
                 }
             });
         }
@@ -128,8 +127,25 @@ public interface OnDetectUrlFileListener {
      * DetectUrlFileFailReason
      */
     public static class DetectUrlFileFailReason extends HttpFailReason {
-
-        private static final long serialVersionUID = -6863373572721814857L;
+        /**
+         * URL illegal
+         */
+        public static final String TYPE_URL_ILLEGAL = DetectUrlFileFailReason.class.getName() + "_TYPE_URL_ILLEGAL";
+        /**
+         * url over redirect count
+         */
+        public static final String TYPE_URL_OVER_REDIRECT_COUNT = DetectUrlFileFailReason.class.getName() + 
+                "_TYPE_URL_OVER_REDIRECT_COUNT";
+        /**
+         * bad http response code, not 2XX
+         */
+        public static final String TYPE_BAD_HTTP_RESPONSE_CODE = DetectUrlFileFailReason.class.getName() + 
+                "_TYPE_BAD_HTTP_RESPONSE_CODE";
+        /**
+         * the file need to download does not exist
+         */
+        public static final String TYPE_HTTP_FILE_NOT_EXIST = DetectUrlFileFailReason.class.getName() + 
+                "_TYPE_HTTP_FILE_NOT_EXIST";
 
         public DetectUrlFileFailReason(String detailMessage, String type) {
             super(detailMessage, type);
@@ -138,12 +154,5 @@ public interface OnDetectUrlFileListener {
         public DetectUrlFileFailReason(Throwable throwable) {
             super(throwable);
         }
-
-        @Override
-        protected void onInitTypeWithThrowable(Throwable throwable) {
-            super.onInitTypeWithThrowable(throwable);
-            // TODO
-        }
-
     }
 }

@@ -2,6 +2,7 @@ package org.wlf.filedownloader.file_download;
 
 import android.text.TextUtils;
 
+import org.wlf.filedownloader.file_download.http_downloader.Range;
 import org.wlf.filedownloader.util.UrlUtil;
 
 import java.net.HttpURLConnection;
@@ -69,7 +70,9 @@ public class HttpConnectionHelper {
      * @return HttpURLConnection
      * @throws Exception any exception during connect
      */
-    private static HttpURLConnection createHttpUrlConnectionInternal(String url, int connectTimeout, String charset, long rangeStartPos, long rangeEndPos) throws Exception {
+    private static HttpURLConnection createHttpUrlConnectionInternal(String url, int connectTimeout, String charset, 
+                                                                     long rangeStartPos, long rangeEndPos) throws 
+            Exception {
 
         // up 4.0 can use if necessary
         // StrictMode.setThreadPolicy(new

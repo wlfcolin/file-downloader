@@ -1,4 +1,4 @@
-package org.wlf.filedownloader.file_download;
+package org.wlf.filedownloader.file_download.http_downloader;
 
 /**
  * data range

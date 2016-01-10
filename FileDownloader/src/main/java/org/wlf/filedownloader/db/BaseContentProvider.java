@@ -15,12 +15,13 @@ import android.text.TextUtils;
  * @email 411086563@qq.com
  * @deprecated not use
  */
+@Deprecated
 public abstract class BaseContentProvider extends ContentProvider {
 
     // ContentProvider Authority
     private String mAuthority;// the ContentProvider Authority in AndroidManifest.xml
 
-    //MimeType
+    // MimeType
     private String mMimeTypeRow;// eg.  vnd.android.cursor.item/book
     private String mMimeTypeRows;// eg. vnd.android.cursor.dir/books
 

@@ -54,12 +54,12 @@ public interface OnDeleteDownloadFilesListener {
          *
          * @param downloadFilesNeedDelete download files needed to delete
          */
-        public static void onDeleteDownloadFilePrepared(final List<DownloadFileInfo> downloadFilesNeedDelete, final 
+        public static void onDeleteDownloadFilesPrepared(final List<DownloadFileInfo> downloadFilesNeedDelete, final 
         OnDeleteDownloadFilesListener onDeleteDownloadFilesListener) {
             if (onDeleteDownloadFilesListener == null) {
                 return;
             }
-            final Handler handler = new Handler(Looper.getMainLooper());
+            Handler handler = new Handler(Looper.getMainLooper());
             handler.post(new Runnable() {
                 @Override
                 public void run() {
@@ -67,7 +67,6 @@ public interface OnDeleteDownloadFilesListener {
                         return;
                     }
                     onDeleteDownloadFilesListener.onDeleteDownloadFilesPrepared(downloadFilesNeedDelete);
-                    handler.removeCallbacksAndMessages(null);
                 }
             });
         }
@@ -86,7 +85,7 @@ public interface OnDeleteDownloadFilesListener {
             if (onDeleteDownloadFilesListener == null) {
                 return;
             }
-            final Handler handler = new Handler(Looper.getMainLooper());
+            Handler handler = new Handler(Looper.getMainLooper());
             handler.post(new Runnable() {
                 @Override
                 public void run() {
@@ -95,7 +94,6 @@ public interface OnDeleteDownloadFilesListener {
                     }
                     onDeleteDownloadFilesListener.onDeletingDownloadFiles(downloadFilesNeedDelete, 
                             downloadFilesDeleted, downloadFilesSkip, downloadFileDeleting);
-                    handler.removeCallbacksAndMessages(null);
                 }
             });
         }
@@ -112,7 +110,7 @@ public interface OnDeleteDownloadFilesListener {
             if (onDeleteDownloadFilesListener == null) {
                 return;
             }
-            final Handler handler = new Handler(Looper.getMainLooper());
+            Handler handler = new Handler(Looper.getMainLooper());
             handler.post(new Runnable() {
                 @Override
                 public void run() {
@@ -121,7 +119,6 @@ public interface OnDeleteDownloadFilesListener {
                     }
                     onDeleteDownloadFilesListener.onDeleteDownloadFilesCompleted(downloadFilesNeedDelete, 
                             downloadFilesDeleted);
-                    handler.removeCallbacksAndMessages(null);
                 }
             });
         }

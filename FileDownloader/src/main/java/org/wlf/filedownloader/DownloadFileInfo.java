@@ -137,10 +137,6 @@ public class DownloadFileInfo extends BaseUrlFileInfo {
      * download status，ref{@link Status}
      */
     private int mStatus = Status.DOWNLOAD_STATUS_UNKNOWN;
-    /**
-     * create download datetime, yyyy-MM-dd HH:mm:ss
-     */
-    private String mCreateDatetime;
 
     @SuppressWarnings("unused")
     private DownloadFileInfo() {
@@ -359,26 +355,18 @@ public class DownloadFileInfo extends BaseUrlFileInfo {
     }
 
     /**
-     * set create download datetime
+     * set save file dir, use for package access
      */
-    void setCreateDatetime(String createDatetime) {
-        this.mCreateDatetime = createDatetime;
+    void setFileDir(String fileDir) {
+        this.mFileDir = fileDir;
     }
 
     /**
-     * set save file dir
+     * set file name, use for package access
      */
-    protected void setFileDir(String fileDir) {
-        setFileDir(fileDir);
+    void setFileName(String fileName) {
+        this.mFileName = fileName;
     }
-
-    /**
-     * set file name
-     */
-    protected void setFileName(String fileName) {
-        setFileName(fileName);
-    }
-
 
     // getters
 
@@ -427,15 +415,6 @@ public class DownloadFileInfo extends BaseUrlFileInfo {
      */
     public int getStatus() {
         return mStatus;
-    }
-
-    /**
-     * get create download datetime
-     *
-     * @return create download datetime
-     */
-    public String getCreateDatetime() {
-        return mCreateDatetime;
     }
 
     // other getters

@@ -3,11 +3,10 @@ package org.wlf.filedownloader.file_rename;
 import android.util.Log;
 
 import org.wlf.filedownloader.DownloadFileInfo;
-import org.wlf.filedownloader.file_download.DownloadTaskManager;
-import org.wlf.filedownloader.file_download.FileDownloadTask.OnStopDownloadFileTaskFailReason;
-import org.wlf.filedownloader.file_download.FileDownloadTask.OnStopFileDownloadTaskListener;
-import org.wlf.filedownloader.file_rename.RenameDownloadFileTask.DownloadFileRenamer;
+import org.wlf.filedownloader.file_download.OnStopFileDownloadTaskListener;
+import org.wlf.filedownloader.file_download.base.Pauseable;
 import org.wlf.filedownloader.listener.OnRenameDownloadFileListener;
+import org.wlf.filedownloader.listener.OnRenameDownloadFileListener.OnRenameDownloadFileFailReason;
 import org.wlf.filedownloader.listener.OnRenameDownloadFileListener.RenameDownloadFileFailReason;
 
 import java.util.concurrent.ExecutorService;
@@ -30,29 +29,29 @@ public class DownloadRenameManager {
     /**
      * task engine
      */
-    private ExecutorService mSupportEngine;
+    private ExecutorService mTaskEngine;
     /**
      * DownloadFileRenamer,to rename download files
      */
     private DownloadFileRenamer mDownloadFileRenamer;
     /**
-     * DownloadTaskManager,to manage download tasks
+     * Pauseable,to pause download tasks
      */
-    private DownloadTaskManager mDownloadTaskManager;
+    private Pauseable mDownloadTaskPauseable;
 
-    public DownloadRenameManager(ExecutorService supportEngine, DownloadFileRenamer downloadFileRenamer, 
-                                 DownloadTaskManager downloadTaskManager) {
-        mSupportEngine = supportEngine;
+    public DownloadRenameManager(ExecutorService taskEngine, DownloadFileRenamer downloadFileRenamer, Pauseable 
+            downloadTaskPauseable) {
+        mTaskEngine = taskEngine;
         mDownloadFileRenamer = downloadFileRenamer;
-        mDownloadTaskManager = downloadTaskManager;
+        mDownloadTaskPauseable = downloadTaskPauseable;
     }
 
     /**
-     * start a support task
+     * start a task
      */
     private void addAndRunTask(Runnable task) {
-        // exec a support task
-        mSupportEngine.execute(task);
+        // exec a task
+        mTaskEngine.execute(task);
     }
 
     /**
@@ -65,6 +64,9 @@ public class DownloadRenameManager {
         return mDownloadFileRenamer.getDownloadFile(url);
     }
 
+    /**
+     * rename download
+     */
     private void renameInternal(String url, String newFileName, boolean includedSuffix, OnRenameDownloadFileListener 
             onRenameDownloadFileListener) {
         // create rename download task
@@ -83,23 +85,12 @@ public class DownloadRenameManager {
      * @param includedSuffix               true means the newFileName include the suffix
      * @param onRenameDownloadFileListener RenameDownloadFileListener
      */
-    public void rename(String url, final String newFileName, final boolean includedSuffix, final OnRenameDownloadFileListener onRenameDownloadFileListener) {
+    public void rename(String url, final String newFileName, final boolean includedSuffix, final 
+    OnRenameDownloadFileListener onRenameDownloadFileListener) {
 
-        final DownloadFileInfo downloadFileInfo = getDownloadFile(url);
-        if (downloadFileInfo == null) {
+        final String finalUrl = url;
 
-            Log.d(TAG, "rename 文件不存在,url:" + url);
-
-            // the DownloadFile does not exist
-            if (onRenameDownloadFileListener != null) {
-                onRenameDownloadFileListener.onRenameDownloadFileFailed(downloadFileInfo, new 
-                        RenameDownloadFileFailReason("the download file is not exist!", RenameDownloadFileFailReason
-                        .TYPE_FILE_RECORD_IS_NOT_EXIST));
-            }
-            return;
-        }
-
-        if (!mDownloadTaskManager.isInFileDownloadTaskMap(url)) {
+        if (!mDownloadTaskPauseable.isDownloading(url)) {
 
             Log.d(TAG, "rename 直接重命名,url:" + url);
 
@@ -109,28 +100,38 @@ public class DownloadRenameManager {
             Log.d(TAG, "rename 需要先暂停后重命名,url:" + url);
 
             // pause
-            mDownloadTaskManager.pause(url, new OnStopFileDownloadTaskListener() {
+            mDownloadTaskPauseable.pause(url, new OnStopFileDownloadTaskListener() {
                 @Override
                 public void onStopFileDownloadTaskSucceed(String url) {
 
-                    Log.d(TAG, "rename 暂停成功，开始重命名,url:" + url);
+                    Log.d(TAG, "rename 暂停成功，开始重命名,url:" + finalUrl);
 
-                    renameInternal(url, newFileName, includedSuffix, onRenameDownloadFileListener);
+                    renameInternal(finalUrl, newFileName, includedSuffix, onRenameDownloadFileListener);
                 }
 
                 @Override
-                public void onStopFileDownloadTaskFailed(String url, OnStopDownloadFileTaskFailReason failReason) {
+                public void onStopFileDownloadTaskFailed(String url, StopDownloadFileTaskFailReason failReason) {
 
-                    Log.d(TAG, "rename 暂停失败，无法重命名,url:" + url);
+                    Log.d(TAG, "rename 暂停失败，无法重命名,url:" + finalUrl);
 
                     // error
-                    if (onRenameDownloadFileListener != null) {
-                        onRenameDownloadFileListener.onRenameDownloadFileFailed(downloadFileInfo, new 
-                                RenameDownloadFileFailReason(failReason));
-                    }
+                    notifyRenameDownloadFileFailed(getDownloadFile(finalUrl), new OnRenameDownloadFileFailReason
+                            (failReason), onRenameDownloadFileListener);
                 }
             });
         }
     }
 
+    // -----------------------notify caller-----------------------
+
+    private void notifyRenameDownloadFileFailed(DownloadFileInfo downloadFileInfo, RenameDownloadFileFailReason 
+            failReason, OnRenameDownloadFileListener onRenameDownloadFileListener) {
+        if (onRenameDownloadFileListener == null) {
+            return;
+        }
+
+        // notify caller
+        OnRenameDownloadFileListener.MainThreadHelper.onRenameDownloadFileFailed(downloadFileInfo, failReason, 
+                onRenameDownloadFileListener);
+    }
 }

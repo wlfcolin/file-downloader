@@ -1,7 +1,6 @@
 package org.wlf.filedownloader.file_download.db_recorder;
 
 import org.wlf.filedownloader.DownloadFileInfo;
-import org.wlf.filedownloader.file_download.Record;
 
 import java.util.List;
 
@@ -14,29 +13,6 @@ import java.util.List;
  * @email 411086563@qq.com
  */
 public interface DownloadFileDbRecorder extends Record {
-
-    /**
-     * add new DownloadFile
-     *
-     * @param downloadFileInfo new DownloadFile
-     * @return true for succeeded
-    boolean addDownloadFile(DownloadFileInfo downloadFileInfo);
-     */
-    /**
-     * update an exist DownloadFile
-     *
-     * @param downloadFileInfo DownloadFile needed to update
-     * @return true for succeeded
-
-    boolean updateDownloadFile(DownloadFileInfo downloadFileInfo);
-     */
-    /**
-     * delete an exist DownloadFile
-     *
-     * @param downloadFileInfo DownloadFile needed to delete
-     * @return true for succeeded
-    boolean deleteDownloadFile(DownloadFileInfo downloadFileInfo);
-     */
 
     /**
      * get DownloadFile by url

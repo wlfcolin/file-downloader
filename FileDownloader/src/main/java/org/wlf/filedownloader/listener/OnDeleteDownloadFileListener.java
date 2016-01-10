@@ -53,7 +53,7 @@ public interface OnDeleteDownloadFileListener {
             if (onDeleteDownloadFileListener == null) {
                 return;
             }
-            final Handler handler = new Handler(Looper.getMainLooper());
+            Handler handler = new Handler(Looper.getMainLooper());
             handler.post(new Runnable() {
                 @Override
                 public void run() {
@@ -61,7 +61,6 @@ public interface OnDeleteDownloadFileListener {
                         return;
                     }
                     onDeleteDownloadFileListener.onDeleteDownloadFilePrepared(downloadFileNeedDelete);
-                    handler.removeCallbacksAndMessages(null);
                 }
             });
         }
@@ -76,7 +75,7 @@ public interface OnDeleteDownloadFileListener {
             if (onDeleteDownloadFileListener == null) {
                 return;
             }
-            final Handler handler = new Handler(Looper.getMainLooper());
+            Handler handler = new Handler(Looper.getMainLooper());
             handler.post(new Runnable() {
                 @Override
                 public void run() {
@@ -84,7 +83,6 @@ public interface OnDeleteDownloadFileListener {
                         return;
                     }
                     onDeleteDownloadFileListener.onDeleteDownloadFileSuccess(downloadFileDeleted);
-                    handler.removeCallbacksAndMessages(null);
                 }
             });
         }
@@ -95,11 +93,12 @@ public interface OnDeleteDownloadFileListener {
          * @param downloadFileInfo download file needed to delete,may be null
          * @param failReason       fail reason
          */
-        public static void onDeleteDownloadFileFailed(final DownloadFileInfo downloadFileInfo, final DeleteDownloadFileFailReason failReason, final OnDeleteDownloadFileListener onDeleteDownloadFileListener) {
+        public static void onDeleteDownloadFileFailed(final DownloadFileInfo downloadFileInfo, final 
+        DeleteDownloadFileFailReason failReason, final OnDeleteDownloadFileListener onDeleteDownloadFileListener) {
             if (onDeleteDownloadFileListener == null) {
                 return;
             }
-            final Handler handler = new Handler(Looper.getMainLooper());
+            Handler handler = new Handler(Looper.getMainLooper());
             handler.post(new Runnable() {
                 @Override
                 public void run() {
@@ -107,7 +106,6 @@ public interface OnDeleteDownloadFileListener {
                         return;
                     }
                     onDeleteDownloadFileListener.onDeleteDownloadFileFailed(downloadFileInfo, failReason);
-                    handler.removeCallbacksAndMessages(null);
                 }
             });
         }
@@ -134,14 +132,17 @@ public interface OnDeleteDownloadFileListener {
      * DeleteDownloadFileFailReason
      */
     public static class DeleteDownloadFileFailReason extends FailReason {
-
-        private static final long serialVersionUID = 6959079784746889291L;
-
         /**
          * the download file record doest not exist
          */
         public static final String TYPE_FILE_RECORD_IS_NOT_EXIST = DeleteDownloadFileFailReason.class.getName() + 
                 "_TYPE_FILE_RECORD_IS_NOT_EXIST";
+
+        /**
+         * the download file status error
+         */
+        public static final String TYPE_FILE_STATUS_ERROR = DeleteDownloadFileFailReason.class.getName() +
+                "_TYPE_RECORD_FILE_STATUS_ERROR";
 
         public DeleteDownloadFileFailReason(String detailMessage, String type) {
             super(detailMessage, type);
@@ -150,11 +151,7 @@ public interface OnDeleteDownloadFileListener {
         public DeleteDownloadFileFailReason(Throwable throwable) {
             super(throwable);
         }
-
-        @Override
-        protected void onInitTypeWithThrowable(Throwable throwable) {
-            super.onInitTypeWithThrowable(throwable);
-            // TODO
-        }
+        
+        // StopDownloadFileTaskFailReason
     }
 }

@@ -10,8 +10,6 @@ package org.wlf.filedownloader.base;
  */
 public class FailException extends FailReason {
 
-    private static final long serialVersionUID = 954872014989299556L;
-
     public FailException(String type) {
         super(type);
     }

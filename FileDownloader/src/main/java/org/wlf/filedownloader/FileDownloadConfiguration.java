@@ -19,112 +19,6 @@ import java.util.concurrent.Executors;
 public class FileDownloadConfiguration {
 
     /**
-     * LOG TAG
-     */
-    private static final String TAG = FileDownloadConfiguration.class.getSimpleName();
-
-    private Context mContext;
-    /**
-     * download dir
-     */
-    private String mFileDownloadDir;
-    /**
-     * engine use for downloading file
-     */
-    private ExecutorService mFileDownloadEngine;
-    /**
-     * engine use for detecting url file
-     */
-    private ExecutorService mFileDetectEngine;
-    /**
-     * engine use for operate downloaded file
-     */
-    private ExecutorService mFileOperationEngine;
-
-    /**
-     * retry download times when failed
-     */
-    private int mRetryDownloadTimes = Builder.DEFAULT_RETRY_DOWNLOAD_TIMES;
-
-    /**
-     * create default configuration,use {@link Builder#build()} to create recommended
-     *
-     * @param context Context
-     * @return default configuration
-     */
-    public static FileDownloadConfiguration createDefault(Context context) {
-        return new Builder(context).build();
-    }
-
-    /**
-     * constructor of FileDownloadConfiguration
-     *
-     * @param builder FileDownloadConfiguration builder
-     */
-    private FileDownloadConfiguration(Builder builder) {
-        if (builder == null) {
-            throw new NullPointerException("builder can not be empty!");
-        }
-        this.mContext = builder.mContext;
-        this.mFileDownloadDir = builder.mFileDownloadDir;
-        this.mFileDownloadEngine = Executors.newFixedThreadPool(builder.mDownloadTaskSize);
-        this.mFileDetectEngine = Executors.newCachedThreadPool(); // no limit
-        this.mFileOperationEngine = Executors.newFixedThreadPool(3); // limit 3, for operations: move,delete,rename
-        this.mRetryDownloadTimes = builder.mRetryDownloadTimes;
-    }
-
-    // getters
-
-    /**
-     * get Context
-     *
-     * @return Context
-     */
-    public Context getContext() {
-        return mContext;
-    }
-
-    /**
-     * get FileDownloadDir
-     *
-     * @return FileDownloadDir
-     */
-    public String getFileDownloadDir() {
-        return mFileDownloadDir;
-    }
-
-    /**
-     * get FileDownloadEngine
-     */
-    public ExecutorService getFileDownloadEngine() {
-        return mFileDownloadEngine;
-    }
-
-    /**
-     * get FileDetectEngine
-     */
-    public ExecutorService getFileDetectEngine() {
-        return mFileDetectEngine;
-    }
-
-
-    /**
-     * get FileOperationEngine
-     */
-    public ExecutorService getFileOperationEngine() {
-        return mFileOperationEngine;
-    }
-
-    /**
-     * get RetryDownloadTimes
-     *
-     * @return retry download times
-     */
-    public int getRetryDownloadTimes() {
-        return mRetryDownloadTimes;
-    }
-
-    /**
      * Configuration Builder
      */
     public static class Builder {
@@ -220,7 +114,7 @@ public class FileDownloadConfiguration {
          * config RetryDownloadTimes
          *
          * @param retryDownloadTimes DownloadTaskSize at the same time,please set 1 to {@link
-         * #MAX_RETRY_DOWNLOAD_TIMES},
+         *                           #MAX_RETRY_DOWNLOAD_TIMES},
          *                           if not set,default is {@link #DEFAULT_RETRY_DOWNLOAD_TIMES}
          * @return the builder
          */
@@ -243,5 +137,103 @@ public class FileDownloadConfiguration {
         public FileDownloadConfiguration build() {
             return new FileDownloadConfiguration(this);
         }
+    }
+
+    /**
+     * LOG TAG
+     */
+    private static final String TAG = FileDownloadConfiguration.class.getSimpleName();
+
+    /**
+     * the builder
+     */
+    private Builder mBuilder;
+
+    /**
+     * engine use for downloading file
+     */
+    private ExecutorService mFileDownloadEngine;
+    /**
+     * engine use for detecting url file
+     */
+    private ExecutorService mFileDetectEngine;
+    /**
+     * engine use for operate downloaded file
+     */
+    private ExecutorService mFileOperationEngine;
+
+    /**
+     * create default configuration,use {@link Builder#build()} to create recommended
+     *
+     * @param context Context
+     * @return default configuration
+     */
+    public static FileDownloadConfiguration createDefault(Context context) {
+        return new Builder(context).build();
+    }
+
+    /**
+     * constructor of FileDownloadConfiguration
+     *
+     * @param builder FileDownloadConfiguration builder
+     */
+    private FileDownloadConfiguration(Builder builder) {
+        if (builder == null) {
+            throw new NullPointerException("builder can not be empty!");
+        }
+        this.mBuilder = builder;
+        this.mFileDownloadEngine = Executors.newFixedThreadPool(builder.mDownloadTaskSize);
+        this.mFileDetectEngine = Executors.newCachedThreadPool(); // no limit
+        this.mFileOperationEngine = Executors.newFixedThreadPool(3); // limit 3, for operations: move,delete,rename
+    }
+
+    // getters
+
+    /**
+     * get Context
+     *
+     * @return Context
+     */
+    public Context getContext() {
+        return mBuilder.mContext;
+    }
+
+    /**
+     * get FileDownloadDir
+     *
+     * @return FileDownloadDir
+     */
+    public String getFileDownloadDir() {
+        return mBuilder.mFileDownloadDir;
+    }
+
+    /**
+     * get RetryDownloadTimes
+     *
+     * @return retry download times
+     */
+    public int getRetryDownloadTimes() {
+        return mBuilder.mRetryDownloadTimes;
+    }
+
+    /**
+     * get FileDownloadEngine
+     */
+    public ExecutorService getFileDownloadEngine() {
+        return mFileDownloadEngine;
+    }
+
+    /**
+     * get FileDetectEngine
+     */
+    public ExecutorService getFileDetectEngine() {
+        return mFileDetectEngine;
+    }
+
+    /**
+     * get FileOperationEngine
+     */
+    public ExecutorService getFileOperationEngine() {
+        return mFileOperationEngine;
     }
 }

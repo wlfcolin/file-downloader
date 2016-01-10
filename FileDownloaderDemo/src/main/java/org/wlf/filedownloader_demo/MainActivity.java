@@ -28,7 +28,7 @@ import org.wlf.filedownloader.listener.OnDetectUrlFileListener;
 import org.wlf.filedownloader.listener.OnMoveDownloadFileListener;
 import org.wlf.filedownloader.listener.OnMoveDownloadFilesListener;
 import org.wlf.filedownloader.listener.OnRenameDownloadFileListener;
-import org.wlf.filedownloader_demo.DownloadFileListAdapter.OnItemSelectListener;
+import org.wlf.filedownloader_demo.DownloadBigFileListAdapter.OnItemSelectListener;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -44,7 +44,7 @@ import java.util.List;
 public class MainActivity extends Activity implements OnItemSelectListener {
 
     // adapter
-    private DownloadFileListAdapter mDownloadFileListAdapter;
+    private DownloadBigFileListAdapter mDownloadFileListAdapter;
 
     // toast
     private Toast mToast;
@@ -67,7 +67,7 @@ public class MainActivity extends Activity implements OnItemSelectListener {
 
         // ListView
         ListView lvDownloadFileList = (ListView) findViewById(R.id.lvDownloadFileList);
-        mDownloadFileListAdapter = new DownloadFileListAdapter(this);
+        mDownloadFileListAdapter = new DownloadBigFileListAdapter(this);
         lvDownloadFileList.setAdapter(mDownloadFileListAdapter);
 
         mDownloadFileListAdapter.setOnItemSelectListener(this);

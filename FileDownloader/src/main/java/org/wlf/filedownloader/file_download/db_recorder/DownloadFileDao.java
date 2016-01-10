@@ -29,7 +29,7 @@ public class DownloadFileDao extends BaseContentDbDao {
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        // 1 to 2
+        // version 1 to 2
         if (oldVersion == 1 && newVersion == 2) {
             db.execSQL(DownloadFileInfo.Table.getUpdateTableVersion1To2Sql());
         }

@@ -3,9 +3,10 @@ package org.wlf.filedownloader.file_delete;
 import android.util.Log;
 
 import org.wlf.filedownloader.DownloadFileInfo;
-import org.wlf.filedownloader.file_download.db_recorder.DownloadFileDbRecorder;
 import org.wlf.filedownloader.listener.OnDeleteDownloadFileListener;
 import org.wlf.filedownloader.listener.OnDeleteDownloadFileListener.DeleteDownloadFileFailReason;
+import org.wlf.filedownloader.listener.OnDeleteDownloadFileListener.OnDeleteDownloadFileFailReason;
+import org.wlf.filedownloader.util.DownloadFileUtil;
 
 import java.io.File;
 
@@ -17,7 +18,7 @@ import java.io.File;
  * @author wlf(Andy)
  * @email 411086563@qq.com
  */
-public class DeleteDownloadFileTask implements Runnable {
+class DeleteDownloadFileTask implements Runnable {
 
     private static final String TAG = DeleteDownloadFileTask.class.getSimpleName();
 
@@ -28,18 +29,22 @@ public class DeleteDownloadFileTask implements Runnable {
 
     private OnDeleteDownloadFileListener mOnDeleteDownloadFileListener;
 
-    DeleteDownloadFileTask(String url, boolean deleteDownloadedFileInPath, DownloadFileDeleter downloadFileDeleter) {
+    public DeleteDownloadFileTask(String url, boolean deleteDownloadedFileInPath, DownloadFileDeleter 
+            downloadFileDeleter) {
         super();
         this.mUrl = url;
         this.mDeleteDownloadedFileInPath = deleteDownloadedFileInPath;
         this.mDownloadFileDeleter = downloadFileDeleter;
     }
 
+    /**
+     * set OnDeleteDownloadFileListener
+     *
+     * @param onDeleteDownloadFileListener OnDeleteDownloadFileListener
+     */
     public void setOnDeleteDownloadFileListener(OnDeleteDownloadFileListener onDeleteDownloadFileListener) {
         this.mOnDeleteDownloadFileListener = onDeleteDownloadFileListener;
     }
-
-    // package use only
 
     /**
      * enable the callback sync
@@ -51,78 +56,110 @@ public class DeleteDownloadFileTask implements Runnable {
     @Override
     public void run() {
 
-        DownloadFileInfo downloadFileInfo = mDownloadFileDeleter.getDownloadFile(mUrl);
-
-        // 1.prepared
-        notifyPrepared(downloadFileInfo);
-
+        DownloadFileInfo downloadFileInfo = null;
         DeleteDownloadFileFailReason failReason = null;
 
-        if (downloadFileInfo != null) {
+        try {
+            downloadFileInfo = mDownloadFileDeleter.getDownloadFile(mUrl);
+
+            if (downloadFileInfo == null) {
+                //                failReason = new DeleteDownloadFileFailReason("the download file not exist!", 
+                //                        DeleteDownloadFileFailReason.TYPE_FILE_RECORD_IS_NOT_EXIST);
+
+                failReason = new OnDeleteDownloadFileFailReason("the download file not exist!", 
+                        OnDeleteDownloadFileFailReason.TYPE_FILE_RECORD_IS_NOT_EXIST);
+                // goto finally,notifyFailed()
+                return;
+            }
+
+            // 1.prepared
+            notifyPrepared(downloadFileInfo);
+
+            // check status
+            if (!DownloadFileUtil.canDelete(downloadFileInfo)) {
+                //                failReason = new DeleteDownloadFileFailReason("the download file status error!", 
+                //                        DeleteDownloadFileFailReason.TYPE_FILE_STATUS_ERROR);
+
+                failReason = new OnDeleteDownloadFileFailReason("the download file status error!", 
+                        OnDeleteDownloadFileFailReason.TYPE_FILE_STATUS_ERROR);
+                // goto finally,notifyFailed()
+                return;
+            }
+
             // delete in database record
             boolean deleteResult = false;
             try {
-                mDownloadFileDeleter.deleteDownloadFile(downloadFileInfo.getUrl());
+                mDownloadFileDeleter.deleteDownloadFile(mUrl);
                 deleteResult = true;
             } catch (Exception e) {
                 e.printStackTrace();
             }
-            // boolean deleteResult = mDownloadFileDeleter.deleteDownloadFile(mUrl);
-            if (deleteResult) {
 
-                Log.d(TAG, "DeleteDownloadFileTask.run 数据库删除成功url：" + mUrl);
+            if (!deleteResult) {
+                //                failReason = new DeleteDownloadFileFailReason("delete file in record failed!", 
+                //                        DeleteDownloadFileFailReason.TYPE_UNKNOWN);
 
-                // delete in path
-                if (deleteResult) {
-                    if (mDeleteDownloadedFileInPath) {
-                        File file = new File(downloadFileInfo.getFileDir(), downloadFileInfo.getFileName());
-                        if (file != null) {
-                            if (file.exists()) {
-                                deleteResult = file.delete();
-                            } else {
-                                // has been deleted in file path or not complete,look up the temp file
-                                file = new File(downloadFileInfo.getFileDir(), downloadFileInfo.getTempFileName());
-                                if (file.exists()) {
-                                    deleteResult = file.delete();
-                                }
-                            }
-                        } else {
-                            // look up the temp file
-                            file = new File(downloadFileInfo.getFileDir(), downloadFileInfo.getTempFileName());
-                            if (file.exists()) {
-                                deleteResult = file.delete();
-                            }
-                        }
-                    }
-                    if (deleteResult) {
-                        Log.d(TAG, "DeleteDownloadFileTask.run 件删除成功url：" + mUrl);
-                        // 2.delete success
-                        notifySuccess(downloadFileInfo);
-                        return;
-                    } else {
-                        failReason = new DeleteDownloadFileFailReason("delete file in path failed!", 
-                                DeleteDownloadFileFailReason.TYPE_UNKNOWN);
-                    }
-                } else {
-                    failReason = new DeleteDownloadFileFailReason("delete file failed!", DeleteDownloadFileFailReason
-                            .TYPE_UNKNOWN);
-                }
-            } else {
-                failReason = new DeleteDownloadFileFailReason("delete file in record failed!", 
-                        DeleteDownloadFileFailReason.TYPE_UNKNOWN);
+                failReason = new OnDeleteDownloadFileFailReason("delete file in record failed!", 
+                        OnDeleteDownloadFileFailReason.TYPE_UNKNOWN);
+                // goto finally,notifyFailed()
+                return;
             }
-        } else {
-            failReason = new DeleteDownloadFileFailReason("file record is not exist!", DeleteDownloadFileFailReason
-                    .TYPE_FILE_RECORD_IS_NOT_EXIST);
-        }
 
-        if (failReason != null) {
-            Log.d(TAG, "DeleteDownloadFileTask.run 删除失败url：" + mUrl + ",failReason:" + failReason.getType());
-            // 2.delete failed
-            notifyFailed(downloadFileInfo, failReason);
+            Log.d(TAG, TAG + ".run 数据库删除成功url：" + mUrl);
+
+            // delete in path
+            if (mDeleteDownloadedFileInPath) {
+                File file = new File(downloadFileInfo.getFileDir(), downloadFileInfo.getFileName());
+                if (file != null && file.exists()) {
+                    deleteResult = file.delete();
+                }
+                // has been deleted in file path or not complete,look up the temp file
+                else {
+                    file = new File(downloadFileInfo.getFileDir(), downloadFileInfo.getTempFileName());
+                    if (file.exists()) {
+                        deleteResult = file.delete();
+                    }
+                }
+            }
+
+            if (!deleteResult) {
+                //                failReason = new DeleteDownloadFileFailReason("delete file in path failed!", 
+                //                        DeleteDownloadFileFailReason.TYPE_UNKNOWN);
+
+                failReason = new OnDeleteDownloadFileFailReason("delete file in path failed!", 
+                        OnDeleteDownloadFileFailReason.TYPE_UNKNOWN);
+                // goto finally,notifyFailed()
+                return;
+            }
+
+            Log.d(TAG, TAG + ".run.run 文件删除成功url：" + mUrl);
+        } catch (Exception e) {
+            e.printStackTrace();
+           
+//            failReason = new DeleteDownloadFileFailReason(e);
+            
+            failReason = new OnDeleteDownloadFileFailReason(e);
+        } finally {
+            // delete succeed
+            if (failReason == null) {
+                // 2.delete success
+                notifySuccess(downloadFileInfo);
+
+                Log.d(TAG, TAG + ".run.run 删除成功，url：" + mUrl);
+            } else {
+                // 2.delete failed
+                notifyFailed(downloadFileInfo, failReason);
+
+                Log.d(TAG, TAG + ".run 删除失败，url：" + mUrl + ",failReason:" + failReason.getType());
+            }
+
+            Log.d(TAG, TAG + ".run 文件删除任务【已结束】，是否有异常：" + (failReason == null) + "，url：" + mUrl);
         }
     }
 
+    /**
+     * notifyPrepared
+     */
     private void notifyPrepared(DownloadFileInfo downloadFileInfo) {
         if (mOnDeleteDownloadFileListener == null) {
             return;
@@ -135,6 +172,9 @@ public class DeleteDownloadFileTask implements Runnable {
         }
     }
 
+    /**
+     * notifySuccess
+     */
     private void notifySuccess(DownloadFileInfo downloadFileInfo) {
         if (mOnDeleteDownloadFileListener == null) {
             return;
@@ -147,6 +187,9 @@ public class DeleteDownloadFileTask implements Runnable {
         }
     }
 
+    /**
+     * notifyFailed
+     */
     private void notifyFailed(DownloadFileInfo downloadFileInfo, DeleteDownloadFileFailReason failReason) {
         if (mOnDeleteDownloadFileListener == null) {
             return;
@@ -158,16 +201,4 @@ public class DeleteDownloadFileTask implements Runnable {
                     mOnDeleteDownloadFileListener);
         }
     }
-
-    public interface DownloadFileDeleter extends DownloadFileDbRecorder {
-
-        /**
-         * delete download file
-         *
-         * @param url download url
-         * @throws Exception any exception during delete
-         */
-        void deleteDownloadFile(String url) throws Exception;
-    }
-
 }

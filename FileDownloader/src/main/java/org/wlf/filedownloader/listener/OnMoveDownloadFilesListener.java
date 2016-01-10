@@ -59,7 +59,7 @@ public interface OnMoveDownloadFilesListener {
             if (onMoveDownloadFilesListener == null) {
                 return;
             }
-            final Handler handler = new Handler(Looper.getMainLooper());
+            Handler handler = new Handler(Looper.getMainLooper());
             handler.post(new Runnable() {
                 @Override
                 public void run() {
@@ -67,7 +67,6 @@ public interface OnMoveDownloadFilesListener {
                         return;
                     }
                     onMoveDownloadFilesListener.onMoveDownloadFilesPrepared(downloadFilesNeedMove);
-                    handler.removeCallbacksAndMessages(null);
                 }
             });
         }
@@ -86,7 +85,7 @@ public interface OnMoveDownloadFilesListener {
             if (onMoveDownloadFilesListener == null) {
                 return;
             }
-            final Handler handler = new Handler(Looper.getMainLooper());
+            Handler handler = new Handler(Looper.getMainLooper());
             handler.post(new Runnable() {
                 @Override
                 public void run() {
@@ -95,7 +94,6 @@ public interface OnMoveDownloadFilesListener {
                     }
                     onMoveDownloadFilesListener.onMovingDownloadFiles(downloadFilesNeedMove, downloadFilesMoved, 
                             downloadFilesSkip, downloadFileMoving);
-                    handler.removeCallbacksAndMessages(null);
                 }
             });
         }
@@ -111,7 +109,7 @@ public interface OnMoveDownloadFilesListener {
             if (onMoveDownloadFilesListener == null) {
                 return;
             }
-            final Handler handler = new Handler(Looper.getMainLooper());
+            Handler handler = new Handler(Looper.getMainLooper());
             handler.post(new Runnable() {
                 @Override
                 public void run() {
@@ -119,7 +117,6 @@ public interface OnMoveDownloadFilesListener {
                         return;
                     }
                     onMoveDownloadFilesListener.onMoveDownloadFilesCompleted(downloadFilesNeedMove, downloadFilesMoved);
-                    handler.removeCallbacksAndMessages(null);
                 }
             });
         }

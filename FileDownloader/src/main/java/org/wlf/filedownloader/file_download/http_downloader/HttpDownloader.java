@@ -3,16 +3,15 @@ package org.wlf.filedownloader.file_download.http_downloader;
 import android.text.TextUtils;
 import android.util.Log;
 
-import org.wlf.filedownloader.base.FailException;
+import org.wlf.filedownloader.base.FailReason;
+import org.wlf.filedownloader.file_download.CloseConnectionTask;
 import org.wlf.filedownloader.file_download.HttpConnectionHelper;
-import org.wlf.filedownloader.file_download.Range;
+import org.wlf.filedownloader.file_download.base.HttpFailReason;
+import org.wlf.filedownloader.file_download.file_saver.FileSaver.FileSaveException;
 
-import java.io.IOException;
 import java.io.InputStream;
-import java.net.ConnectException;
 import java.net.HttpURLConnection;
-import java.net.SocketTimeoutException;
-import java.net.UnknownHostException;
+import java.util.concurrent.ExecutorService;
 
 /**
  * http file download impl
@@ -20,6 +19,7 @@ import java.net.UnknownHostException;
  * Http下载器
  *
  * @author wlf
+ * @email 411086563@qq.com
  */
 public class HttpDownloader implements Download {
 
@@ -28,37 +28,40 @@ public class HttpDownloader implements Download {
      */
     private static final String TAG = HttpDownloader.class.getSimpleName();
 
-    private static final int MAX_REDIRECT_COUNT = 5;
-    private static final int CONNECT_TIMEOUT = 15 * 1000;// 15s
-    private static final String CHARSET = "UTF-8";
+    private static final int MAX_REDIRECT_TIMES = 5;
+    private static final int CONNECT_TIMEOUT = 15 * 1000;// 15s default
+    private static final String DEFAULT_CHARSET = "UTF-8";
 
-    private String mUrl;
+    private String mUrl;// download url
     private Range mRange;// download data range
     private String mAcceptRangeType;// accept range type
     private String mETag;// http file eTag
-    private int mConnectTimeout = CONNECT_TIMEOUT;
+    private int mConnectTimeout = CONNECT_TIMEOUT;// connect time out, millisecond
+    private String mCharset = DEFAULT_CHARSET;// FIXME now UTF-8 only
+
+    private ExecutorService mCloseConnectionEngine;// engine use for closing the http connection
 
     private OnHttpDownloadListener mOnHttpDownloadListener;
 
-    /**
-     * constructor of HttpDownloader,the range is from the beginning to the end
-     *
-     * @param url url path
-     */
-    public HttpDownloader(String url) {
-        this(url, null, null);
-    }
+    //    /**
+    //     * constructor of HttpDownloader,the range is from the beginning to the end of the url file
+    //     *
+    //     * @param url url path
+    //     */
+    //    public HttpDownloader(String url) {
+    //        this(url, null, null);
+    //    }
 
-    /**
-     * constructor of HttpDownloader,will check range and acceptRangeType
-     *
-     * @param url             url path
-     * @param range           data range
-     * @param acceptRangeType accept range type
-     */
-    public HttpDownloader(String url, Range range, String acceptRangeType) {
-        this(url, range, acceptRangeType, null);
-    }
+    //    /**
+    //     * constructor of HttpDownloader,will check range and acceptRangeType
+    //     *
+    //     * @param url             url path
+    //     * @param range           data range
+    //     * @param acceptRangeType accept range type
+    //     */
+    //    public HttpDownloader(String url, Range range, String acceptRangeType) {
+    //        this(url, range, acceptRangeType, null);
+    //    }
 
     /**
      * constructor of HttpDownloader,will check range,acceptRangeType and eTag
@@ -76,16 +79,30 @@ public class HttpDownloader implements Download {
     }
 
     /**
-     * set HttpDownloadListener
+     * set OnHttpDownloadListener
      *
-     * @param onHttpDownloadListener HttpDownloadListener
+     * @param onHttpDownloadListener OnHttpDownloadListener
      */
     public void setOnHttpDownloadListener(OnHttpDownloadListener onHttpDownloadListener) {
         this.mOnHttpDownloadListener = onHttpDownloadListener;
     }
 
+    /**
+     * set CloseConnectionEngine
+     *
+     * @param closeConnectionEngine CloseConnectionEngine
+     */
+    public void setCloseConnectionEngine(ExecutorService closeConnectionEngine) {
+        mCloseConnectionEngine = closeConnectionEngine;
+    }
+
+    /**
+     * if it throw HttpDownloadException,that means download data failed(error occur)
+     */
     @Override
     public void download() throws HttpDownloadException {
+
+        boolean hasException = true;
 
         String url = mUrl;// url
 
@@ -93,21 +110,27 @@ public class HttpDownloader implements Download {
         ContentLengthInputStream inputStream = null;
 
         try {
-            conn = HttpConnectionHelper.createDownloadFileConnection(url, mConnectTimeout, CHARSET, mRange);
+            conn = HttpConnectionHelper.createDownloadFileConnection(url, mConnectTimeout, mCharset, mRange);
 
-            int redirectCount = 0;
-            while (conn != null && conn.getResponseCode() / 100 == 3 && redirectCount < MAX_REDIRECT_COUNT) {
+            int redirectTimes = 0;
+            while (conn != null && conn.getResponseCode() / 100 == 3 && redirectTimes < MAX_REDIRECT_TIMES) {// redirect
                 conn = HttpConnectionHelper.createDownloadFileConnection(conn.getHeaderField("Location"), 
-                        mConnectTimeout, CHARSET, mRange);
-                redirectCount++;
+                        mConnectTimeout, mCharset, mRange);
+                redirectTimes++;
             }
 
-            Log.d(TAG, "download 1、准备下载，重定向：" + redirectCount + "次" + "，最大重定向次数：" + MAX_REDIRECT_COUNT + "，url：" + url);
+            Log.d(TAG, TAG + ".download 1、准备下载，重定向：" + redirectTimes + "次" + "，最大重定向次数：" + MAX_REDIRECT_TIMES +
+                    "，url：" + url);
 
-            if (redirectCount > MAX_REDIRECT_COUNT) {
-                // error over max redirect
-                throw new HttpDownloadException("over max redirect:" + MAX_REDIRECT_COUNT + "!", 
+            if (redirectTimes > MAX_REDIRECT_TIMES) {
+                // error over max redirect times
+                throw new HttpDownloadException("over max redirect:" + MAX_REDIRECT_TIMES + "!", 
                         HttpDownloadException.TYPE_REDIRECT_COUNT_OVER_LIMITS);
+            }
+
+            if (conn == null) {
+                throw new HttpDownloadException("the connection is null:" + MAX_REDIRECT_TIMES + "!", 
+                        HttpDownloadException.TYPE_NULL_POINTER);
             }
 
             // 1.check ResponseCode
@@ -119,13 +142,15 @@ public class HttpDownloader implements Download {
                 long contentLength = conn.getContentLength();
 
                 if (contentLength <= 0) {
+                    // get contentLength by header
                     String contentLengthStr = conn.getHeaderField("Content-Length");
                     if (!TextUtils.isEmpty(contentLengthStr)) {
                         contentLength = Long.parseLong(contentLengthStr);
                     }
                 }
 
-                Log.d(TAG, "download 2、得到服务器返回的资源contentLength：" + contentLength + "，传入的range：" + mRange.toString() +
+                Log.d(TAG, TAG + ".download 2、得到服务器返回的资源contentLength：" + contentLength + "，传入的range：" + mRange
+                        .toString() +
                         "，url：" + url);
 
                 if (contentLength <= 0) {
@@ -138,26 +163,24 @@ public class HttpDownloader implements Download {
                 if (!TextUtils.isEmpty(mETag)) {
                     String eTag = conn.getHeaderField("ETag");
 
-                    Log.d(TAG, "download 3、得到服务器返回的资源eTag：" + eTag + "，传入的eTag：" + mETag + "，url：" + url);
+                    Log.d(TAG, TAG + ".download 3、得到服务器返回的资源eTag：" + eTag + "，传入的eTag：" + mETag + "，url：" + url);
 
                     if (TextUtils.isEmpty(eTag) || !mETag.equals(eTag)) {
                         // error eTag is not equal
-                        throw new HttpDownloadException("eTag is not equal,please re-download!", 
-                                HttpDownloadException.TYPE_ETAG_CHANGED);
+                        throw new HttpDownloadException("eTag is not equal,please delete the old one then " + 
+                                "re-download!", HttpDownloadException.TYPE_ETAG_CHANGED);
                     }
                 }
 
-                // range is illegal,that means need download whole file from range 0 to file size
+                // range is illegal,that means it need download whole file from range 0 to file size
                 if (!Range.isLegal(mRange) || (mRange != null && mRange.getLength() > contentLength)) {
-                    mRange = new Range(0, contentLength);// FIXME whether need to notify range change?
+                    mRange = new Range(0, contentLength);// FIXME whether need to notify caller the range change?
                 }
-                // use range to continue download
+                // use custom range to continue download
                 else {
                     // 4.check contentRange and acceptRangeType
                     if (mRange != null && !TextUtils.isEmpty(mAcceptRangeType)) {
-
                         boolean isRangeValidateSucceed = false;
-
                         String contentRange = conn.getHeaderField("Content-Range");
                         // get ContentRange
                         ContentRangeInfo contentRangeInfo = ContentRangeInfo.getContentRangeInfo(contentRange);
@@ -180,11 +203,11 @@ public class HttpDownloader implements Download {
 
                 // get server InputStream
                 InputStream serverInputStream = conn.getInputStream();
-
-                // wrap serverInputStream
+                // wrap serverInputStream by ContentLengthInputStream
                 inputStream = new ContentLengthInputStream(serverInputStream, contentLength);
 
-                Log.d(TAG, "download 4、准备处理数据，获取服务器返回的资源长度为：" + contentLength + "，获取服务器返回的输入流长度为：" + inputStream.getLength() + "，需要处理的区域为：" + mRange.toString() + "，url：" + url);
+                Log.d(TAG, TAG + ".download 4、准备处理数据，获取服务器返回的资源长度为：" + contentLength + "，获取服务器返回的输入流长度为：" +
+                        inputStream.available() + "，需要处理的区域为：" + mRange.toString() + "，url：" + url);
 
                 // notifyDownloadConnected
                 notifyDownloadConnected(inputStream, mRange.startPos);
@@ -192,19 +215,14 @@ public class HttpDownloader implements Download {
             // ResponseCode error
             else {
                 // error ResponseCode error
-                throw new HttpDownloadException("ResponseCode:" + responseCode + " error,can not read data!", 
+                throw new HttpDownloadException("ResponseCode:" + responseCode + " error,can not read server data!", 
                         HttpDownloadException.TYPE_RESPONSE_CODE_ERROR);
             }
+            hasException = false;
         } catch (Exception e) {
             e.printStackTrace();
-            // network timeout
-            if (e instanceof SocketTimeoutException || e.getCause() instanceof SocketTimeoutException) {
-                // error network timeout
-                throw new HttpDownloadException("network timeout!", e, HttpDownloadException.TYPE_NETWORK_TIMEOUT);
-            } else if (e instanceof ConnectException || e instanceof UnknownHostException) {
-                // error network denied
-                throw new HttpDownloadException("network denied!", e, HttpDownloadException.TYPE_NETWORK_DENIED);
-            } else if (e instanceof HttpDownloadException) {
+            hasException = true;
+            if (e instanceof HttpDownloadException) {
                 // HttpDownloadException
                 throw (HttpDownloadException) e;
             } else {
@@ -212,20 +230,15 @@ public class HttpDownloader implements Download {
                 throw new HttpDownloadException(e);
             }
         } finally {
-            // close inputStream
-            if (inputStream != null) {
-                try {
-                    inputStream.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-            // close connection
-            if (conn != null) {
-                conn.disconnect();
+            // close inputStream & url connection
+            CloseConnectionTask closeConnectionTask = new CloseConnectionTask(conn, inputStream);
+            if (mCloseConnectionEngine != null) {
+                mCloseConnectionEngine.execute(closeConnectionTask);
+            } else {
+                closeConnectionTask.run();
             }
 
-            Log.d(TAG, "download 5、下载已结束" + "，url：" + url);
+            Log.d(TAG, TAG + ".download 5、文件下载【已结束】，是否有异常：" + hasException + "，url：" + url);
         }
 
     }
@@ -240,12 +253,9 @@ public class HttpDownloader implements Download {
     /**
      * HttpDownloadException
      */
-    public static class HttpDownloadException extends FailException {
-
-        private static final long serialVersionUID = -1264975040094495002L;
-
+    public static class HttpDownloadException extends HttpFailReason {
         /**
-         * http redirect count over limits
+         * http redirect times over limits
          */
         public static final String TYPE_REDIRECT_COUNT_OVER_LIMITS = HttpDownloadException.class.getName() + 
                 "_TYPE_REDIRECT_COUNT_OVER_LIMITS";
@@ -255,7 +265,7 @@ public class HttpDownloader implements Download {
         public static final String TYPE_RESOURCES_SIZE_ILLEGAL = HttpDownloadException.class.getName() + 
                 "_TYPE_RESOURCES_SIZE_ILLEGAL";
         /**
-         * eTag is not equal
+         * eTag changed
          */
         public static final String TYPE_ETAG_CHANGED = HttpDownloadException.class.getName() + "_TYPE_ETAG_CHANGED";
         /**
@@ -264,26 +274,13 @@ public class HttpDownloader implements Download {
         public static final String TYPE_CONTENT_RANGE_VALIDATE_FAIL = HttpDownloadException.class.getName() + 
                 "_TYPE_CONTENT_RANGE_VALIDATE_FAIL";
         /**
-         * ResponseCode error,can not read data
+         * ResponseCode error,can not read server data
          */
         public static final String TYPE_RESPONSE_CODE_ERROR = HttpDownloadException.class.getName() + 
                 "_TYPE_RESPONSE_CODE_ERROR";
-        /**
-         * network timeout
-         */
-        public static final String TYPE_NETWORK_TIMEOUT = HttpDownloadException.class.getName() + 
-                "_TYPE_NETWORK_TIMEOUT";
-        /**
-         * network denied
-         */
-        public static final String TYPE_NETWORK_DENIED = HttpDownloadException.class.getName() + "_TYPE_NETWORK_DENIED";
 
         public HttpDownloadException(String detailMessage, String type) {
             super(detailMessage, type);
-        }
-
-        public HttpDownloadException(String detailMessage, Throwable throwable, String type) {
-            super(detailMessage, throwable, type);
         }
 
         public HttpDownloadException(Throwable throwable) {
@@ -291,15 +288,30 @@ public class HttpDownloader implements Download {
         }
 
         @Override
-        protected void onInitTypeWithThrowable(Throwable throwable) {
-            super.onInitTypeWithThrowable(throwable);
+        protected void onInitTypeWithFailReason(FailReason failReason) {
+            super.onInitTypeWithFailReason(failReason);
 
-            if (isTypeInit() || throwable == null) {
+            if (failReason == null) {
                 return;
             }
 
-            if (throwable instanceof SocketTimeoutException) {
-                setType(TYPE_NETWORK_TIMEOUT);
+            // other FailReason exceptions that need cast to HttpDownloadException
+
+            // cast FileSaveException
+            if (failReason instanceof FileSaveException) {
+
+                FileSaveException fileSaveException = (FileSaveException) failReason;
+                String type = fileSaveException.getType();
+
+                if (FileSaveException.TYPE_FILE_CAN_NOT_STORAGE.equals(type)) {
+                    // ignore
+                } else if (FileSaveException.TYPE_RENAME_TEMP_FILE_ERROR.equals(type)) {
+                    // ignore
+                } else if (FileSaveException.TYPE_SAVER_HAS_BEEN_STOPPED.equals(type)) {
+                    // ignore
+                } else if (FileSaveException.TYPE_TEMP_FILE_DOES_NOT_EXIST.equals(type)) {
+                    // ignore
+                }
             }
         }
     }

@@ -6,6 +6,7 @@ import android.util.Log;
 import org.wlf.filedownloader.base.Control;
 import org.wlf.filedownloader.base.Status;
 import org.wlf.filedownloader.file_delete.DownloadDeleteManager;
+import org.wlf.filedownloader.file_download.DownloadStatusConfiguration;
 import org.wlf.filedownloader.file_download.DownloadTaskManager;
 import org.wlf.filedownloader.file_download.DownloadTaskManager.OnReleaseListener;
 import org.wlf.filedownloader.file_move.DownloadMoveManager;
@@ -16,7 +17,7 @@ import org.wlf.filedownloader.listener.OnDetectBigUrlFileListener;
 import org.wlf.filedownloader.listener.OnDetectUrlFileListener;
 import org.wlf.filedownloader.listener.OnDownloadFileChangeListener;
 import org.wlf.filedownloader.listener.OnFileDownloadStatusListener;
-import org.wlf.filedownloader.listener.OnFileDownloadStatusListener2;
+import org.wlf.filedownloader.listener.OnBigFileDownloadStatusListener;
 import org.wlf.filedownloader.listener.OnMoveDownloadFileListener;
 import org.wlf.filedownloader.listener.OnMoveDownloadFilesListener;
 import org.wlf.filedownloader.listener.OnRenameDownloadFileListener;
@@ -134,7 +135,7 @@ public final class FileDownloadManager {
             String url = downloadFileInfo.getUrl();
 
             // initialized and in the download task,ignore
-            if (isInit() && getDownloadTaskManager().isInFileDownloadTaskMap(url)) {
+            if (isInit() && getDownloadTaskManager().isDownloading(url)) {
                 continue;
             }
             // check
@@ -340,7 +341,7 @@ public final class FileDownloadManager {
      * register an OnFileDownloadStatusListener
      *
      * @param onFileDownloadStatusListener OnFileDownloadStatusListener,recommend to use {@link
-     *                                     OnFileDownloadStatusListener2} instead to support retrying download status
+     *                                     OnBigFileDownloadStatusListener} instead to support retrying download status
      * @since 0.2.0
      */
     void registerDownloadStatusListener(OnFileDownloadStatusListener onFileDownloadStatusListener) {
@@ -348,14 +349,41 @@ public final class FileDownloadManager {
     }
 
     /**
+     * register an OnFileDownloadStatusListener
+     *
+     * @param onFileDownloadStatusListener OnFileDownloadStatusListener,recommend to use {@link
+     *                                     OnBigFileDownloadStatusListener} instead to support retrying download status
+     * @param downloadStatusConfiguration  Configuration for FileDownloadStatusListener
+     * @since 0.3.0
+     */
+    public void registerDownloadStatusListener(OnFileDownloadStatusListener onFileDownloadStatusListener, 
+                                               DownloadStatusConfiguration downloadStatusConfiguration) {
+        getDownloadTaskManager().registerDownloadStatusListener(onFileDownloadStatusListener, 
+                downloadStatusConfiguration);
+    }
+
+    /**
      * unregister an OnFileDownloadStatusListener
      *
      * @param onFileDownloadStatusListener OnFileDownloadStatusListener,recommend to use {@link
-     *                                     OnFileDownloadStatusListener2} instead to support retrying download status
+     *                                     OnBigFileDownloadStatusListener} instead to support retrying download status
      * @since 0.2.0
      */
     void unregisterDownloadStatusListener(OnFileDownloadStatusListener onFileDownloadStatusListener) {
         getDownloadTaskManager().unregisterDownloadStatusListener(onFileDownloadStatusListener);
+    }
+
+    /**
+     * register a DownloadFileChangeListener
+     *
+     * @param onDownloadFileChangeListener    the OnDownloadFileChangeListener impl
+     * @param downloadFileChangeConfiguration the Configuration for the DownloadFileChangeListener
+     * @since 0.3.0
+     */
+     void registerDownloadFileChangeListener(OnDownloadFileChangeListener onDownloadFileChangeListener, 
+                                                   DownloadFileChangeConfiguration downloadFileChangeConfiguration) {
+        mDownloadFileCacher.registerDownloadFileChangeListener(onDownloadFileChangeListener, 
+                downloadFileChangeConfiguration);
     }
 
     /**
@@ -420,7 +448,8 @@ public final class FileDownloadManager {
     @Deprecated
     public void createAndStart(String url, String saveDir, String fileName, OnFileDownloadStatusListener 
             onFileDownloadStatusListener) {
-        getDownloadTaskManager().createAndStart(url, saveDir, fileName, onFileDownloadStatusListener);
+        registerDownloadStatusListener(onFileDownloadStatusListener);
+        createAndStart(url, saveDir, fileName);
     }
 
     /**
@@ -445,7 +474,8 @@ public final class FileDownloadManager {
      */
     @Deprecated
     public void start(String url, OnFileDownloadStatusListener onFileDownloadStatusListener) {
-        getDownloadTaskManager().start(url, onFileDownloadStatusListener);
+        registerDownloadStatusListener(onFileDownloadStatusListener);
+        start(url);
     }
 
     /**
@@ -467,7 +497,8 @@ public final class FileDownloadManager {
      */
     @Deprecated
     public void start(List<String> urls, OnFileDownloadStatusListener onFileDownloadStatusListener) {
-        getDownloadTaskManager().start(urls, onFileDownloadStatusListener);
+        registerDownloadStatusListener(onFileDownloadStatusListener);
+        start(urls);
     }
 
     // --------------------------------------pause download--------------------------------------
@@ -494,7 +525,7 @@ public final class FileDownloadManager {
      * pause all download
      */
     public void pauseAll() {
-        getDownloadTaskManager().pauseAll(null, null);
+        getDownloadTaskManager().pauseAll(null);
     }
 
     // --------------------------------------restart download--------------------------------------
@@ -521,7 +552,8 @@ public final class FileDownloadManager {
      */
     @Deprecated
     public void reStart(String url, OnFileDownloadStatusListener onFileDownloadStatusListener) {
-        getDownloadTaskManager().reStart(url, onFileDownloadStatusListener);
+        registerDownloadStatusListener(onFileDownloadStatusListener);
+        reStart(url);
     }
 
     /**
@@ -546,7 +578,8 @@ public final class FileDownloadManager {
      */
     @Deprecated
     public void reStart(List<String> urls, OnFileDownloadStatusListener onFileDownloadStatusListener) {
-        getDownloadTaskManager().reStart(urls, onFileDownloadStatusListener);
+        registerDownloadStatusListener(onFileDownloadStatusListener);
+        reStart(urls);
     }
 
     // --------------------------------------move download--------------------------------------

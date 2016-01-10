@@ -3,13 +3,14 @@ package org.wlf.filedownloader;
 import android.content.Context;
 
 import org.wlf.filedownloader.base.Control;
+import org.wlf.filedownloader.file_download.DownloadStatusConfiguration;
 import org.wlf.filedownloader.listener.OnDeleteDownloadFileListener;
 import org.wlf.filedownloader.listener.OnDeleteDownloadFilesListener;
 import org.wlf.filedownloader.listener.OnDetectBigUrlFileListener;
 import org.wlf.filedownloader.listener.OnDetectUrlFileListener;
 import org.wlf.filedownloader.listener.OnDownloadFileChangeListener;
 import org.wlf.filedownloader.listener.OnFileDownloadStatusListener;
-import org.wlf.filedownloader.listener.OnFileDownloadStatusListener2;
+import org.wlf.filedownloader.listener.OnBigFileDownloadStatusListener;
 import org.wlf.filedownloader.listener.OnMoveDownloadFileListener;
 import org.wlf.filedownloader.listener.OnMoveDownloadFilesListener;
 import org.wlf.filedownloader.listener.OnRenameDownloadFileListener;
@@ -130,7 +131,7 @@ public final class FileDownloader {
      * register an OnFileDownloadStatusListener
      *
      * @param onFileDownloadStatusListener OnFileDownloadStatusListener,recommend to use {@link
-     *                                     OnFileDownloadStatusListener2} instead to support retrying download status
+     *                                     OnBigFileDownloadStatusListener} instead to support retrying download status
      * @see FileDownloadManager#registerDownloadStatusListener(OnFileDownloadStatusListener)
      */
     public static void registerDownloadStatusListener(OnFileDownloadStatusListener onFileDownloadStatusListener) {
@@ -138,10 +139,25 @@ public final class FileDownloader {
     }
 
     /**
+     * register an OnFileDownloadStatusListener
+     *
+     * @param onFileDownloadStatusListener OnFileDownloadStatusListener,recommend to use {@link
+     *                                     OnBigFileDownloadStatusListener} instead to support retrying download status
+     * @param downloadStatusConfiguration  Configuration for FileDownloadStatusListener
+     * @see FileDownloadManager#registerDownloadStatusListener(OnFileDownloadStatusListener,
+     * DownloadStatusConfiguration)
+     */
+    public static void registerDownloadStatusListener(OnFileDownloadStatusListener onFileDownloadStatusListener, 
+                                                      DownloadStatusConfiguration downloadStatusConfiguration) {
+        getFileDownloadManager().registerDownloadStatusListener(onFileDownloadStatusListener, 
+                downloadStatusConfiguration);
+    }
+
+    /**
      * unregister an OnFileDownloadStatusListener
      *
      * @param onFileDownloadStatusListener OnFileDownloadStatusListener,recommend to use {@link
-     *                                     OnFileDownloadStatusListener2} instead to support retrying download status
+     *                                     OnBigFileDownloadStatusListener} instead to support retrying download status
      * @see FileDownloadManager#unregisterDownloadStatusListener(OnFileDownloadStatusListener)
      */
     public static void unregisterDownloadStatusListener(OnFileDownloadStatusListener onFileDownloadStatusListener) {
@@ -156,6 +172,19 @@ public final class FileDownloader {
      */
     public static void registerDownloadFileChangeListener(OnDownloadFileChangeListener onDownloadFileChangeListener) {
         getFileDownloadManager().registerDownloadFileChangeListener(onDownloadFileChangeListener);
+    }
+
+    /**
+     * register a DownloadFileChangeListener
+     *
+     * @param onDownloadFileChangeListener    the OnDownloadFileChangeListener impl
+     * @param downloadFileChangeConfiguration the Configuration for the DownloadFileChangeListener
+     * @since 0.3.0
+     */
+    public void registerDownloadFileChangeListener(OnDownloadFileChangeListener onDownloadFileChangeListener, 
+                                                   DownloadFileChangeConfiguration downloadFileChangeConfiguration) {
+        getFileDownloadManager().registerDownloadFileChangeListener(onDownloadFileChangeListener, 
+                downloadFileChangeConfiguration);
     }
 
     /**

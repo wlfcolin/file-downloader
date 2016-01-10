@@ -54,7 +54,7 @@ public interface OnRenameDownloadFileListener {
             if (onRenameDownloadFileListener == null) {
                 return;
             }
-            final Handler handler = new Handler(Looper.getMainLooper());
+            Handler handler = new Handler(Looper.getMainLooper());
             handler.post(new Runnable() {
                 @Override
                 public void run() {
@@ -62,7 +62,6 @@ public interface OnRenameDownloadFileListener {
                         return;
                     }
                     onRenameDownloadFileListener.onRenameDownloadFilePrepared(downloadFileNeedRename);
-                    handler.removeCallbacksAndMessages(null);
                 }
             });
         }
@@ -77,7 +76,7 @@ public interface OnRenameDownloadFileListener {
             if (onRenameDownloadFileListener == null) {
                 return;
             }
-            final Handler handler = new Handler(Looper.getMainLooper());
+            Handler handler = new Handler(Looper.getMainLooper());
             handler.post(new Runnable() {
                 @Override
                 public void run() {
@@ -85,7 +84,6 @@ public interface OnRenameDownloadFileListener {
                         return;
                     }
                     onRenameDownloadFileListener.onRenameDownloadFileSuccess(downloadFileRenamed);
-                    handler.removeCallbacksAndMessages(null);
                 }
             });
         }
@@ -96,11 +94,12 @@ public interface OnRenameDownloadFileListener {
          * @param downloadFileInfo download files needed to rename
          * @param failReason       fail reason
          */
-        public static void onRenameDownloadFileFailed(final DownloadFileInfo downloadFileInfo, final RenameDownloadFileFailReason failReason, final OnRenameDownloadFileListener onRenameDownloadFileListener) {
+        public static void onRenameDownloadFileFailed(final DownloadFileInfo downloadFileInfo, final 
+        RenameDownloadFileFailReason failReason, final OnRenameDownloadFileListener onRenameDownloadFileListener) {
             if (onRenameDownloadFileListener == null) {
                 return;
             }
-            final Handler handler = new Handler(Looper.getMainLooper());
+            Handler handler = new Handler(Looper.getMainLooper());
             handler.post(new Runnable() {
                 @Override
                 public void run() {
@@ -108,7 +107,6 @@ public interface OnRenameDownloadFileListener {
                         return;
                     }
                     onRenameDownloadFileListener.onRenameDownloadFileFailed(downloadFileInfo, failReason);
-                    handler.removeCallbacksAndMessages(null);
                 }
             });
         }
@@ -137,9 +135,6 @@ public interface OnRenameDownloadFileListener {
      */
     public static class RenameDownloadFileFailReason extends FailReason {
 
-        private static final long serialVersionUID = 4959079784745889291L;
-
-
         /**
          * the download file is not exist
          */
@@ -158,7 +153,8 @@ public interface OnRenameDownloadFileListener {
         /**
          * file status error,can not rename
          */
-        public static final String TYPE_FILE_STATUS_ERROR = RenameDownloadFileFailReason.class.getName() + "_TYPE_FILE_STATUS_ERROR";
+        public static final String TYPE_FILE_STATUS_ERROR = RenameDownloadFileFailReason.class.getName() + 
+                "_TYPE_FILE_STATUS_ERROR";
         /**
          * the new file has been exist
          */
@@ -171,12 +167,6 @@ public interface OnRenameDownloadFileListener {
 
         public RenameDownloadFileFailReason(Throwable throwable) {
             super(throwable);
-        }
-
-        @Override
-        protected void onInitTypeWithThrowable(Throwable throwable) {
-            super.onInitTypeWithThrowable(throwable);
-            // TODO
         }
     }
 }
