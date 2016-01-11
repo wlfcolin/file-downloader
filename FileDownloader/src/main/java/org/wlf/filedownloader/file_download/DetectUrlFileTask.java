@@ -100,7 +100,7 @@ class DetectUrlFileTask implements Runnable {
                 redirectCount++;
             }
 
-            Log.d(TAG, "DetectUrlFileTask.run 探测文件，重定向：" + redirectCount + "次" + "，最大重定向次数：" + MAX_REDIRECT_TIMES +
+            Log.d(TAG, TAG + ".run 探测文件，重定向：" + redirectCount + "次" + "，最大重定向次数：" + MAX_REDIRECT_TIMES +
                     "，url：" + mUrl);
 
             if (redirectCount > MAX_REDIRECT_TIMES) {
@@ -167,20 +167,13 @@ class DetectUrlFileTask implements Runnable {
 
             if (downloadFileInfo != null) {
                 // 1.in the download file database,notify
-                if (mOnDetectUrlFileListener != null) {
-                    OnDetectUrlFileListener.MainThreadHelper.onDetectUrlFileExist(mUrl, mOnDetectUrlFileListener);
-                }
-                isNotify = true;
+                isNotify = notifyDetectUrlFileExist();
             }
 
             if (!isNotify && detectUrlFileInfo != null) {
                 // 2.need to create download file
-                if (mOnDetectUrlFileListener != null) {
-                    OnDetectUrlFileListener.MainThreadHelper.onDetectNewDownloadFile(mUrl, detectUrlFileInfo
-                            .getFileName(), mDownloadSaveDir, detectUrlFileInfo.getFileSizeLong(), 
-                            mOnDetectUrlFileListener);
-                }
-                isNotify = true;
+                isNotify = notifyDetectNewDownloadFile(detectUrlFileInfo.getFileName(), detectUrlFileInfo.getFileDir
+                        (), detectUrlFileInfo.getFileSizeLong());
             }
 
             if (!isNotify) {
@@ -189,12 +182,43 @@ class DetectUrlFileTask implements Runnable {
                             DetectUrlFileFailReason.TYPE_UNKNOWN);
                 }
                 // 2.error
-                if (mOnDetectUrlFileListener != null) {
-                    OnDetectUrlFileListener.MainThreadHelper.onDetectUrlFileFailed(mUrl, failReason, 
-                            mOnDetectUrlFileListener);
-                }
-                isNotify = true;
+                isNotify = notifyDetectUrlFileFailed(failReason);
             }
         }
+    }
+
+    private boolean notifyDetectUrlFileExist() {
+
+        Log.d(TAG, "探测文件已存在，url：" + mUrl);
+
+        // notify caller
+        if (mOnDetectUrlFileListener != null) {
+            OnDetectUrlFileListener.MainThreadHelper.onDetectUrlFileExist(mUrl, mOnDetectUrlFileListener);
+            return true;
+        }
+        return false;
+    }
+
+    private boolean notifyDetectNewDownloadFile(String fileName, String saveDir, long fileSize) {
+
+        Log.d(TAG, "探测文件不存在，需要创建，url：" + mUrl);
+
+        if (mOnDetectUrlFileListener != null) {
+            OnDetectUrlFileListener.MainThreadHelper.onDetectNewDownloadFile(mUrl, fileName, saveDir, fileSize, 
+                    mOnDetectUrlFileListener);
+            return true;
+        }
+        return false;
+    }
+
+    private boolean notifyDetectUrlFileFailed(DetectUrlFileFailReason failReason) {
+
+        Log.d(TAG, "探测文件失败，url：" + mUrl);
+
+        if (mOnDetectUrlFileListener != null) {
+            OnDetectUrlFileListener.MainThreadHelper.onDetectUrlFileFailed(mUrl, failReason, mOnDetectUrlFileListener);
+            return true;
+        }
+        return false;
     }
 }

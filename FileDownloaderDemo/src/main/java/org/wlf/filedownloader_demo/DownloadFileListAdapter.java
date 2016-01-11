@@ -23,7 +23,7 @@ import android.widget.Toast;
 import org.wlf.filedownloader.DownloadFileInfo;
 import org.wlf.filedownloader.FileDownloader;
 import org.wlf.filedownloader.base.Status;
-import org.wlf.filedownloader.listener.OnBigFileDownloadStatusListener;
+import org.wlf.filedownloader.listener.OnRetryableFileDownloadStatusListener;
 import org.wlf.filedownloader.util.FileUtil;
 import org.wlf.filedownloader_demo.util.ApkUtil;
 import org.wlf.filedownloader_demo.util.TimeUtil;
@@ -42,12 +42,12 @@ import java.util.Map;
  * @author wlf(Andy)
  * @email 411086563@qq.com
  */
-public class DownloadBigFileListAdapter extends BaseAdapter implements OnBigFileDownloadStatusListener {
+public class DownloadFileListAdapter extends BaseAdapter implements OnRetryableFileDownloadStatusListener {
 
     /**
      * LOG TAG
      */
-    private static final String TAG = DownloadBigFileListAdapter.class.getSimpleName();
+    private static final String TAG = DownloadFileListAdapter.class.getSimpleName();
 
     // all download infos
     private List<DownloadFileInfo> mDownloadFileInfos = Collections.synchronizedList(new ArrayList<DownloadFileInfo>());
@@ -62,7 +62,7 @@ public class DownloadBigFileListAdapter extends BaseAdapter implements OnBigFile
 
     private OnItemSelectListener mOnItemSelectListener;
 
-    public DownloadBigFileListAdapter(Activity activity) {
+    public DownloadFileListAdapter(Activity activity) {
         super();
         this.mActivity = activity;
         initDownloadFileInfos();
@@ -628,8 +628,32 @@ public class DownloadBigFileListAdapter extends BaseAdapter implements OnBigFile
     public void onFileDownloadStatusFailed(String url, DownloadFileInfo downloadFileInfo, 
                                            FileDownloadStatusFailReason failReason) {
 
+        String msg = mActivity.getString(R.string.main__download_error);
+
+        if (failReason != null) {
+            if (FileDownloadStatusFailReason.TYPE_NETWORK_DENIED.equals(failReason.getType())) {
+                msg += mActivity.getString(R.string.main__check_network);
+            } else if (FileDownloadStatusFailReason.TYPE_URL_ILLEGAL.equals(failReason.getType())) {
+                msg = mActivity.getString(R.string.main__url_illegal);
+            } else if (FileDownloadStatusFailReason.TYPE_NETWORK_TIMEOUT.equals(failReason.getType())) {
+                msg = mActivity.getString(R.string.main__network_timeout);
+            } else if (FileDownloadStatusFailReason.TYPE_STORAGE_SPACE_IS_FULL.equals(failReason.getType())) {
+                msg =  mActivity.getString(R.string.main__storage_space_is_full);
+            } else if (FileDownloadStatusFailReason.TYPE_STORAGE_SPACE_CAN_NOT_WRITE.equals(failReason.getType())) {
+                msg =  mActivity.getString(R.string.main__storage_space_can_not_write);
+            } else if (FileDownloadStatusFailReason.TYPE_FILE_NOT_DETECT.equals(failReason.getType())) {
+                msg =  mActivity.getString(R.string.main__file_not_detect);
+            } else if (FileDownloadStatusFailReason.TYPE_BAD_HTTP_RESPONSE_CODE.equals(failReason.getType())) {
+                msg =  mActivity.getString(R.string.main__http_bad_response_code);
+            } else if (FileDownloadStatusFailReason.TYPE_HTTP_FILE_NOT_EXIST.equals(failReason.getType())) {
+                msg =  mActivity.getString(R.string.main__http_file_not_exist);
+            } else if (FileDownloadStatusFailReason.TYPE_SAVE_FILE_NOT_EXIST.equals(failReason.getType())) {
+                msg =  mActivity.getString(R.string.main__save_file_not_exist);
+            } 
+        }
+
         if (downloadFileInfo == null) {
-            //
+            showToast(msg);
             return;
         }
 
@@ -640,26 +664,8 @@ public class DownloadBigFileListAdapter extends BaseAdapter implements OnBigFile
             LinearLayout lnlyDownloadItem = (LinearLayout) cacheConvertView.findViewById(R.id.lnlyDownloadItem);
             TextView tvText = (TextView) cacheConvertView.findViewById(R.id.tvText);
 
-            String msg = cacheConvertView.getContext().getString(R.string.main__download_error);
-
-            if (failReason != null) {
-                if (FileDownloadStatusFailReason.TYPE_NETWORK_DENIED.equals(failReason.getType())) {
-                    msg += cacheConvertView.getContext().getString(R.string.main__check_network);
-                    tvText.setText(msg);
-                } else if (FileDownloadStatusFailReason.TYPE_FILE_IS_DOWNLOADING.equals(failReason.getType())) {
-                    msg = downloadFileInfo.getFileName() + cacheConvertView.getContext().getString(R.string
-                            .main__downloading);
-                    showToast(msg);
-                } else if (FileDownloadStatusFailReason.TYPE_URL_ILLEGAL.equals(failReason.getType())) {
-                    msg = cacheConvertView.getContext().getString(R.string.main__url_illegal);
-                    showToast(msg);
-                } else if (FileDownloadStatusFailReason.TYPE_NETWORK_TIMEOUT.equals(failReason.getType())) {
-                    msg = cacheConvertView.getContext().getString(R.string.main__network_timeout);
-                    showToast(msg);
-                }
-            }
-
             tvText.setText(msg);
+            showToast(msg);
 
             setBackgroundOnClickListener(lnlyDownloadItem, downloadFileInfo);
 

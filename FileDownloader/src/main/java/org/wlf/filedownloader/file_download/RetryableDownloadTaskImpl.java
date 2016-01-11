@@ -10,7 +10,7 @@ import org.wlf.filedownloader.file_download.OnStopFileDownloadTaskListener.StopD
 import org.wlf.filedownloader.file_download.base.DownloadRecorder;
 import org.wlf.filedownloader.file_download.base.RetryableDownloadTask;
 import org.wlf.filedownloader.listener.OnFileDownloadStatusListener;
-import org.wlf.filedownloader.listener.OnBigFileDownloadStatusListener;
+import org.wlf.filedownloader.listener.OnRetryableFileDownloadStatusListener;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -59,11 +59,14 @@ class RetryableDownloadTaskImpl implements RetryableDownloadTask, OnFileDownload
      * @param taskParamInfo
      * @param downloadRecorder
      */
-    public RetryableDownloadTaskImpl(FileDownloadTaskParam taskParamInfo, DownloadRecorder downloadRecorder) {
+    public RetryableDownloadTaskImpl(FileDownloadTaskParam taskParamInfo, DownloadRecorder downloadRecorder, 
+                                     OnFileDownloadStatusListener onFileDownloadStatusListener) {
         super();
 
         this.mOriginalTaskParamInfo = taskParamInfo;
         this.mDownloadRecorder = downloadRecorder;
+        // listener init here because it is need to use in constructor
+        this.mOnFileDownloadStatusListener = onFileDownloadStatusListener;
 
         mIsTaskStop = false;
 
@@ -73,6 +76,10 @@ class RetryableDownloadTaskImpl implements RetryableDownloadTask, OnFileDownload
         if (mFileDownloadTaskImpl == null || mFileDownloadTaskImpl.isStopped()) {
             // stop self
             stop();
+            DownloadTaskImpl.FinishState finishStateInternal = mFileDownloadTaskImpl.getFinishState();
+            if (finishStateInternal != null) {
+                mFinishState = new FinishState(finishStateInternal.getStatus(), finishStateInternal.getFailReason());
+            }
             // finish
             notifyTaskFinish();
             return;
@@ -84,18 +91,8 @@ class RetryableDownloadTaskImpl implements RetryableDownloadTask, OnFileDownload
                 - mRecordedSize, mOriginalTaskParamInfo.fileTotalSize, mOriginalTaskParamInfo.eTag, 
                 mOriginalTaskParamInfo.
                 acceptRangeType, mOriginalTaskParamInfo.tempFilePath, mOriginalTaskParamInfo.filePath);
-        mFileDownloadTaskImpl = new DownloadTaskImpl(mTaskParamInfo, mDownloadRecorder);
-        mFileDownloadTaskImpl.setOnFileDownloadStatusListener(this);
+        mFileDownloadTaskImpl = new DownloadTaskImpl(mTaskParamInfo, mDownloadRecorder, this);
         mFileDownloadTaskImpl.setCloseConnectionEngine(mCloseConnectionEngine);
-    }
-
-    /**
-     * set OnFileDownloadStatusListener
-     *
-     * @param onFileDownloadStatusListener OnFileDownloadStatusListener
-     */
-    public void setOnFileDownloadStatusListener(OnFileDownloadStatusListener onFileDownloadStatusListener) {
-        mOnFileDownloadStatusListener = onFileDownloadStatusListener;
     }
 
     @Override
@@ -148,12 +145,13 @@ class RetryableDownloadTaskImpl implements RetryableDownloadTask, OnFileDownload
     private boolean notifyStatusRetrying() {
         try {
             // if OnFileDownloadStatusListener2,notify retrying
-            if (mOnFileDownloadStatusListener instanceof OnBigFileDownloadStatusListener) {
-                OnBigFileDownloadStatusListener onBigFileDownloadStatusListener = (OnBigFileDownloadStatusListener) 
-                        mOnFileDownloadStatusListener;
+            if (mOnFileDownloadStatusListener instanceof OnRetryableFileDownloadStatusListener) {
+                OnRetryableFileDownloadStatusListener onRetryableFileDownloadStatusListener = 
+                        (OnRetryableFileDownloadStatusListener) mOnFileDownloadStatusListener;
                 mDownloadRecorder.recordStatus(mTaskParamInfo.url, Status.DOWNLOAD_STATUS_RETRYING, 0);
-                if (onBigFileDownloadStatusListener != null) {
-                    onBigFileDownloadStatusListener.onFileDownloadStatusRetrying(getDownloadFile(), mHasRetriedTimes);
+                if (onRetryableFileDownloadStatusListener != null) {
+                    onRetryableFileDownloadStatusListener.onFileDownloadStatusRetrying(getDownloadFile(), 
+                            mHasRetriedTimes);
                 }
 
                 Log.i(TAG, "file-downloader-status 记录【重试状态】成功，url：" + mTaskParamInfo.url);
@@ -384,6 +382,8 @@ class RetryableDownloadTaskImpl implements RetryableDownloadTask, OnFileDownload
                 if (mIsTaskStop) {
                     // stop internal impl
                     stopInternalImpl();
+                    // clear the error status
+                    mFinishState = new FinishState(Status.DOWNLOAD_STATUS_PAUSED, null);
                     // goto finally,notifyTaskFinish()
                     return;
                 } else {

@@ -19,6 +19,7 @@ import org.wlf.filedownloader.listener.OnDownloadFileChangeListener;
 import org.wlf.filedownloader.listener.OnDownloadFileChangeListener.Type;
 import org.wlf.filedownloader.util.CollectionUtil;
 import org.wlf.filedownloader.util.ContentValuesUtil;
+import org.wlf.filedownloader.util.DownloadFileUtil;
 import org.wlf.filedownloader.util.FileUtil;
 import org.wlf.filedownloader.util.MapUtil;
 import org.wlf.filedownloader.util.UrlUtil;
@@ -110,7 +111,7 @@ public class DownloadCacher implements DownloadRecorder, DownloadFileMover, Down
 
         // cache in memory
         for (DownloadFileInfo downloadFileInfo : downloadFileInfos) {
-            if (downloadFileInfo == null) {
+            if (!DownloadFileUtil.isLegal(downloadFileInfo)) {
                 continue;
             }
             synchronized (mModifyLock) {// lock
@@ -121,7 +122,7 @@ public class DownloadCacher implements DownloadRecorder, DownloadFileMover, Down
 
     private boolean addDownloadFile(DownloadFileInfo downloadFileInfo) {
 
-        if (downloadFileInfo == null) {
+        if (!DownloadFileUtil.isLegal(downloadFileInfo)) {
             return false;
         }
 
@@ -137,6 +138,48 @@ public class DownloadCacher implements DownloadRecorder, DownloadFileMover, Down
 
         String url = downloadFileInfo.getUrl();
 
+        DownloadFileInfo downloadFileInfoExist = getDownloadFile(url);
+        if (DownloadFileUtil.isLegal(downloadFileInfoExist)) {
+            // exist the download file, update
+            synchronized (mModifyLock) {// lock
+                Type type = Type.OTHER;
+                int changeCount = 0;
+
+                if (downloadFileInfoExist.getStatus() != downloadFileInfo.getStatus()) {
+                    changeCount++;
+                    type = Type.DOWNLOAD_STATUS;
+                }
+                if (downloadFileInfoExist.getDownloadedSizeLong() != downloadFileInfo.getDownloadedSizeLong()) {
+                    changeCount++;
+                    type = Type.DOWNLOADED_SIZE;
+                }
+                if (downloadFileInfoExist.getFileDir() != null && !downloadFileInfoExist.getFileDir().equals
+                        (downloadFileInfo.getFileDir())) {
+                    changeCount++;
+                    type = Type.SAVE_DIR;
+                }
+                if (downloadFileInfoExist.getFileName() != null && !downloadFileInfoExist.getFileName().equals
+                        (downloadFileInfo.getFileName())) {
+                    changeCount++;
+                    type = Type.SAVE_FILE_NAME;
+                }
+
+                if (changeCount > 1) {
+                    type = Type.OTHER;
+                }
+
+                downloadFileInfoExist.update(downloadFileInfo);
+
+                boolean isSucceed = updateDownloadFileInternal(downloadFileInfoExist, false, type);
+
+                if (!isSucceed) {
+                    // not concern
+                }
+                return true;
+            }
+        }
+
+        // insert new one
         synchronized (mModifyLock) {// lock
             long id = dao.insert(values);
             if (id != -1) {
@@ -159,7 +202,7 @@ public class DownloadCacher implements DownloadRecorder, DownloadFileMover, Down
     private boolean updateDownloadFileInternal(DownloadFileInfo downloadFileInfo, boolean lockInternal, Type 
             notifyType) {
 
-        if (downloadFileInfo == null) {
+        if (!DownloadFileUtil.isLegal(downloadFileInfo)) {
             return false;
         }
 
@@ -217,7 +260,7 @@ public class DownloadCacher implements DownloadRecorder, DownloadFileMover, Down
 
     private boolean deleteDownloadFile(DownloadFileInfo downloadFileInfo) {
 
-        if (downloadFileInfo == null) {
+        if (!DownloadFileUtil.isLegal(downloadFileInfo)) {
             return false;
         }
 
@@ -384,30 +427,119 @@ public class DownloadCacher implements DownloadRecorder, DownloadFileMover, Down
      * check the download file status
      */
     private void checkDownloadFileStatus(DownloadFileInfo downloadFileInfo) {
-        if (downloadFileInfo == null) {
-            return;
-        }
 
-        // check whether file exist
-        String filePath = null;
-        switch (downloadFileInfo.getStatus()) {
-            case Status.DOWNLOAD_STATUS_COMPLETED:
-                filePath = downloadFileInfo.getFilePath();
-                break;
-            case Status.DOWNLOAD_STATUS_PAUSED:
-                filePath = downloadFileInfo.getTempFilePath();
-                break;
-        }
+        try {
+            if (!DownloadFileUtil.isLegal(downloadFileInfo)) {
+                return;
+            }
 
-        if (!TextUtils.isEmpty(filePath)) {
-            File file = new File(filePath);
-            if (!file.exists() && downloadFileInfo.getDownloadedSizeLong() > 0) {
-                synchronized (mModifyLock) {
+            // must has been downloaded
+            if (downloadFileInfo.getDownloadedSizeLong() <= 0) {
+                return;
+            }
+
+            // check whether file exist
+            String saveFilePath = downloadFileInfo.getFilePath();
+            String tempFilePath = downloadFileInfo.getTempFilePath();
+
+            File saveFile = null;
+            File tempFile = null;
+
+            if (FileUtil.isFilePath(saveFilePath)) {
+                saveFile = new File(saveFilePath);
+            }
+            if (FileUtil.isFilePath(tempFilePath)) {
+                tempFile = new File(tempFilePath);
+            }
+
+            // if download status,may now is available
+            if (downloadFileInfo.getStatus() == Status.DOWNLOAD_STATUS_FILE_NOT_EXIST) {
+                boolean handled = false;
+                // try to recovery complete status
+                if (saveFile != null && saveFile.length() == downloadFileInfo.getDownloadedSizeLong() &&
+                        downloadFileInfo.getDownloadedSizeLong() == downloadFileInfo.getFileSizeLong()) {
+                    // file completed
+
+                    Log.e(TAG, "checkDownloadFileStatus，状态：DOWNLOAD_STATUS_FILE_NOT_EXIST" +
+                            "，正在更新为：DOWNLOAD_STATUS_COMPLETED，url:" + downloadFileInfo.getUrl());
+
+                    handled = updateStatus(downloadFileInfo, Status.DOWNLOAD_STATUS_COMPLETED);
+                }
+
+                if (!handled) {
+                    // try to recovery error status, not recovery pause status because current status is 
+                    // DOWNLOAD_STATUS_FILE_NOT_EXIST
+                    if (tempFile != null && tempFile.exists() && tempFile.length() > 0) {
+                        // file error
+
+                        Log.e(TAG, "checkDownloadFileStatus，状态：DOWNLOAD_STATUS_FILE_NOT_EXIST" +
+                                "，正在更新为：DOWNLOAD_STATUS_ERROR，url:" + downloadFileInfo.getUrl());
+
+                        handled = updateStatus(downloadFileInfo, Status.DOWNLOAD_STATUS_ERROR);
+                    }
+                }
+            } else {
+
+                boolean fileExist = true;
+
+                // completed status
+                if (DownloadFileUtil.isCompleted(downloadFileInfo)) {
+                    // must has been downloaded
+                    if (saveFile != null) {
+                        // save file not exists
+                        if (!saveFile.exists()) {
+                            // check tempFile size equals total file size
+                            if (tempFile != null && tempFile.exists() && tempFile.length() == downloadFileInfo
+                                    .getDownloadedSizeLong() && downloadFileInfo.getDownloadedSizeLong() == 
+                                    downloadFileInfo.getFileSizeLong()) {
+                                // however the temp file is finished, so ignore
+                                // FIXME whether need to move to save file
+                            } else {
+
+                                Log.e(TAG, "checkDownloadFileStatus，1正在更新为：DOWNLOAD_STATUS_FILE_NOT_EXIST，url:" + 
+                                        downloadFileInfo.getUrl());
+
+                                fileExist = false;
+                            }
+                        }
+                    }
+                }
+                // other status
+                else {
+                    if (tempFile != null && tempFile.exists() && tempFile.length() > 0) {
+                        // temp file exist, so ignore
+                    } else {
+
+                        Log.e(TAG, "checkDownloadFileStatus，2正在更新为：DOWNLOAD_STATUS_FILE_NOT_EXIST，url:" + 
+                                downloadFileInfo.getUrl());
+
+                        fileExist = false;
+                    }
+                }
+
+                if (!fileExist) {
                     // file not exist
-                    downloadFileInfo.setStatus(Status.DOWNLOAD_STATUS_FILE_NOT_EXIST);
-                    updateDownloadFileInternal(downloadFileInfo, false, Type.DOWNLOAD_STATUS);
+                    updateStatus(downloadFileInfo, Status.DOWNLOAD_STATUS_FILE_NOT_EXIST);
                 }
             }
+        } catch (Exception e) {
+            e.printStackTrace();
+            // can ignore
+        }
+    }
+
+    private boolean updateStatus(DownloadFileInfo downloadFileInfo, int newStatus) {
+        synchronized (mModifyLock) {// lock
+            int oldStatus = downloadFileInfo.getStatus();
+            downloadFileInfo.setStatus(newStatus);
+            boolean isSucceed = updateDownloadFileInternal(downloadFileInfo, false, Type.DOWNLOAD_STATUS);
+            if (!isSucceed) {
+                // rollback
+                downloadFileInfo.setStatus(oldStatus);
+            } else {
+                return true;
+            }
+            return false;
         }
     }
 
@@ -501,10 +633,16 @@ public class DownloadCacher implements DownloadRecorder, DownloadFileMover, Down
 
     @Override
     public DownloadFileInfo createDownloadFileInfo(DetectUrlFileInfo detectUrlFileInfo) {
+        if (!DownloadFileUtil.isLegal(detectUrlFileInfo)) {
+            return null;
+        }
         DownloadFileInfo downloadFileInfo = new DownloadFileInfo(detectUrlFileInfo);
         // add to cache
-        addDownloadFile(downloadFileInfo);
-        return downloadFileInfo;
+        boolean isSucceed = addDownloadFile(downloadFileInfo);
+        if (isSucceed) {
+            return downloadFileInfo;
+        }
+        return null;
     }
 
     @Override
@@ -513,22 +651,42 @@ public class DownloadCacher implements DownloadRecorder, DownloadFileMover, Down
         Log.d(TAG, "recordStatus 记录状态：status：" + status + "，increaseSize：" + +increaseSize + "，url：" + url);
 
         DownloadFileInfo downloadFileInfo = getDownloadFile(url);
-        if (downloadFileInfo != null) {
-            synchronized (mModifyLock) {// lock
-                boolean isStatusChange = (status != downloadFileInfo.getStatus());
-                if (!isStatusChange && increaseSize <= 0) {
-                    return;
-                }
-                Type type = Type.OTHER;
-                if (increaseSize > 0) {
-                    downloadFileInfo.setDownloadedSize(downloadFileInfo.getDownloadedSizeLong() + increaseSize);
-                    type = Type.DOWNLOADED_SIZE;
-                }
+        if (!DownloadFileUtil.isLegal(downloadFileInfo)) {
+            return;
+        }
+
+        synchronized (mModifyLock) {// lock
+
+            int oldStatus = downloadFileInfo.getStatus();
+            long oldDownloadedSize = downloadFileInfo.getDownloadedSizeLong();
+
+            boolean isStatusChange = (status != downloadFileInfo.getStatus());
+            if (!isStatusChange && increaseSize <= 0) {
+                return;
+            }
+
+            Type type = Type.OTHER;
+            int changeCount = 0;
+
+            if (isStatusChange) {
                 downloadFileInfo.setStatus(status);
-                if (isStatusChange) {
-                    type = Type.DOWNLOAD_STATUS;
-                }
-                updateDownloadFileInternal(downloadFileInfo, false, type);
+                changeCount++;
+                type = Type.DOWNLOAD_STATUS;
+            }
+            if (increaseSize > 0) {
+                downloadFileInfo.setDownloadedSize(downloadFileInfo.getDownloadedSizeLong() + increaseSize);
+                changeCount++;
+                type = Type.DOWNLOADED_SIZE;
+            }
+            if (changeCount > 1) {
+                type = Type.OTHER;
+            }
+            boolean isSucceed = updateDownloadFileInternal(downloadFileInfo, false, type);
+            if (!isSucceed) {
+                downloadFileInfo.setStatus(oldStatus);
+                downloadFileInfo.setDownloadedSize(oldDownloadedSize);
+
+                throw new Exception("record failed!");
             }
         }
     }
@@ -536,46 +694,66 @@ public class DownloadCacher implements DownloadRecorder, DownloadFileMover, Down
     @Override
     public void resetDownloadFile(String url) throws Exception {
         DownloadFileInfo downloadFileInfo = getDownloadFile(url);
-        if (downloadFileInfo == null) {
+        if (!DownloadFileUtil.isLegal(downloadFileInfo)) {
             return;
         }
         synchronized (mModifyLock) {// lock
+            long oldDownloadedSize = downloadFileInfo.getDownloadedSizeLong();
             downloadFileInfo.setDownloadedSize(0);
-            updateDownloadFileInternal(downloadFileInfo, false, Type.DOWNLOADED_SIZE);
+            boolean isSucceed = updateDownloadFileInternal(downloadFileInfo, false, Type.DOWNLOADED_SIZE);
+            if (!isSucceed) {
+                // rollback
+                downloadFileInfo.setDownloadedSize(oldDownloadedSize);
+                throw new Exception("reset failed!");
+            }
         }
     }
 
     @Override
     public void moveDownloadFile(String url, String newDirPath) throws Exception {
         DownloadFileInfo downloadFileInfo = getDownloadFile(url);
-        if (downloadFileInfo == null) {
-            throw new Exception("file doest not exist!");
+        if (!DownloadFileUtil.isLegal(downloadFileInfo)) {
+            throw new Exception("download file doest not exist or illegal!");
         }
         synchronized (mModifyLock) {// lock
+            String oldFileDir = downloadFileInfo.getFileDir();
             downloadFileInfo.setFileDir(newDirPath);
-            updateDownloadFileInternal(downloadFileInfo, false, Type.SAVE_DIR);
+            boolean isSucceed = updateDownloadFileInternal(downloadFileInfo, false, Type.SAVE_DIR);
+            if (!isSucceed) {
+                // rollback
+                downloadFileInfo.setFileDir(oldFileDir);
+                throw new Exception("move failed!");
+            }
         }
     }
 
     @Override
     public void deleteDownloadFile(String url) throws Exception {
         DownloadFileInfo downloadFileInfo = getDownloadFile(url);
-        if (downloadFileInfo == null) {
-            throw new Exception("file doest not exist!");
+        if (!DownloadFileUtil.isLegal(downloadFileInfo)) {
+            throw new Exception("download file doest not exist or illegal!");
         }
-        deleteDownloadFile(downloadFileInfo);
+        boolean isSucceed = deleteDownloadFile(downloadFileInfo);
+        if (!isSucceed) {
+            throw new Exception("delete failed!");
+        }
     }
 
     @Override
     public void renameDownloadFile(String url, String newFileName) throws Exception {
         DownloadFileInfo downloadFileInfo = getDownloadFile(url);
         if (downloadFileInfo == null) {
-            throw new Exception("file doest not exist!");
+            throw new Exception("download file doest not exist or illegal!");
         }
         synchronized (mModifyLock) {// lock
+            String oldFileName = downloadFileInfo.getFileName();
             downloadFileInfo.setFileName(newFileName);
-            updateDownloadFileInternal(downloadFileInfo, false, Type.SAVE_FILE_NAME);
+            boolean isSucceed = updateDownloadFileInternal(downloadFileInfo, false, Type.SAVE_FILE_NAME);
+            if (!isSucceed) {
+                // rollback
+                downloadFileInfo.setFileName(oldFileName);
+                throw new Exception("rename failed!");
+            }
         }
     }
-
 }

@@ -4,7 +4,7 @@ import android.util.Log;
 
 import org.wlf.filedownloader.DownloadFileInfo;
 import org.wlf.filedownloader.listener.OnFileDownloadStatusListener;
-import org.wlf.filedownloader.listener.OnBigFileDownloadStatusListener;
+import org.wlf.filedownloader.listener.OnRetryableFileDownloadStatusListener;
 import org.wlf.filedownloader.util.CollectionUtil;
 import org.wlf.filedownloader.util.UrlUtil;
 
@@ -18,9 +18,9 @@ import java.util.concurrent.CopyOnWriteArraySet;
  * @datetime 2015-12-09 17:55 GMT+8
  * @email 411086563@qq.com
  */
-class DownloadStatusObserverBig implements OnBigFileDownloadStatusListener {
+class DownloadStatusObserver implements OnRetryableFileDownloadStatusListener {
 
-    private static final String TAG = DownloadStatusObserverBig.class.getSimpleName();
+    private static final String TAG = DownloadStatusObserver.class.getSimpleName();
 
     // listeners
     private Set<DownloadStatusListenerInfo> mDownloadStatusListenerInfos = new 
@@ -143,10 +143,10 @@ class DownloadStatusObserverBig implements OnBigFileDownloadStatusListener {
      */
     private void notifyStatusRetrying(DownloadFileInfo downloadFileInfo, int retryTimes, OnFileDownloadStatusListener
             listener) {
-        if (listener instanceof OnBigFileDownloadStatusListener) {
+        if (listener instanceof OnRetryableFileDownloadStatusListener) {
             // notify caller
             OnFileDownloadStatusListener.MainThreadHelper.onFileDownloadStatusRetrying(downloadFileInfo, retryTimes, 
-                    (OnBigFileDownloadStatusListener) listener);
+                    (OnRetryableFileDownloadStatusListener) listener);
 
             String url = downloadFileInfo != null ? downloadFileInfo.getUrl() : "unknown";
 
@@ -227,7 +227,7 @@ class DownloadStatusObserverBig implements OnBigFileDownloadStatusListener {
 
         String downloadFileUrl = downloadFileInfo != null ? downloadFileInfo.getUrl() : "unknown";
 
-        Log.i(TAG, "file-downloader-listener 通知【下载状态为完成】，文件的url：" + url + "，downloadFileUrl：" + downloadFileUrl);
+        Log.i(TAG, "file-downloader-listener 通知【下载状态为失败】，文件的url：" + url + "，downloadFileUrl：" + downloadFileUrl);
     }
 
     @Override
@@ -281,7 +281,7 @@ class DownloadStatusObserverBig implements OnBigFileDownloadStatusListener {
         for (DownloadStatusListenerInfo listenerInfo : mDownloadStatusListenerInfos) {
 
             if (listenerInfo == null || listenerInfo.mListener == null || listenerInfo.mListener == this || !
-                    (listenerInfo.mListener instanceof OnBigFileDownloadStatusListener)) {
+                    (listenerInfo.mListener instanceof OnRetryableFileDownloadStatusListener)) {
                 continue;
             }
 
@@ -527,7 +527,6 @@ class DownloadStatusObserverBig implements OnBigFileDownloadStatusListener {
         if (!UrlUtil.isUrl(url)) {
             return;
         }
-
 
         for (DownloadStatusListenerInfo listenerInfo : mDownloadStatusListenerInfos) {
 

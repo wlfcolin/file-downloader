@@ -8,6 +8,7 @@ import org.wlf.filedownloader.base.FailReason;
 import org.wlf.filedownloader.file_download.base.HttpFailReason;
 import org.wlf.filedownloader.file_download.file_saver.FileSaver.FileSaveException;
 import org.wlf.filedownloader.file_download.http_downloader.HttpDownloader.HttpDownloadException;
+import org.wlf.filedownloader.listener.OnDetectUrlFileListener.DetectUrlFileFailReason;
 
 /**
  * OnFileDownloadStatusListener
@@ -85,18 +86,18 @@ public interface OnFileDownloadStatusListener {
          * @param retryTimes       the times to retry
          */
         public static void onFileDownloadStatusRetrying(final DownloadFileInfo downloadFileInfo, final int 
-                retryTimes, final OnBigFileDownloadStatusListener onBigFileDownloadStatusListener) {
-            if (onBigFileDownloadStatusListener == null) {
+                retryTimes, final OnRetryableFileDownloadStatusListener onRetryableFileDownloadStatusListener) {
+            if (onRetryableFileDownloadStatusListener == null) {
                 return;
             }
             Handler handler = new Handler(Looper.getMainLooper());
             handler.post(new Runnable() {
                 @Override
                 public void run() {
-                    if (onBigFileDownloadStatusListener == null) {
+                    if (onRetryableFileDownloadStatusListener == null) {
                         return;
                     }
-                    onBigFileDownloadStatusListener.onFileDownloadStatusRetrying(downloadFileInfo, retryTimes);
+                    onRetryableFileDownloadStatusListener.onFileDownloadStatusRetrying(downloadFileInfo, retryTimes);
                 }
             });
         }
@@ -366,8 +367,56 @@ public interface OnFileDownloadStatusListener {
 
             // other FailReason exceptions that need cast to FileDownloadStatusFailReason
 
+            // cast HttpFailReason
+            if (failReason instanceof HttpFailReason) {
+                // cast HttpFailReason
+                HttpFailReason httpFailReason = (HttpFailReason) failReason;
+                String type = httpFailReason.getType();
+                setType(type);
+
+                if (isTypeInit()) {
+                    return;
+                }
+
+                // case others
+                // case HttpDownloadException
+                if (failReason instanceof HttpDownloadException) {
+
+                    HttpDownloadException httpDownloadException = (HttpDownloadException) failReason;
+                    type = httpDownloadException.getType();
+
+                    if (HttpDownloadException.TYPE_CONTENT_RANGE_VALIDATE_FAIL.equals(type)) {
+                        // ignore
+                    } else if (HttpDownloadException.TYPE_ETAG_CHANGED.equals(type)) {
+                        setType(TYPE_DOWNLOAD_FILE_ERROR);
+                    } else if (HttpDownloadException.TYPE_REDIRECT_COUNT_OVER_LIMITS.equals(type)) {
+                        setType(TYPE_URL_OVER_REDIRECT_COUNT);
+                    } else if (HttpDownloadException.TYPE_RESOURCES_SIZE_ILLEGAL.equals(type)) {
+                        setType(TYPE_DOWNLOAD_FILE_ERROR);
+                    } else if (HttpDownloadException.TYPE_RESPONSE_CODE_ERROR.equals(type)) {
+                        setType(TYPE_BAD_HTTP_RESPONSE_CODE);
+                    }
+                }
+                // cast DetectUrlFileFailReason
+                else if (failReason instanceof DetectUrlFileFailReason) {
+
+                    DetectUrlFileFailReason detectUrlFileFailReason = (DetectUrlFileFailReason) failReason;
+                    type = detectUrlFileFailReason.getType();
+
+                    if (DetectUrlFileFailReason.TYPE_BAD_HTTP_RESPONSE_CODE.equals(type)) {
+                        setType(TYPE_BAD_HTTP_RESPONSE_CODE);
+                    } else if (DetectUrlFileFailReason.TYPE_HTTP_FILE_NOT_EXIST.equals(type)) {
+                        setType(TYPE_FILE_NOT_DETECT);
+                    } else if (DetectUrlFileFailReason.TYPE_URL_ILLEGAL.equals(type)) {
+                        setType(TYPE_URL_ILLEGAL);
+                    } else if (DetectUrlFileFailReason.TYPE_URL_OVER_REDIRECT_COUNT.equals(type)) {
+                        setType(TYPE_URL_OVER_REDIRECT_COUNT);
+                    }
+                }
+
+            }
             // cast FileSaveException
-            if (failReason instanceof FileSaveException) {
+            else if (failReason instanceof FileSaveException) {
 
                 FileSaveException fileSaveException = (FileSaveException) failReason;
                 String type = fileSaveException.getType();
@@ -382,29 +431,6 @@ public interface OnFileDownloadStatusListener {
                     setType(TYPE_SAVE_FILE_NOT_EXIST);
                 }
             }
-            // case HttpDownloadException
-            else if (failReason instanceof HttpDownloadException) {
-
-                HttpDownloadException httpDownloadException = (HttpDownloadException) failReason;
-                String type = httpDownloadException.getType();
-
-                if (HttpDownloadException.TYPE_NETWORK_TIMEOUT.equals(type)) {
-                    setType(TYPE_NETWORK_TIMEOUT);
-                } else if (HttpDownloadException.TYPE_NETWORK_DENIED.equals(type)) {
-                    setType(TYPE_NETWORK_DENIED);
-                } else if (HttpDownloadException.TYPE_CONTENT_RANGE_VALIDATE_FAIL.equals(type)) {
-                    // ignore
-                } else if (HttpDownloadException.TYPE_ETAG_CHANGED.equals(type)) {
-                    setType(TYPE_DOWNLOAD_FILE_ERROR);
-                } else if (HttpDownloadException.TYPE_REDIRECT_COUNT_OVER_LIMITS.equals(type)) {
-                    setType(TYPE_URL_OVER_REDIRECT_COUNT);
-                } else if (HttpDownloadException.TYPE_RESOURCES_SIZE_ILLEGAL.equals(type)) {
-                    setType(TYPE_DOWNLOAD_FILE_ERROR);
-                } else if (HttpDownloadException.TYPE_RESPONSE_CODE_ERROR.equals(type)) {
-                    setType(TYPE_BAD_HTTP_RESPONSE_CODE);
-                }
-            }
-            // cast DetectUrlFileFailReason
         }
     }
 }

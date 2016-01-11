@@ -121,6 +121,10 @@ public class FileUtil {
      */
     public static long getAvailableSpace(String fileDirPath) {
         try {
+            File file = new File(fileDirPath);
+            if (!file.exists()) {
+                file.mkdirs();// create to make sure it is not error below
+            }
             final StatFs stats = new StatFs(fileDirPath);
             long result = (long) stats.getBlockSize() * (long) stats.getAvailableBlocks();
             return result;

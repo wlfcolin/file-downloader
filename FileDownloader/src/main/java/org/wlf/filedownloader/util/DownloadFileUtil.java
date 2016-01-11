@@ -2,6 +2,7 @@ package org.wlf.filedownloader.util;
 
 
 import org.wlf.filedownloader.DownloadFileInfo;
+import org.wlf.filedownloader.base.BaseUrlFileInfo;
 import org.wlf.filedownloader.base.Status;
 
 /**
@@ -69,7 +70,7 @@ public class DownloadFileUtil {
      * @return
      */
     public static boolean isCompleted(DownloadFileInfo downloadFileInfo) {
-        
+
         if (downloadFileInfo == null) {
             return false;
         }
@@ -84,11 +85,12 @@ public class DownloadFileUtil {
 
     /**
      * whether the download file can rename
+     *
      * @param downloadFileInfo
      * @return
      */
-    public static boolean canRename(DownloadFileInfo downloadFileInfo){
-        
+    public static boolean canRename(DownloadFileInfo downloadFileInfo) {
+
         if (downloadFileInfo == null) {
             return false;
         }
@@ -105,4 +107,14 @@ public class DownloadFileUtil {
 
         return true;
     }
+
+    public static boolean isLegal(BaseUrlFileInfo baseUrlFileInfo) {
+
+        if (baseUrlFileInfo == null || !UrlUtil.isUrl(baseUrlFileInfo.getUrl())) {
+            return false;
+        }
+
+        return true;
+    }
+    
 }

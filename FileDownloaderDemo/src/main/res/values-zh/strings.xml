@@ -63,6 +63,12 @@
     <string name="main__check_network">(请检查网络)</string>
     <string name="main__url_illegal">Url不合法</string>
     <string name="main__network_timeout">(网络超时)</string>
+    <string name="main__storage_space_is_full">(存储空间已满)</string>
+    <string name="main__storage_space_can_not_write">(存储空间不可写)</string>
+    <string name="main__file_not_detect">(文件没有被探测到)</string>
+    <string name="main__http_bad_response_code">(Http 返回错误)</string>
+    <string name="main__http_file_not_exist">(Http请求文件不存在)</string>
+    <string name="main__save_file_not_exist">(保存文件不存在)</string>
 
     <string name="main__confirm_the_dir_path_move_to">请确认移动的文件夹路径</string>
     <string name="main__can_not_rename">无法重命名</string>
@@ -72,7 +78,7 @@
 
     <string name="main__confirm_yes">是（彻底删除）</string>
     <string name="main__confirm_no">否（保留下载的保存文件）</string>
-    
+
     <!-- menu -->
     <string name="main__menu_new_download">新建单个下载</string>
     <string name="main__menu_new_downloads">新建批量下载</string>

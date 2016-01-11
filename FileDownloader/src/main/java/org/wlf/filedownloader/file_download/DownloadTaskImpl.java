@@ -67,16 +67,21 @@ class DownloadTaskImpl implements DownloadTask, OnHttpDownloadListener, OnFileSa
     private ExecutorService mCloseConnectionEngine;// engine use for closing the download connection
 
     /**
+     * constructor of DownloadTaskImpl
+     *
      * @param taskParamInfo
      * @param downloadRecorder
      */
-    public DownloadTaskImpl(FileDownloadTaskParam taskParamInfo, DownloadRecorder downloadRecorder) {
+    public DownloadTaskImpl(FileDownloadTaskParam taskParamInfo, DownloadRecorder downloadRecorder, 
+                            OnFileDownloadStatusListener onFileDownloadStatusListener) {
         super();
         this.mTaskParamInfo = taskParamInfo;
 
         init();
 
         this.mDownloadRecorder = downloadRecorder;
+        // listener init here because it is need to use in constructor
+        this.mOnFileDownloadStatusListener = onFileDownloadStatusListener;
 
         // check whether the task can be executed
         if (!checkTaskCanExecute()) {
@@ -126,15 +131,6 @@ class DownloadTaskImpl implements DownloadTask, OnHttpDownloadListener, OnFileSa
         // DownloadRecorder will init by the constructor
     }
 
-    /**
-     * set FileDownloadStatusListener
-     *
-     * @param onFileDownloadStatusListener FileDownloadStatusListener
-     */
-    public void setOnFileDownloadStatusListener(OnFileDownloadStatusListener onFileDownloadStatusListener) {
-        mOnFileDownloadStatusListener = onFileDownloadStatusListener;
-    }
-
     @Override
     public void setOnStopFileDownloadTaskListener(OnStopFileDownloadTaskListener onStopFileDownloadTaskListener) {
         this.mOnStopFileDownloadTaskListener = onStopFileDownloadTaskListener;
@@ -172,6 +168,10 @@ class DownloadTaskImpl implements DownloadTask, OnHttpDownloadListener, OnFileSa
         return mTaskParamInfo.url;
     }
 
+    public FinishState getFinishState() {
+        return mFinishState;
+    }
+
     /**
      * check whether the task can execute
      *
@@ -201,6 +201,31 @@ class DownloadTaskImpl implements DownloadTask, OnHttpDownloadListener, OnFileSa
             // error savePath can not write
             failReason = new OnFileDownloadStatusFailReason("savePath can not write!", OnFileDownloadStatusFailReason
                     .TYPE_STORAGE_SPACE_CAN_NOT_WRITE);
+        }
+        if (failReason == null) {
+            DownloadFileInfo downloadFileInfo = getDownloadFile();
+            if (downloadFileInfo != null) {
+                if (downloadFileInfo.getStatus() == Status.DOWNLOAD_STATUS_COMPLETED) {
+                    // error the file has been download complete
+                    mFinishState = new FinishState(Status.DOWNLOAD_STATUS_COMPLETED, 0, null);
+                    notifyTaskFinish();
+                    return false;
+                } else if (downloadFileInfo.getDownloadedSizeLong() == downloadFileInfo.getFileSizeLong()) {
+                    File tempFile = new File(downloadFileInfo.getTempFilePath());
+                    File saveFile = new File(downloadFileInfo.getFilePath());
+                    if (tempFile.exists() && tempFile.length() == downloadFileInfo.getDownloadedSizeLong() &&
+                            !saveFile.exists()) {
+                        // rename temp file to save file
+                        boolean isSucceed = tempFile.renameTo(saveFile);
+                        if (isSucceed) {
+                            // error the file has been download complete
+                            mFinishState = new FinishState(Status.DOWNLOAD_STATUS_COMPLETED, 0, null);
+                            notifyTaskFinish();
+                            return false;
+                        }
+                    }
+                }
+            }
         }
         if (failReason == null) {
             try {
@@ -259,6 +284,16 @@ class DownloadTaskImpl implements DownloadTask, OnHttpDownloadListener, OnFileSa
 
             Log.d(TAG, TAG + ".run 2、任务开始执行，正在获取资源，url：：" + mTaskParamInfo.url);
 
+            // 1.check url
+            if (!UrlUtil.isUrl(mTaskParamInfo.url)) {
+                // error url illegal
+                FileDownloadStatusFailReason failReason = new OnFileDownloadStatusFailReason("url illegal!", 
+                        OnFileDownloadStatusFailReason.TYPE_URL_ILLEGAL);
+                mFinishState = new FinishState(Status.DOWNLOAD_STATUS_ERROR, 0, failReason);
+                // goto finally, url error
+                return;
+            }
+
             if (!notifyStatusPreparing()) {
                 // stop internal impl
                 stopInternalImpl();
@@ -277,7 +312,7 @@ class DownloadTaskImpl implements DownloadTask, OnHttpDownloadListener, OnFileSa
             DownloadFileInfo downloadFileInfo = getDownloadFile();
             if (downloadFileInfo == null) {
                 FileDownloadStatusFailReason failReason = new OnFileDownloadStatusFailReason("the DownloadFile is " +
-                        "null,may be deleted?", OnFileDownloadStatusFailReason.TYPE_NULL_POINTER);
+                        "null,may be not deleted?", OnFileDownloadStatusFailReason.TYPE_NULL_POINTER);
                 mFinishState = new FinishState(Status.DOWNLOAD_STATUS_ERROR, 0, failReason);
             } else {
                 // confirm the download file size legal
@@ -724,7 +759,7 @@ class DownloadTaskImpl implements DownloadTask, OnHttpDownloadListener, OnFileSa
     /**
      * temp record finish state
      */
-    private static class FinishState {
+    static class FinishState {
 
         private final int mStatus;
         private final int mIncreaseSize;
@@ -734,6 +769,18 @@ class DownloadTaskImpl implements DownloadTask, OnHttpDownloadListener, OnFileSa
             mStatus = status;
             mIncreaseSize = increaseSize;
             mFailReason = failReason;
+        }
+
+        public int getStatus() {
+            return mStatus;
+        }
+
+        public int getIncreaseSize() {
+            return mIncreaseSize;
+        }
+
+        public FileDownloadStatusFailReason getFailReason() {
+            return mFailReason;
         }
     }
 

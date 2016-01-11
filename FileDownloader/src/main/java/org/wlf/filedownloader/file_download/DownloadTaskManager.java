@@ -16,7 +16,7 @@ import org.wlf.filedownloader.listener.OnDetectUrlFileListener.DetectUrlFileFail
 import org.wlf.filedownloader.listener.OnFileDownloadStatusListener;
 import org.wlf.filedownloader.listener.OnFileDownloadStatusListener.FileDownloadStatusFailReason;
 import org.wlf.filedownloader.listener.OnFileDownloadStatusListener.OnFileDownloadStatusFailReason;
-import org.wlf.filedownloader.listener.OnBigFileDownloadStatusListener;
+import org.wlf.filedownloader.listener.OnRetryableFileDownloadStatusListener;
 import org.wlf.filedownloader.util.NetworkUtil;
 import org.wlf.filedownloader.util.UrlUtil;
 
@@ -56,7 +56,7 @@ public class DownloadTaskManager implements Pauseable {
     /**
      * DownloadFileStatusObserver
      */
-    private DownloadStatusObserverBig mDownloadStatusObserver;
+    private DownloadStatusObserver mDownloadStatusObserver;
 
     /**
      * all task under download,the download status will be waiting,preparing,prepared,downloading
@@ -77,7 +77,7 @@ public class DownloadTaskManager implements Pauseable {
         // init DetectUrlFileCacher
         mDetectUrlFileCacher = new DetectUrlFileCacher();
         // init DownloadFileStatusObserver
-        mDownloadStatusObserver = new DownloadStatusObserverBig();
+        mDownloadStatusObserver = new DownloadStatusObserver();
     }
 
     // --------------------------------------getters--------------------------------------
@@ -141,7 +141,8 @@ public class DownloadTaskManager implements Pauseable {
      * register an OnFileDownloadStatusListener
      *
      * @param onFileDownloadStatusListener OnFileDownloadStatusListener,recommend to use {@link
-     *                                     OnBigFileDownloadStatusListener} instead to support retrying download status
+     *                                     OnRetryableFileDownloadStatusListener} instead to support retrying 
+     *                                     download status
      * @param downloadStatusConfiguration  Configuration for FileDownloadStatusListener
      * @since 0.3.0
      */
@@ -155,7 +156,8 @@ public class DownloadTaskManager implements Pauseable {
      * register an OnFileDownloadStatusListener
      *
      * @param onFileDownloadStatusListener OnFileDownloadStatusListener,recommend to use {@link
-     *                                     OnBigFileDownloadStatusListener} instead to support retrying download status
+     *                                     OnRetryableFileDownloadStatusListener} instead to support retrying 
+     *                                     download status
      */
     public void registerDownloadStatusListener(OnFileDownloadStatusListener onFileDownloadStatusListener) {
         registerDownloadStatusListener(onFileDownloadStatusListener, null);
@@ -165,7 +167,8 @@ public class DownloadTaskManager implements Pauseable {
      * unregister an OnFileDownloadStatusListener
      *
      * @param onFileDownloadStatusListener OnFileDownloadStatusListener,recommend to use {@link
-     *                                     OnBigFileDownloadStatusListener} instead to support retrying download status
+     *                                     OnRetryableFileDownloadStatusListener} instead to support retrying 
+     *                                     download status
      */
     public void unregisterDownloadStatusListener(OnFileDownloadStatusListener onFileDownloadStatusListener) {
         mDownloadStatusObserver.removeOnFileDownloadStatusListener(onFileDownloadStatusListener);
@@ -221,7 +224,6 @@ public class DownloadTaskManager implements Pauseable {
                     .TYPE_URL_ILLEGAL);
         }
 
-
         // 2.network check
         if (failReason == null && !NetworkUtil.isNetworkAvailable(mConfiguration.getContext())) {
             failReason = new FileDownloadStatusFailReason("network error!", FileDownloadStatusFailReason
@@ -259,13 +261,11 @@ public class DownloadTaskManager implements Pauseable {
         // create task
 
         //        DownloadTaskImpl downloadTask = new DownloadTaskImpl(FileDownloadTaskParam.createByDownloadFile
-        //                (downloadFileInfo), mDownloadRecorder);
-        //        downloadTask.setOnFileDownloadStatusListener(onFileDownloadStatusListener);
+        //                (downloadFileInfo), mDownloadRecorder, onFileDownloadStatusListener);
         //        downloadTask.setCloseConnectionEngine(mConfiguration.getFileDetectEngine());
 
         RetryableDownloadTaskImpl downloadTask = new RetryableDownloadTaskImpl(FileDownloadTaskParam
-                .createByDownloadFile(downloadFileInfo), mDownloadRecorder);
-        downloadTask.setOnFileDownloadStatusListener(mDownloadStatusObserver);
+                .createByDownloadFile(downloadFileInfo), mDownloadRecorder, mDownloadStatusObserver);
         downloadTask.setCloseConnectionEngine(mConfiguration.getFileDetectEngine());
         downloadTask.setRetryDownloadTimes(mConfiguration.getRetryDownloadTimes());
 

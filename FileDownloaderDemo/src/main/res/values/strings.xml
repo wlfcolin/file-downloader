@@ -64,7 +64,13 @@
     <string name="main__check_network">(Check network)</string>
     <string name="main__url_illegal">Url illegal</string>
     <string name="main__network_timeout">(Network timeout)</string>
-
+    <string name="main__storage_space_is_full">(Storage space is full)</string>
+    <string name="main__storage_space_can_not_write">(Storage space can not write)</string>
+    <string name="main__file_not_detect">(File not detect)</string>
+    <string name="main__http_bad_response_code">(Http bad response code)</string>
+    <string name="main__http_file_not_exist">(Http file not exist)</string>
+    <string name="main__save_file_not_exist">(Save file not exist)</string>
+    
     <string name="main__confirm_the_dir_path_move_to">Please confirm the dir path move to</string>
     <string name="main__can_not_rename">can not rename</string>
     <string name="main__rename_included_suffix">whether include file suffix</string>
