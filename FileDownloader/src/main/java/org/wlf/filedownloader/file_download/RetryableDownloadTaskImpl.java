@@ -9,6 +9,7 @@ import org.wlf.filedownloader.base.Status;
 import org.wlf.filedownloader.file_download.OnStopFileDownloadTaskListener.StopDownloadFileTaskFailReason;
 import org.wlf.filedownloader.file_download.base.DownloadRecorder;
 import org.wlf.filedownloader.file_download.base.RetryableDownloadTask;
+import org.wlf.filedownloader.file_download.http_downloader.Range;
 import org.wlf.filedownloader.listener.OnFileDownloadStatusListener;
 import org.wlf.filedownloader.listener.OnRetryableFileDownloadStatusListener;
 
@@ -38,7 +39,7 @@ class RetryableDownloadTaskImpl implements RetryableDownloadTask, OnFileDownload
 
     // for retry download
     private int mRetryDownloadTimes = 0;// retry times
-    private long mRecordedSize = 0;// recordedSize by the task
+    private Range mRecordedRange;// recordedRange by the task
     private int mHasRetriedTimes = 0;// has been retry times
     private boolean mIsTaskStop = false;
 
@@ -87,8 +88,11 @@ class RetryableDownloadTaskImpl implements RetryableDownloadTask, OnFileDownload
     }
 
     private void init() {
+        if (mRecordedRange == null) {// first time to start internal impl task
+            mRecordedRange = new Range(mOriginalTaskParamInfo.startPosInTotal, mOriginalTaskParamInfo.startPosInTotal);
+        }
         mTaskParamInfo = new FileDownloadTaskParam(mOriginalTaskParamInfo.url, mOriginalTaskParamInfo.startPosInTotal
-                - mRecordedSize, mOriginalTaskParamInfo.fileTotalSize, mOriginalTaskParamInfo.eTag, 
+                + mRecordedRange.getLength(), mOriginalTaskParamInfo.fileTotalSize, mOriginalTaskParamInfo.eTag, 
                 mOriginalTaskParamInfo.
                 acceptRangeType, mOriginalTaskParamInfo.tempFilePath, mOriginalTaskParamInfo.filePath);
         mFileDownloadTaskImpl = new DownloadTaskImpl(mTaskParamInfo, mDownloadRecorder, this);
@@ -530,6 +534,9 @@ class RetryableDownloadTaskImpl implements RetryableDownloadTask, OnFileDownload
         if (mOnFileDownloadStatusListener != null) {
             mOnFileDownloadStatusListener.onFileDownloadStatusPrepared(downloadFileInfo);
         }
+
+        // record download range
+        mRecordedRange = new Range(downloadFileInfo.getDownloadedSizeLong(),mRecordedRange.endPos);
     }
 
     @Override
@@ -552,12 +559,18 @@ class RetryableDownloadTaskImpl implements RetryableDownloadTask, OnFileDownload
     public void onFileDownloadStatusPaused(DownloadFileInfo downloadFileInfo) {
         // record the state and not notify caller,wait notifyTaskFinish()
         mFinishState = new FinishState(Status.DOWNLOAD_STATUS_PAUSED, null);
+
+        // record download range
+        mRecordedRange = new Range(mRecordedRange.startPos,downloadFileInfo.getDownloadedSizeLong());
     }
 
     @Override
     public void onFileDownloadStatusCompleted(DownloadFileInfo downloadFileInfo) {
         // record the state and not notify caller,wait notifyTaskFinish()
         mFinishState = new FinishState(Status.DOWNLOAD_STATUS_COMPLETED, null);
+
+        // record download range
+        mRecordedRange = new Range(mRecordedRange.startPos,downloadFileInfo.getDownloadedSizeLong());
     }
 
     @Override
@@ -565,6 +578,9 @@ class RetryableDownloadTaskImpl implements RetryableDownloadTask, OnFileDownload
                                            FileDownloadStatusFailReason failReason) {
         // record the state and not notify caller,wait notifyTaskFinish()
         mFinishState = new FinishState(Status.DOWNLOAD_STATUS_ERROR, failReason);
+
+        // record download range
+        mRecordedRange = new Range(mRecordedRange.startPos,downloadFileInfo.getDownloadedSizeLong());
     }
 
     /**
