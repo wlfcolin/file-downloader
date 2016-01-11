@@ -1,10 +1,10 @@
 package org.wlf.filedownloader.file_download.file_saver;
 
 import android.os.SystemClock;
-import android.util.Log;
 
 import org.wlf.filedownloader.base.FailException;
 import org.wlf.filedownloader.base.FailReason;
+import org.wlf.filedownloader.base.Log;
 import org.wlf.filedownloader.base.Stoppable;
 import org.wlf.filedownloader.file_download.http_downloader.ContentLengthInputStream;
 import org.wlf.filedownloader.util.FileUtil;

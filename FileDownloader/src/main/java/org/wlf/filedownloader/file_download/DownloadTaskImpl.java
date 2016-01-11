@@ -3,9 +3,9 @@ package org.wlf.filedownloader.file_download;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.SystemClock;
-import android.util.Log;
 
 import org.wlf.filedownloader.DownloadFileInfo;
+import org.wlf.filedownloader.base.Log;
 import org.wlf.filedownloader.base.Status;
 import org.wlf.filedownloader.file_download.OnStopFileDownloadTaskListener.StopDownloadFileTaskFailReason;
 import org.wlf.filedownloader.file_download.base.DownloadRecorder;
@@ -358,7 +358,7 @@ class DownloadTaskImpl implements DownloadTask, OnHttpDownloadListener, OnFileSa
             boolean hasException = (mFinishState != null && mFinishState.mFailReason != null && mFinishState.mStatus 
                     == Status.DOWNLOAD_STATUS_ERROR) ? true : false;
 
-            Log.d(TAG, TAG + ".run 7、文件任务【已结束】，是否有异常：" + hasException + "，url：" + mTaskParamInfo.url);
+            Log.d(TAG, TAG + ".run 7、文件下载任务【已结束】，是否有异常：" + hasException + "，url：" + mTaskParamInfo.url);
         }
     }
 

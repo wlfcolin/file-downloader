@@ -1,8 +1,7 @@
 package org.wlf.filedownloader.file_move;
 
-import android.util.Log;
-
 import org.wlf.filedownloader.DownloadFileInfo;
+import org.wlf.filedownloader.base.Log;
 import org.wlf.filedownloader.base.Stoppable;
 import org.wlf.filedownloader.listener.OnMoveDownloadFileListener;
 import org.wlf.filedownloader.listener.OnMoveDownloadFilesListener;
@@ -151,6 +150,8 @@ class MoveDownloadFilesTask implements Runnable, Stoppable {
 
             // notify caller
             notifyMoveDownloadFilesCompleted();
+
+            Log.d(TAG, TAG + ".run 批量移动文件任务【已结束】");
 
             mIsStop = true;// the task is finish
         }

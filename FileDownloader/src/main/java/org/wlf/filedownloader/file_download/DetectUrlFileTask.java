@@ -1,9 +1,9 @@
 package org.wlf.filedownloader.file_download;
 
 import android.text.TextUtils;
-import android.util.Log;
 
 import org.wlf.filedownloader.DownloadFileInfo;
+import org.wlf.filedownloader.base.Log;
 import org.wlf.filedownloader.file_download.base.DownloadRecorder;
 import org.wlf.filedownloader.listener.OnDetectUrlFileListener;
 import org.wlf.filedownloader.listener.OnDetectUrlFileListener.DetectUrlFileFailReason;
@@ -184,6 +184,10 @@ class DetectUrlFileTask implements Runnable {
                 // 2.error
                 isNotify = notifyDetectUrlFileFailed(failReason);
             }
+
+            boolean hasException = failReason == null ? true : false;
+
+            Log.d(TAG, TAG + ".run 探测文件任务【已结束】，是否有异常：" + hasException + "，url：" + mUrl);
         }
     }
 

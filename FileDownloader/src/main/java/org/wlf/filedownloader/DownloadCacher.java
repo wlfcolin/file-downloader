@@ -4,9 +4,9 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.text.TextUtils;
-import android.util.Log;
 
 import org.wlf.filedownloader.DownloadFileInfo.Table;
+import org.wlf.filedownloader.base.Log;
 import org.wlf.filedownloader.base.Status;
 import org.wlf.filedownloader.db.ContentDbDao;
 import org.wlf.filedownloader.file_delete.DownloadFileDeleter;
@@ -460,8 +460,8 @@ public class DownloadCacher implements DownloadRecorder, DownloadFileMover, Down
                         downloadFileInfo.getDownloadedSizeLong() == downloadFileInfo.getFileSizeLong()) {
                     // file completed
 
-                    Log.e(TAG, "checkDownloadFileStatus，状态：DOWNLOAD_STATUS_FILE_NOT_EXIST" +
-                            "，正在更新为：DOWNLOAD_STATUS_COMPLETED，url:" + downloadFileInfo.getUrl());
+                    Log.d(TAG, "checkDownloadFileStatus，文件已下载完，当前状态：DOWNLOAD_STATUS_FILE_NOT_EXIST" +
+                            "，更新状态为：DOWNLOAD_STATUS_COMPLETED，url:" + downloadFileInfo.getUrl());
 
                     handled = updateStatus(downloadFileInfo, Status.DOWNLOAD_STATUS_COMPLETED);
                 }
@@ -472,8 +472,8 @@ public class DownloadCacher implements DownloadRecorder, DownloadFileMover, Down
                     if (tempFile != null && tempFile.exists() && tempFile.length() > 0) {
                         // file error
 
-                        Log.e(TAG, "checkDownloadFileStatus，状态：DOWNLOAD_STATUS_FILE_NOT_EXIST" +
-                                "，正在更新为：DOWNLOAD_STATUS_ERROR，url:" + downloadFileInfo.getUrl());
+                        Log.d(TAG, "checkDownloadFileStatus，文件未下载完，当前状态：DOWNLOAD_STATUS_FILE_NOT_EXIST" +
+                                "，更新状态为：DOWNLOAD_STATUS_ERROR，url:" + downloadFileInfo.getUrl());
 
                         handled = updateStatus(downloadFileInfo, Status.DOWNLOAD_STATUS_ERROR);
                     }
@@ -496,8 +496,8 @@ public class DownloadCacher implements DownloadRecorder, DownloadFileMover, Down
                                 // FIXME whether need to move to save file
                             } else {
 
-                                Log.e(TAG, "checkDownloadFileStatus，1正在更新为：DOWNLOAD_STATUS_FILE_NOT_EXIST，url:" + 
-                                        downloadFileInfo.getUrl());
+                                Log.d(TAG, "checkDownloadFileStatus，下载完成，文件不存在，更新状态为：DOWNLOAD_STATUS_FILE_NOT_EXIST" +
+                                        "，url:" + downloadFileInfo.getUrl());
 
                                 fileExist = false;
                             }
@@ -510,7 +510,7 @@ public class DownloadCacher implements DownloadRecorder, DownloadFileMover, Down
                         // temp file exist, so ignore
                     } else {
 
-                        Log.e(TAG, "checkDownloadFileStatus，2正在更新为：DOWNLOAD_STATUS_FILE_NOT_EXIST，url:" + 
+                        Log.d(TAG, "checkDownloadFileStatus，没有下载完成，文件不存在，更新状态为：DOWNLOAD_STATUS_FILE_NOT_EXIST，url:" +
                                 downloadFileInfo.getUrl());
 
                         fileExist = false;
@@ -648,7 +648,7 @@ public class DownloadCacher implements DownloadRecorder, DownloadFileMover, Down
     @Override
     public void recordStatus(String url, int status, int increaseSize) throws Exception {
 
-        Log.d(TAG, "recordStatus 记录状态：status：" + status + "，increaseSize：" + +increaseSize + "，url：" + url);
+        Log.i(TAG, "recordStatus 记录状态：status：" + status + "，increaseSize：" + increaseSize + "，url：" + url);
 
         DownloadFileInfo downloadFileInfo = getDownloadFile(url);
         if (!DownloadFileUtil.isLegal(downloadFileInfo)) {

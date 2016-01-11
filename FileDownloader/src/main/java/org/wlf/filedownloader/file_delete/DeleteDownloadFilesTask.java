@@ -1,8 +1,7 @@
 package org.wlf.filedownloader.file_delete;
 
-import android.util.Log;
-
 import org.wlf.filedownloader.DownloadFileInfo;
+import org.wlf.filedownloader.base.Log;
 import org.wlf.filedownloader.base.Stoppable;
 import org.wlf.filedownloader.listener.OnDeleteDownloadFileListener;
 import org.wlf.filedownloader.listener.OnDeleteDownloadFilesListener;
@@ -141,6 +140,8 @@ class DeleteDownloadFilesTask implements Runnable, Stoppable {
         } finally {
             // notify caller
             notifyDeleteDownloadFilesCompleted();
+
+            Log.d(TAG, TAG + ".run 批量删除文件任务【已结束】");
 
             mIsStop = true;// the task is finish
         }

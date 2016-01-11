@@ -51,8 +51,8 @@ public class FileDownloadApplication extends Application {
         // 2.config FileDownloadConfiguration.Builder
         // config the download path
         builder.configFileDownloadDir(Environment.getExternalStorageDirectory().getAbsolutePath() + File.separator +
-                "FileDownloader");
-        // builder.configFileDownloadDir("/storage/sdcard1/FileDownloader");
+                "FileDownloader2");
+        // builder.configFileDownloadDir("/storage/sdcard1/FileDownloader2");
 
         // allow 3 download task at the same time
         builder.configDownloadTaskSize(3);
@@ -67,9 +67,9 @@ public class FileDownloadApplication extends Application {
     private void releaseFileDownloader() {
         FileDownloader.release();
     }
-    
+
     // init ImageLoader
-    private void initImageLoader(){
+    private void initImageLoader() {
         // Create global configuration and initialize ImageLoader with this config
         ImageLoaderConfiguration config = new ImageLoaderConfiguration.Builder(this).build();
         ImageLoader.getInstance().init(config);

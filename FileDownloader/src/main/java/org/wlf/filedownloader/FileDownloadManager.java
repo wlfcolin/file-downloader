@@ -1,9 +1,9 @@
 package org.wlf.filedownloader;
 
 import android.content.Context;
-import android.util.Log;
 
 import org.wlf.filedownloader.base.Control;
+import org.wlf.filedownloader.base.Log;
 import org.wlf.filedownloader.base.Status;
 import org.wlf.filedownloader.file_delete.DownloadDeleteManager;
 import org.wlf.filedownloader.file_download.DownloadStatusConfiguration;
@@ -17,10 +17,10 @@ import org.wlf.filedownloader.listener.OnDetectBigUrlFileListener;
 import org.wlf.filedownloader.listener.OnDetectUrlFileListener;
 import org.wlf.filedownloader.listener.OnDownloadFileChangeListener;
 import org.wlf.filedownloader.listener.OnFileDownloadStatusListener;
-import org.wlf.filedownloader.listener.OnRetryableFileDownloadStatusListener;
 import org.wlf.filedownloader.listener.OnMoveDownloadFileListener;
 import org.wlf.filedownloader.listener.OnMoveDownloadFilesListener;
 import org.wlf.filedownloader.listener.OnRenameDownloadFileListener;
+import org.wlf.filedownloader.listener.OnRetryableFileDownloadStatusListener;
 import org.wlf.filedownloader.util.CollectionUtil;
 
 import java.util.List;
@@ -341,7 +341,8 @@ public final class FileDownloadManager {
      * register an OnFileDownloadStatusListener
      *
      * @param onFileDownloadStatusListener OnFileDownloadStatusListener,recommend to use {@link
-     *                                     OnRetryableFileDownloadStatusListener} instead to support retrying download status
+     *                                     OnRetryableFileDownloadStatusListener} instead to support retrying
+     *                                     download status
      * @since 0.2.0
      */
     void registerDownloadStatusListener(OnFileDownloadStatusListener onFileDownloadStatusListener) {
@@ -352,7 +353,8 @@ public final class FileDownloadManager {
      * register an OnFileDownloadStatusListener
      *
      * @param onFileDownloadStatusListener OnFileDownloadStatusListener,recommend to use {@link
-     *                                     OnRetryableFileDownloadStatusListener} instead to support retrying download status
+     *                                     OnRetryableFileDownloadStatusListener} instead to support retrying
+     *                                     download status
      * @param downloadStatusConfiguration  Configuration for FileDownloadStatusListener
      * @since 0.3.0
      */
@@ -366,7 +368,8 @@ public final class FileDownloadManager {
      * unregister an OnFileDownloadStatusListener
      *
      * @param onFileDownloadStatusListener OnFileDownloadStatusListener,recommend to use {@link
-     *                                     OnRetryableFileDownloadStatusListener} instead to support retrying download status
+     *                                     OnRetryableFileDownloadStatusListener} instead to support retrying
+     *                                     download status
      * @since 0.2.0
      */
     void unregisterDownloadStatusListener(OnFileDownloadStatusListener onFileDownloadStatusListener) {
@@ -380,8 +383,8 @@ public final class FileDownloadManager {
      * @param downloadFileChangeConfiguration the Configuration for the DownloadFileChangeListener
      * @since 0.3.0
      */
-     void registerDownloadFileChangeListener(OnDownloadFileChangeListener onDownloadFileChangeListener, 
-                                                   DownloadFileChangeConfiguration downloadFileChangeConfiguration) {
+    void registerDownloadFileChangeListener(OnDownloadFileChangeListener onDownloadFileChangeListener, 
+                                            DownloadFileChangeConfiguration downloadFileChangeConfiguration) {
         mDownloadFileCacher.registerDownloadFileChangeListener(onDownloadFileChangeListener, 
                 downloadFileChangeConfiguration);
     }

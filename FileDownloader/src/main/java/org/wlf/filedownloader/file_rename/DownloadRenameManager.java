@@ -1,8 +1,7 @@
 package org.wlf.filedownloader.file_rename;
 
-import android.util.Log;
-
 import org.wlf.filedownloader.DownloadFileInfo;
+import org.wlf.filedownloader.base.Log;
 import org.wlf.filedownloader.file_download.OnStopFileDownloadTaskListener;
 import org.wlf.filedownloader.file_download.base.Pauseable;
 import org.wlf.filedownloader.listener.OnRenameDownloadFileListener;

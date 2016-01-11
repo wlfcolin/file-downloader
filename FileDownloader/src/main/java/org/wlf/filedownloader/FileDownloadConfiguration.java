@@ -2,7 +2,8 @@ package org.wlf.filedownloader;
 
 import android.content.Context;
 import android.text.TextUtils;
-import android.util.Log;
+
+import org.wlf.filedownloader.base.Log;
 
 import java.io.File;
 import java.util.concurrent.ExecutorService;
@@ -45,6 +46,7 @@ public class FileDownloadConfiguration {
         private String mFileDownloadDir;
         private int mDownloadTaskSize;
         private int mRetryDownloadTimes;
+        private boolean mIsDebugMode = false;
 
         public Builder(Context context) {
             super();
@@ -60,6 +62,9 @@ public class FileDownloadConfiguration {
             }
             mDownloadTaskSize = DEFAULT_DOWNLOAD_TASK_SIZE;
             mRetryDownloadTimes = DEFAULT_RETRY_DOWNLOAD_TIMES;
+
+            // set log mode
+            Log.setIsDebugMode(mIsDebugMode);
         }
 
         /**
@@ -127,6 +132,17 @@ public class FileDownloadConfiguration {
                 Log.i(TAG, "configRetryDownloadTimes 配置下载失败重试次数失败，retryDownloadTimes：" + retryDownloadTimes);
             }
             return this;
+        }
+
+        /**
+         * config IsDebug, debug mode can print log and some debug operations
+         *
+         * @param isDebug true means debug mode
+         */
+        public void configIsDebugMode(boolean isDebug) {
+            this.mIsDebugMode = isDebug;
+            // set log mode
+            Log.setIsDebugMode(mIsDebugMode);
         }
 
         /**
@@ -214,6 +230,15 @@ public class FileDownloadConfiguration {
      */
     public int getRetryDownloadTimes() {
         return mBuilder.mRetryDownloadTimes;
+    }
+
+    /**
+     * whether is debug mode,debug mode can print log and some debug operations
+     *
+     * @return true means debug mode
+     */
+    public boolean isDebugMode() {
+        return mBuilder.mIsDebugMode;
     }
 
     /**

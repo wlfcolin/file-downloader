@@ -1,9 +1,8 @@
 package org.wlf.filedownloader.file_move;
 
-import android.util.Log;
-
 import org.wlf.filedownloader.DownloadFileInfo;
 import org.wlf.filedownloader.base.Control;
+import org.wlf.filedownloader.base.Log;
 import org.wlf.filedownloader.file_download.OnStopFileDownloadTaskListener;
 import org.wlf.filedownloader.file_download.base.Pauseable;
 import org.wlf.filedownloader.listener.OnMoveDownloadFileListener;

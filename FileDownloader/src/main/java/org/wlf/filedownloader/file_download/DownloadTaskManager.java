@@ -1,10 +1,10 @@
 package org.wlf.filedownloader.file_download;
 
 import android.text.TextUtils;
-import android.util.Log;
 
 import org.wlf.filedownloader.DownloadFileInfo;
 import org.wlf.filedownloader.FileDownloadConfiguration;
+import org.wlf.filedownloader.base.Log;
 import org.wlf.filedownloader.base.Status;
 import org.wlf.filedownloader.file_download.OnStopFileDownloadTaskListener.StopDownloadFileTaskFailReason;
 import org.wlf.filedownloader.file_download.base.DownloadRecorder;
@@ -17,6 +17,7 @@ import org.wlf.filedownloader.listener.OnFileDownloadStatusListener;
 import org.wlf.filedownloader.listener.OnFileDownloadStatusListener.FileDownloadStatusFailReason;
 import org.wlf.filedownloader.listener.OnFileDownloadStatusListener.OnFileDownloadStatusFailReason;
 import org.wlf.filedownloader.listener.OnRetryableFileDownloadStatusListener;
+import org.wlf.filedownloader.util.DownloadFileUtil;
 import org.wlf.filedownloader.util.NetworkUtil;
 import org.wlf.filedownloader.util.UrlUtil;
 
@@ -141,7 +142,7 @@ public class DownloadTaskManager implements Pauseable {
      * register an OnFileDownloadStatusListener
      *
      * @param onFileDownloadStatusListener OnFileDownloadStatusListener,recommend to use {@link
-     *                                     OnRetryableFileDownloadStatusListener} instead to support retrying 
+     *                                     OnRetryableFileDownloadStatusListener} instead to support retrying
      *                                     download status
      * @param downloadStatusConfiguration  Configuration for FileDownloadStatusListener
      * @since 0.3.0
@@ -156,7 +157,7 @@ public class DownloadTaskManager implements Pauseable {
      * register an OnFileDownloadStatusListener
      *
      * @param onFileDownloadStatusListener OnFileDownloadStatusListener,recommend to use {@link
-     *                                     OnRetryableFileDownloadStatusListener} instead to support retrying 
+     *                                     OnRetryableFileDownloadStatusListener} instead to support retrying
      *                                     download status
      */
     public void registerDownloadStatusListener(OnFileDownloadStatusListener onFileDownloadStatusListener) {
@@ -167,7 +168,7 @@ public class DownloadTaskManager implements Pauseable {
      * unregister an OnFileDownloadStatusListener
      *
      * @param onFileDownloadStatusListener OnFileDownloadStatusListener,recommend to use {@link
-     *                                     OnRetryableFileDownloadStatusListener} instead to support retrying 
+     *                                     OnRetryableFileDownloadStatusListener} instead to support retrying
      *                                     download status
      */
     public void unregisterDownloadStatusListener(OnFileDownloadStatusListener onFileDownloadStatusListener) {
@@ -569,19 +570,11 @@ public class DownloadTaskManager implements Pauseable {
 
             // confirm the status is paused
             DownloadFileInfo downloadFileInfo = getDownloadFile(url);
-            if (downloadFileInfo != null) {
-                switch (downloadFileInfo.getStatus()) {
-                    case Status.DOWNLOAD_STATUS_WAITING:
-                    case Status.DOWNLOAD_STATUS_RETRYING:
-                    case Status.DOWNLOAD_STATUS_PREPARING:
-                    case Status.DOWNLOAD_STATUS_PREPARED:
-                    case Status.DOWNLOAD_STATUS_DOWNLOADING:
-                        try {
-                            mDownloadRecorder.recordStatus(url, Status.DOWNLOAD_STATUS_PAUSED, 0);
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                        break;
+            if (DownloadFileUtil.canPause(downloadFileInfo)) {
+                try {
+                    mDownloadRecorder.recordStatus(url, Status.DOWNLOAD_STATUS_PAUSED, 0);
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
             }
 

@@ -1,6 +1,5 @@
 package org.wlf.filedownloader.util;
 
-
 import org.wlf.filedownloader.DownloadFileInfo;
 import org.wlf.filedownloader.base.BaseUrlFileInfo;
 import org.wlf.filedownloader.base.Status;
@@ -64,6 +63,31 @@ public class DownloadFileUtil {
     }
 
     /**
+     * whether the download file can pause
+     *
+     * @param downloadFileInfo
+     * @return
+     */
+    public static boolean canPause(DownloadFileInfo downloadFileInfo) {
+
+        if (downloadFileInfo == null) {
+            return false;
+        }
+
+        switch (downloadFileInfo.getStatus()) {
+            // only the status below can NOT be moved
+            case Status.DOWNLOAD_STATUS_WAITING:
+            case Status.DOWNLOAD_STATUS_RETRYING:
+            case Status.DOWNLOAD_STATUS_PREPARING:
+            case Status.DOWNLOAD_STATUS_PREPARED:
+            case Status.DOWNLOAD_STATUS_DOWNLOADING:
+                return true;
+        }
+
+        return false;
+    }
+
+    /**
      * whether the download file download completed
      *
      * @param downloadFileInfo
@@ -116,5 +140,5 @@ public class DownloadFileUtil {
 
         return true;
     }
-    
+
 }

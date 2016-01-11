@@ -1,8 +1,7 @@
 package org.wlf.filedownloader.file_move;
 
-import android.util.Log;
-
 import org.wlf.filedownloader.DownloadFileInfo;
+import org.wlf.filedownloader.base.Log;
 import org.wlf.filedownloader.listener.OnMoveDownloadFileListener;
 import org.wlf.filedownloader.listener.OnMoveDownloadFileListener.MoveDownloadFileFailReason;
 import org.wlf.filedownloader.listener.OnMoveDownloadFileListener.OnMoveDownloadFileFailReason;
@@ -200,10 +199,10 @@ class MoveDownloadFileTask implements Runnable {
                 // 2.move failed
                 notifyFailed(downloadFileInfo, failReason);
 
-                Log.d(TAG, TAG + ".run 删除失败，url：" + mUrl + ",failReason:" + failReason.getType());
+                Log.d(TAG, TAG + ".run 移动失败，url：" + mUrl + ",failReason:" + failReason.getType());
             }
 
-            Log.d(TAG, TAG + ".run 文件删除任务【已结束】，是否有异常：" + (failReason == null) + "，url：" + mUrl);
+            Log.d(TAG, TAG + ".run 文件移动任务【已结束】，是否有异常：" + (failReason == null) + "，url：" + mUrl);
         }
     }
 

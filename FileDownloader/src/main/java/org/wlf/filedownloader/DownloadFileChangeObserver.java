@@ -1,7 +1,6 @@
 package org.wlf.filedownloader;
 
-import android.util.Log;
-
+import org.wlf.filedownloader.base.Log;
 import org.wlf.filedownloader.listener.OnDownloadFileChangeListener;
 import org.wlf.filedownloader.util.CollectionUtil;
 import org.wlf.filedownloader.util.UrlUtil;
@@ -51,8 +50,7 @@ class DownloadFileChangeObserver implements OnDownloadFileChangeListener {
         mOnDownloadFileChangeListeners.add(listenerInfo);
 
         String urls = (downloadFileChangeConfiguration != null && !CollectionUtil.isEmpty
-                (downloadFileChangeConfiguration.getListenUrls())) ? downloadFileChangeConfiguration.getListenUrls()
-                .toString() : "";
+                (downloadFileChangeConfiguration.getListenUrls())) ? downloadFileChangeConfiguration.getListenUrls().toString() : "all";
 
         Log.i(TAG, "file-downloader-listener 添加【文件改变监听器】成功，监听的urls：" + urls);
     }
@@ -76,8 +74,7 @@ class DownloadFileChangeObserver implements OnDownloadFileChangeListener {
                 mOnDownloadFileChangeListeners.remove(listenerInfo);
 
                 String urls = (listenerInfo.mDownloadFileChangeConfiguration != null && !CollectionUtil.isEmpty
-                        (listenerInfo.mDownloadFileChangeConfiguration.getListenUrls())) ? listenerInfo
-                        .mDownloadFileChangeConfiguration.getListenUrls().toString() : "";
+                        (listenerInfo.mDownloadFileChangeConfiguration.getListenUrls())) ? listenerInfo.mDownloadFileChangeConfiguration.getListenUrls().toString() : "all";
 
                 Log.i(TAG, "file-downloader-listener 添加【文件改变监听器】成功，监听的urls：" + urls);
 
@@ -194,8 +191,11 @@ class DownloadFileChangeObserver implements OnDownloadFileChangeListener {
                 if (listenerInfo.mDownloadFileChangeConfiguration == null || CollectionUtil.isEmpty(listenerInfo
                         .mDownloadFileChangeConfiguration.getListenUrls())) {
                     // notify caller
-                    notifyDownloadFileCreated(downloadFileInfo, listenerInfo.mListener, listenerInfo
-                            .mDownloadFileChangeConfiguration.isSyncCallback());
+                    boolean isSyncCallback = false;
+                    if (listenerInfo.mDownloadFileChangeConfiguration != null) {
+                        isSyncCallback = listenerInfo.mDownloadFileChangeConfiguration.isSyncCallback();
+                    }
+                    notifyDownloadFileCreated(downloadFileInfo, listenerInfo.mListener, isSyncCallback);
                 } else {
                     // do not notify
                 }
@@ -236,8 +236,11 @@ class DownloadFileChangeObserver implements OnDownloadFileChangeListener {
                 if (listenerInfo.mDownloadFileChangeConfiguration == null || CollectionUtil.isEmpty(listenerInfo
                         .mDownloadFileChangeConfiguration.getListenUrls())) {
                     // notify caller
-                    notifyDownloadFileUpdated(downloadFileInfo, type, listenerInfo.mListener, listenerInfo
-                            .mDownloadFileChangeConfiguration.isSyncCallback());
+                    boolean isSyncCallback = false;
+                    if (listenerInfo.mDownloadFileChangeConfiguration != null) {
+                        isSyncCallback = listenerInfo.mDownloadFileChangeConfiguration.isSyncCallback();
+                    }
+                    notifyDownloadFileUpdated(downloadFileInfo, type, listenerInfo.mListener, isSyncCallback);
                 } else {
                     // do not notify
                 }
@@ -278,8 +281,11 @@ class DownloadFileChangeObserver implements OnDownloadFileChangeListener {
                 if (listenerInfo.mDownloadFileChangeConfiguration == null || CollectionUtil.isEmpty(listenerInfo
                         .mDownloadFileChangeConfiguration.getListenUrls())) {
                     // notify caller
-                    notifyDownloadFileDeleted(downloadFileInfo, listenerInfo.mListener, listenerInfo
-                            .mDownloadFileChangeConfiguration.isSyncCallback());
+                    boolean isSyncCallback = false;
+                    if (listenerInfo.mDownloadFileChangeConfiguration != null) {
+                        isSyncCallback = listenerInfo.mDownloadFileChangeConfiguration.isSyncCallback();
+                    }
+                    notifyDownloadFileDeleted(downloadFileInfo, listenerInfo.mListener, isSyncCallback);
                 } else {
                     // do not notify
                 }

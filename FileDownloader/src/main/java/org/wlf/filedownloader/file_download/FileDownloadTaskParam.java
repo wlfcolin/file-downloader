@@ -3,6 +3,8 @@ package org.wlf.filedownloader.file_download;
 import org.wlf.filedownloader.DownloadFileInfo;
 
 /**
+ * FileDownloadTaskParam
+ *
  * @author wlf(Andy)
  * @datetime 2016-01-08 18:50 GMT+8
  * @email 411086563@qq.com

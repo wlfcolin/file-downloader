@@ -1,9 +1,9 @@
 package org.wlf.filedownloader.file_download.http_downloader;
 
 import android.text.TextUtils;
-import android.util.Log;
 
 import org.wlf.filedownloader.base.FailReason;
+import org.wlf.filedownloader.base.Log;
 import org.wlf.filedownloader.file_download.CloseConnectionTask;
 import org.wlf.filedownloader.file_download.HttpConnectionHelper;
 import org.wlf.filedownloader.file_download.base.HttpFailReason;
@@ -238,7 +238,7 @@ public class HttpDownloader implements Download {
                 closeConnectionTask.run();
             }
 
-            Log.d(TAG, TAG + ".download 5、文件下载【已结束】，是否有异常：" + hasException + "，url：" + url);
+            Log.d(TAG, TAG + ".download 5、Http文件下载【已结束】，是否有异常：" + hasException + "，url：" + url);
         }
 
     }

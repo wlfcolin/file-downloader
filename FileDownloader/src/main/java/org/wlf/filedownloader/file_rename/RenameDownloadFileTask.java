@@ -1,9 +1,9 @@
 package org.wlf.filedownloader.file_rename;
 
 import android.text.TextUtils;
-import android.util.Log;
 
 import org.wlf.filedownloader.DownloadFileInfo;
+import org.wlf.filedownloader.base.Log;
 import org.wlf.filedownloader.listener.OnRenameDownloadFileListener;
 import org.wlf.filedownloader.listener.OnRenameDownloadFileListener.OnRenameDownloadFileFailReason;
 import org.wlf.filedownloader.listener.OnRenameDownloadFileListener.RenameDownloadFileFailReason;

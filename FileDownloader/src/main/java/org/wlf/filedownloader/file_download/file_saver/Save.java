@@ -2,8 +2,6 @@ package org.wlf.filedownloader.file_download.file_saver;
 
 import org.wlf.filedownloader.file_download.http_downloader.ContentLengthInputStream;
 
-import java.io.InputStream;
-
 /**
  * save data
  * <br/>

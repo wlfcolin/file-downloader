@@ -1,8 +1,7 @@
 package org.wlf.filedownloader.file_delete;
 
-import android.util.Log;
-
 import org.wlf.filedownloader.DownloadFileInfo;
+import org.wlf.filedownloader.base.Log;
 import org.wlf.filedownloader.listener.OnDeleteDownloadFileListener;
 import org.wlf.filedownloader.listener.OnDeleteDownloadFileListener.DeleteDownloadFileFailReason;
 import org.wlf.filedownloader.listener.OnDeleteDownloadFileListener.OnDeleteDownloadFileFailReason;
@@ -135,9 +134,9 @@ class DeleteDownloadFileTask implements Runnable {
             Log.d(TAG, TAG + ".run.run 文件删除成功url：" + mUrl);
         } catch (Exception e) {
             e.printStackTrace();
-           
-//            failReason = new DeleteDownloadFileFailReason(e);
-            
+
+            //            failReason = new DeleteDownloadFileFailReason(e);
+
             failReason = new OnDeleteDownloadFileFailReason(e);
         } finally {
             // delete succeed

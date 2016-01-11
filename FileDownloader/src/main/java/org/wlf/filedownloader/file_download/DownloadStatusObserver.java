@@ -1,8 +1,7 @@
 package org.wlf.filedownloader.file_download;
 
-import android.util.Log;
-
 import org.wlf.filedownloader.DownloadFileInfo;
+import org.wlf.filedownloader.base.Log;
 import org.wlf.filedownloader.listener.OnFileDownloadStatusListener;
 import org.wlf.filedownloader.listener.OnRetryableFileDownloadStatusListener;
 import org.wlf.filedownloader.util.CollectionUtil;
@@ -53,8 +52,7 @@ class DownloadStatusObserver implements OnRetryableFileDownloadStatusListener {
                 onFileDownloadStatusListener);
         mDownloadStatusListenerInfos.add(listenerInfo);
 
-        String urls = (downloadStatusConfiguration != null && !CollectionUtil.isEmpty(downloadStatusConfiguration
-                .getListenUrls())) ? downloadStatusConfiguration.getListenUrls().toString() : "";
+        String urls = (downloadStatusConfiguration != null && !CollectionUtil.isEmpty(downloadStatusConfiguration.getListenUrls())) ? downloadStatusConfiguration.getListenUrls().toString() : "all";
 
         Log.i(TAG, "file-downloader-listener 添加【下载状态监听器】成功，监听的urls：" + urls);
     }
@@ -79,8 +77,7 @@ class DownloadStatusObserver implements OnRetryableFileDownloadStatusListener {
                 mDownloadStatusListenerInfos.remove(listenerInfo);
 
                 String urls = (listenerInfo.mDownloadStatusConfiguration != null && !CollectionUtil.isEmpty
-                        (listenerInfo.mDownloadStatusConfiguration.getListenUrls())) ? listenerInfo
-                        .mDownloadStatusConfiguration.getListenUrls().toString() : "";
+                        (listenerInfo.mDownloadStatusConfiguration.getListenUrls())) ? listenerInfo.mDownloadStatusConfiguration.getListenUrls().toString() : "all";
 
                 Log.i(TAG, "file-downloader-listener 移除【下载状态监听器】成功，包含监听的urls：" + urls);
                 break;
