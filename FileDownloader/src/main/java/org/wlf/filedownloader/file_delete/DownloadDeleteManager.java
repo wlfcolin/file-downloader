@@ -73,7 +73,8 @@ public class DownloadDeleteManager {
     /**
      * delete a download
      */
-    private void singleDeleteInternal(String url, boolean deleteDownloadedFileInPath, OnDeleteDownloadFileListener onDeleteDownloadFileListener) {
+    private void singleDeleteInternal(String url, boolean deleteDownloadedFileInPath, OnDeleteDownloadFileListener 
+            onDeleteDownloadFileListener) {
         // create a delete download task
         DeleteDownloadFileTask deleteDownloadFileTask = new DeleteDownloadFileTask(url, deleteDownloadedFileInPath, 
                 mDownloadFileDeleter);
@@ -152,8 +153,7 @@ public class DownloadDeleteManager {
         }
 
         // create a multi delete task
-        DeleteDownloadFilesTask deleteDownloadFilesTask = new DeleteDownloadFilesTask(urls, deleteDownloadedFile, 
-                mDownloadFileDeleter);
+        DeleteDownloadFilesTask deleteDownloadFilesTask = new DeleteDownloadFilesTask(urls, deleteDownloadedFile, mTaskEngine, mDownloadFileDeleter, mDownloadTaskPauseable);
         deleteDownloadFilesTask.setOnDeleteDownloadFilesListener(onDeleteDownloadFilesListener);
 
         // start the task

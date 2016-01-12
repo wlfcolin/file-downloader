@@ -54,7 +54,7 @@ public class FileDownloadApplication extends Application {
         builder.configRetryDownloadTimes(5);
 
         // enable debug mode
-        builder.configIsDebugMode(false);
+        builder.configDebugMode(true);
 
         // 3.init FileDownloader with the configuration
         // build FileDownloadConfiguration with the builder

@@ -160,6 +160,11 @@ public class DownloadFileUtil {
     }
 
     public static boolean isDownloadingStatus(DownloadFileInfo downloadFileInfo) {
+
+        if (!DownloadFileUtil.isLegal(downloadFileInfo)) {
+            return false;
+        }
+
         // only the status below is downloading
         switch (downloadFileInfo.getStatus()) {
             case Status.DOWNLOAD_STATUS_WAITING:

@@ -25,20 +25,20 @@ public class FileDownloadConfiguration {
     public static class Builder {
 
         /**
-         * max download task at the same time,max 5
+         * max download task at the same time, max is 10
          */
-        public static final int MAX_DOWNLOAD_TASK_SIZE = 5;
+        public static final int MAX_DOWNLOAD_TASK_SIZE = 10;
         /**
-         * default download task at the same time,default 2
+         * default download task at the same time, default is 2
          */
         public static final int DEFAULT_DOWNLOAD_TASK_SIZE = 2;
 
         /**
-         * max retry download times,max 5
+         * max retry download times, max is 5
          */
-        public static final int MAX_RETRY_DOWNLOAD_TIMES = 5;
+        public static final int MAX_RETRY_DOWNLOAD_TIMES = 10;
         /**
-         * default retry download times,default 0
+         * default retry download times, default is 0
          */
         public static final int DEFAULT_RETRY_DOWNLOAD_TIMES = 0;
 
@@ -139,7 +139,7 @@ public class FileDownloadConfiguration {
          *
          * @param isDebug true means debug mode
          */
-        public void configIsDebugMode(boolean isDebug) {
+        public void configDebugMode(boolean isDebug) {
             this.mIsDebugMode = isDebug;
             // set log mode
             Log.setDebugMode(mIsDebugMode);
@@ -174,7 +174,7 @@ public class FileDownloadConfiguration {
      */
     private ExecutorService mFileDetectEngine;
     /**
-     * engine use for operate downloaded file
+     * engine use for operate downloaded file such as delete, move, rename and other async operations
      */
     private ExecutorService mFileOperationEngine;
 
@@ -200,7 +200,7 @@ public class FileDownloadConfiguration {
         this.mBuilder = builder;
         this.mFileDownloadEngine = Executors.newFixedThreadPool(builder.mDownloadTaskSize);
         this.mFileDetectEngine = Executors.newCachedThreadPool(); // no limit
-        this.mFileOperationEngine = Executors.newFixedThreadPool(3); // limit 3, for operations: move,delete,rename
+        this.mFileOperationEngine = Executors.newCachedThreadPool(); // no limit
     }
 
     // getters

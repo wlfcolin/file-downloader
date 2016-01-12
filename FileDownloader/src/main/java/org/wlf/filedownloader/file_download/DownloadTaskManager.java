@@ -239,7 +239,7 @@ public class DownloadTaskManager implements Pauseable {
                 mDetectUrlFileCacher, mDownloadRecorder);
         detectUrlFileTask.setOnDetectUrlFileListener(onDetectBigUrlFileListener);
         // set the CloseConnectionEngine
-        detectUrlFileTask.setCloseConnectionEngine(mConfiguration.getFileDetectEngine());
+        detectUrlFileTask.setCloseConnectionEngine(mConfiguration.getFileOperationEngine());
 
         // exec the DetectUrlFileTask
         mConfiguration.getFileDetectEngine().execute(detectUrlFileTask);
@@ -300,7 +300,7 @@ public class DownloadTaskManager implements Pauseable {
         RetryableDownloadTaskImpl downloadTask = new RetryableDownloadTaskImpl(FileDownloadTaskParam
                 .createByDownloadFile(downloadFileInfo), mDownloadRecorder, mDownloadStatusObserver);
         // set the CloseConnectionEngine
-        downloadTask.setCloseConnectionEngine(mConfiguration.getFileDetectEngine());
+        downloadTask.setCloseConnectionEngine(mConfiguration.getFileOperationEngine());
         // set RetryDownloadTimes
         downloadTask.setRetryDownloadTimes(mConfiguration.getRetryDownloadTimes());
 
@@ -618,7 +618,8 @@ public class DownloadTaskManager implements Pauseable {
         // get download task info
         DownloadTask downloadTask = getRunningDownloadTask(url);
 
-        Log.d(TAG, "pauseInternal fileDownloadTask是否已经停止：" + downloadTask.isStopped() + ",url：" + url);
+        Log.d(TAG, "pauseInternal fileDownloadTask是否已经停止：" + (downloadTask != null ? downloadTask.isStopped() : true) +
+                ",url：" + url);
 
         final String finalUrl = url;
 

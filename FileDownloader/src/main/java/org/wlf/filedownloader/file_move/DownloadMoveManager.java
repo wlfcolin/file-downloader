@@ -150,7 +150,8 @@ public class DownloadMoveManager {
         }
 
         // create a multi move task
-        MoveDownloadFilesTask moveDownloadFilesTask = new MoveDownloadFilesTask(urls, newDirPath, mDownloadFileMover);
+        MoveDownloadFilesTask moveDownloadFilesTask = new MoveDownloadFilesTask(urls, newDirPath, mTaskEngine, 
+                mDownloadFileMover, mDownloadTaskPauseable);
         moveDownloadFilesTask.setOnMoveDownloadFilesListener(onMoveDownloadFilesListener);
 
         // start the task
