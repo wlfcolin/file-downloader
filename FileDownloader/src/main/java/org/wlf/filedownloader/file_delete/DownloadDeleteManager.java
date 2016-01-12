@@ -33,15 +33,15 @@ public class DownloadDeleteManager {
      */
     private ExecutorService mTaskEngine;
     /**
-     * DownloadFileDeleter,to manage download files
+     * DownloadFileDeleter, which to delete download files in record
      */
     private DownloadFileDeleter mDownloadFileDeleter;
     /**
-     * Pauseable,to pause download tasks
+     * Pauseable, which to pause download tasks
      */
     private Pauseable mDownloadTaskPauseable;
     /**
-     * delete control
+     * multi delete control
      */
     private DeleteControl mDeleteControl;
 
@@ -56,7 +56,7 @@ public class DownloadDeleteManager {
      * start a task
      */
     private void addAndRunTask(Runnable task) {
-        // exec a task
+        // exec the task
         mTaskEngine.execute(task);
     }
 
@@ -71,56 +71,63 @@ public class DownloadDeleteManager {
     }
 
     /**
-     * delete download
+     * delete a download
      */
-    private void deleteInternal(String url, boolean deleteDownloadedFileInPath, OnDeleteDownloadFileListener 
-            onDeleteDownloadFileListener) {
-        // create delete download task
+    private void singleDeleteInternal(String url, boolean deleteDownloadedFileInPath, OnDeleteDownloadFileListener onDeleteDownloadFileListener) {
+        // create a delete download task
         DeleteDownloadFileTask deleteDownloadFileTask = new DeleteDownloadFileTask(url, deleteDownloadedFileInPath, 
                 mDownloadFileDeleter);
         deleteDownloadFileTask.setOnDeleteDownloadFileListener(onDeleteDownloadFileListener);
-        // run task
+        // run the task
         addAndRunTask(deleteDownloadFileTask);
     }
 
     /**
-     * delete download
+     * delete a download file
      *
      * @param url                          file url
      * @param deleteDownloadedFileInPath   whether delete file in path
-     * @param onDeleteDownloadFileListener DeleteDownloadFileListener
+     * @param onDeleteDownloadFileListener OnDeleteDownloadFileListener impl
      */
     public void delete(final String url, final boolean deleteDownloadedFileInPath, final OnDeleteDownloadFileListener
             onDeleteDownloadFileListener) {
 
         final String finalUrl = url;
 
-        // not downloading, delete direct
+        // the download task has been stopped
         if (!mDownloadTaskPauseable.isDownloading(url)) {
 
-            Log.d(TAG, "delete 直接删除,url:" + url);
+            Log.d(TAG, TAG + ".delete 下载任务已经暂停，可以直接删除，url:" + url);
 
-            deleteInternal(url, deleteDownloadedFileInPath, onDeleteDownloadFileListener);
+            singleDeleteInternal(url, deleteDownloadedFileInPath, onDeleteDownloadFileListener);
         } else {
 
-            Log.d(TAG, "delete 需要先暂停后删除,url:" + url);
+            Log.d(TAG, TAG + ".delete 需要先暂停下载任务后删除,url:" + url);
 
             // pause
             mDownloadTaskPauseable.pause(url, new OnStopFileDownloadTaskListener() {
                 @Override
                 public void onStopFileDownloadTaskSucceed(String url) {
 
-                    Log.d(TAG, "delete 暂停成功，开始删除,url:" + finalUrl);
+                    Log.d(TAG, TAG + ".delete 暂停下载任务成功，开始删除，url:" + finalUrl);
 
-                    deleteInternal(finalUrl, deleteDownloadedFileInPath, onDeleteDownloadFileListener);
+                    singleDeleteInternal(finalUrl, deleteDownloadedFileInPath, onDeleteDownloadFileListener);
                 }
 
                 @Override
                 public void onStopFileDownloadTaskFailed(String url, StopDownloadFileTaskFailReason failReason) {
 
-                    Log.d(TAG, "delete 暂停失败，无法删除,url:" + finalUrl);
+                    if (failReason != null) {
+                        if (StopDownloadFileTaskFailReason.TYPE_TASK_HAS_BEEN_STOPPED.equals(failReason.getType())) {
+                            // has been stopped, so can restart normally
+                            singleDeleteInternal(finalUrl, deleteDownloadedFileInPath, onDeleteDownloadFileListener);
+                            return;
+                        }
+                    }
 
-                    // notify caller
+                    Log.d(TAG, TAG + ".delete 暂停下载任务失败，无法删除，url:" + finalUrl);
+
+                    // otherwise error occur, notify caller
                     notifyDeleteDownloadFileFailed(getDownloadFile(finalUrl), new OnDeleteDownloadFileFailReason
                             (failReason), onDeleteDownloadFileListener);
                 }
@@ -129,26 +136,27 @@ public class DownloadDeleteManager {
     }
 
     /**
-     * delete multi downloads
+     * delete multi download files
      *
-     * @param urls                          file mUrls
+     * @param urls                          file urls
      * @param deleteDownloadedFile          whether delete file in path
-     * @param onDeleteDownloadFilesListener DeleteDownloadFilesListener
-     * @return the control for the operation
+     * @param onDeleteDownloadFilesListener OnDeleteDownloadFilesListener impl
+     * @return a control for the operation
      */
     public Control delete(List<String> urls, boolean deleteDownloadedFile, OnDeleteDownloadFilesListener 
             onDeleteDownloadFilesListener) {
 
         if (mDeleteControl != null && !mDeleteControl.isStopped()) {
             // under deleting, ignore
-            return mDeleteControl;
+            return mDeleteControl;// FIXME whether need to notify caller by onMoveDownloadFilesListener ?
         }
 
+        // create a multi delete task
         DeleteDownloadFilesTask deleteDownloadFilesTask = new DeleteDownloadFilesTask(urls, deleteDownloadedFile, 
                 mDownloadFileDeleter);
         deleteDownloadFilesTask.setOnDeleteDownloadFilesListener(onDeleteDownloadFilesListener);
 
-        // start task
+        // start the task
         addAndRunTask(deleteDownloadFilesTask);
 
         // record new delete control  
@@ -157,21 +165,22 @@ public class DownloadDeleteManager {
         return mDeleteControl;
     }
 
-    // -----------------------notify caller-----------------------
+    // --------------------------------------notify caller--------------------------------------
 
+    /**
+     * notifyDeleteDownloadFileFailed
+     */
     private void notifyDeleteDownloadFileFailed(DownloadFileInfo downloadFileInfo, DeleteDownloadFileFailReason 
             failReason, OnDeleteDownloadFileListener onDeleteDownloadFileListener) {
-        if (onDeleteDownloadFileListener == null) {
-            return;
-        }
-
-        // notify caller
+        // main thread notify caller
         OnDeleteDownloadFileListener.MainThreadHelper.onDeleteDownloadFileFailed(downloadFileInfo, failReason, 
                 onDeleteDownloadFileListener);
     }
 
+    // --------------------------------------internal classes--------------------------------------
+
     /**
-     * DeleteControl
+     * MoveControl for multi delete
      */
     private class DeleteControl implements Control {
 

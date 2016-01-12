@@ -9,9 +9,17 @@ package org.wlf.filedownloader.base;
  */
 public class Log {
 
+    /**
+     * debug mode flag, default is true
+     */
     private static boolean sIsDebugMode = true;
 
-    public static void setIsDebugMode(boolean isDebugMode) {
+    /**
+     * set whether is debug mode
+     *
+     * @param isDebugMode whether is debug mode, default is true
+     */
+    public static void setDebugMode(boolean isDebugMode) {
         Log.sIsDebugMode = isDebugMode;
     }
 

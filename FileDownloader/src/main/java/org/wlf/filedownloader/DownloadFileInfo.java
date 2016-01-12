@@ -142,8 +142,6 @@ public class DownloadFileInfo extends BaseUrlFileInfo {
     private DownloadFileInfo() {
     }
 
-    // package use only
-
     /**
      * constructor of HttpDownloader,use DetectUrlFileInfo to create
      *
@@ -159,8 +157,6 @@ public class DownloadFileInfo extends BaseUrlFileInfo {
         // this.mStatus = Status.DOWNLOAD_STATUS_WAITING;// download status
         this.mCreateDatetime = DateUtil.date2String_yyyy_MM_dd_HH_mm_ss(new Date());
     }
-
-    // package use only
 
     /**
      * constructor of HttpDownloader,use {@link Cursor} to create
@@ -247,8 +243,6 @@ public class DownloadFileInfo extends BaseUrlFileInfo {
         }
     }
 
-    // package use only
-
     /**
      * update DownloadFileInfo with new DownloadFileInfo
      *
@@ -290,8 +284,6 @@ public class DownloadFileInfo extends BaseUrlFileInfo {
         }
     }
 
-    // package use only
-
     /**
      * get ContentValues for all fields
      */
@@ -328,8 +320,6 @@ public class DownloadFileInfo extends BaseUrlFileInfo {
         }
         return super.hashCode();
     }
-
-    // setters,package use only
 
     /**
      * set id

@@ -3,7 +3,7 @@ package org.wlf.filedownloader.base;
 /**
  * download file status
  * <br/>
- * 状态
+ * 文件下载状态
  *
  * @author wlf(Andy)
  * @email 411086563@qq.com

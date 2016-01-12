@@ -64,7 +64,7 @@ public class FileDownloadConfiguration {
             mRetryDownloadTimes = DEFAULT_RETRY_DOWNLOAD_TIMES;
 
             // set log mode
-            Log.setIsDebugMode(mIsDebugMode);
+            Log.setDebugMode(mIsDebugMode);
         }
 
         /**
@@ -142,7 +142,7 @@ public class FileDownloadConfiguration {
         public void configIsDebugMode(boolean isDebug) {
             this.mIsDebugMode = isDebug;
             // set log mode
-            Log.setIsDebugMode(mIsDebugMode);
+            Log.setDebugMode(mIsDebugMode);
         }
 
         /**

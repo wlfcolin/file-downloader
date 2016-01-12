@@ -4,24 +4,22 @@ import android.content.Context;
 
 import org.wlf.filedownloader.base.Control;
 import org.wlf.filedownloader.base.Log;
-import org.wlf.filedownloader.base.Status;
 import org.wlf.filedownloader.file_delete.DownloadDeleteManager;
-import org.wlf.filedownloader.file_download.DownloadStatusConfiguration;
+import org.wlf.filedownloader.DownloadStatusConfiguration.Builder;
 import org.wlf.filedownloader.file_download.DownloadTaskManager;
 import org.wlf.filedownloader.file_download.DownloadTaskManager.OnReleaseListener;
 import org.wlf.filedownloader.file_move.DownloadMoveManager;
 import org.wlf.filedownloader.file_rename.DownloadRenameManager;
 import org.wlf.filedownloader.listener.OnDeleteDownloadFileListener;
 import org.wlf.filedownloader.listener.OnDeleteDownloadFilesListener;
-import org.wlf.filedownloader.listener.OnDetectBigUrlFileListener;
 import org.wlf.filedownloader.listener.OnDetectUrlFileListener;
 import org.wlf.filedownloader.listener.OnDownloadFileChangeListener;
 import org.wlf.filedownloader.listener.OnFileDownloadStatusListener;
 import org.wlf.filedownloader.listener.OnMoveDownloadFileListener;
 import org.wlf.filedownloader.listener.OnMoveDownloadFilesListener;
 import org.wlf.filedownloader.listener.OnRenameDownloadFileListener;
-import org.wlf.filedownloader.listener.OnRetryableFileDownloadStatusListener;
 import org.wlf.filedownloader.util.CollectionUtil;
+import org.wlf.filedownloader.util.DownloadFileUtil;
 
 import java.util.List;
 
@@ -31,7 +29,7 @@ import java.util.List;
  * 文件下载管理器
  *
  * @author wlf
- * @deprecated use {@link FileDownloader} instead if the version you are using is reach 0.2.0
+ * @deprecated use {@link FileDownloader} instead
  */
 @Deprecated
 public final class FileDownloadManager {
@@ -49,33 +47,37 @@ public final class FileDownloadManager {
      */
     private Object mInitLock = new Object();
 
-    // --------------------------------------important fields for the manager--------------------------------------
+    // --------------------------------------important fields--------------------------------------
+
     /**
-     * Configuration,to config download parameters
+     * FileDownload Configuration, which stored global configurations
      */
     private FileDownloadConfiguration mConfiguration;
     /**
-     * DownloadFileCacher,to storage download files
+     * DownloadFileCacher, which stored download files
      */
     private DownloadCacher mDownloadFileCacher;
+
     /**
-     * DownloadTaskManager,to manage download tasks
+     * DownloadTaskManager, which to manage download tasks
      */
     private DownloadTaskManager mDownloadTaskManager;
     /**
-     * DownloadMoveManager,to manage move download files
+     * DownloadMoveManager, which to move download files
      */
     private DownloadMoveManager mDownloadMoveManager;
     /**
-     * mDownloadDeleteManager,to manage delete download files
+     * DownloadDeleteManager, which to delete download files
      */
     private DownloadDeleteManager mDownloadDeleteManager;
     /**
-     * DownloadRenameManager,to manage rename download files
+     * DownloadRenameManager, which to rename download files
      */
     private DownloadRenameManager mDownloadRenameManager;
 
-    //  constructor of FileDownloadManager,private only
+    // --------------------------------------lifecycle & others--------------------------------------
+
+    //  constructor of FileDownloadManager, private only
     private FileDownloadManager(Context context) {
 
         Context appContext = context.getApplicationContext();
@@ -83,8 +85,8 @@ public final class FileDownloadManager {
         // init DownloadFileCacher
         mDownloadFileCacher = new DownloadCacher(appContext);
 
-        // check the download status,if there is an exception status,try to recover it
-        exceptionStateRecovery(getDownloadFiles());
+        // check the download status, if there is an exception status, try to recover it
+        checkAndRecoveryExceptionStatus(getDownloadFiles());
     }
 
     /**
@@ -104,69 +106,32 @@ public final class FileDownloadManager {
         return sInstance;
     }
 
-    // package access, FileDownloader use only
-    static FileDownloadConfiguration getConfiguration() {
-        if (sInstance != null) {
-            synchronized (sInstance.mInitLock) {
-                if (sInstance != null) {
-                    return sInstance.mConfiguration;
-                }
-            }
-        }
-        return null;
-    }
-
     /**
-     * try to recover exception states
+     * check and recovery exception status
      */
-    private void exceptionStateRecovery(List<DownloadFileInfo> downloadFileInfos) {
+    private void checkAndRecoveryExceptionStatus(List<DownloadFileInfo> downloadFileInfos) {
 
-        Log.i(TAG, "exceptionStateRecovery 异常恢复检查！");
+        Log.i(TAG, "checkAndRecoveryExceptionStatus 异常恢复检查！");
 
         if (CollectionUtil.isEmpty(downloadFileInfos)) {
             return;
         }
 
         for (DownloadFileInfo downloadFileInfo : downloadFileInfos) {
-            if (downloadFileInfo == null) {
+
+            if (!DownloadFileUtil.isLegal(downloadFileInfo)) {
                 continue;
             }
 
             String url = downloadFileInfo.getUrl();
 
-            // initialized and in the download task,ignore
+            // initialized and isDownloading, ignore
             if (isInit() && getDownloadTaskManager().isDownloading(url)) {
                 continue;
             }
-            // check
-            switch (downloadFileInfo.getStatus()) {
-                case Status.DOWNLOAD_STATUS_WAITING:
-                case Status.DOWNLOAD_STATUS_PREPARING:
-                case Status.DOWNLOAD_STATUS_PREPARED:
-                case Status.DOWNLOAD_STATUS_DOWNLOADING:
-                    // recover paused
-                    try {
-                        mDownloadFileCacher.recordStatus(url, Status.DOWNLOAD_STATUS_PAUSED, 0);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                    break;
-                case Status.DOWNLOAD_STATUS_COMPLETED:
-                case Status.DOWNLOAD_STATUS_PAUSED:
-                case Status.DOWNLOAD_STATUS_ERROR:
-                    // ignore
-                    break;
-                case Status.DOWNLOAD_STATUS_UNKNOWN:
-                case Status.DOWNLOAD_STATUS_RETRYING:
-                default:
-                    // recover error
-                    try {
-                        mDownloadFileCacher.recordStatus(url, Status.DOWNLOAD_STATUS_ERROR, 0);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                    break;
-            }
+
+            // recovery status if necessary
+            DownloadFileUtil.recoveryExceptionStatus(mDownloadFileCacher, downloadFileInfo);
         }
     }
 
@@ -197,10 +162,30 @@ public final class FileDownloadManager {
      */
     private void checkInit() {
         if (!isInit()) {
-            throw new IllegalStateException("please init the file-downloader by using " + FileDownloader.class
-                    .getSimpleName() + " or " + FileDownloadManager.class.getSimpleName() + " if the version is below" +
-                    " 0.2.0");
+            throw new IllegalStateException("Please init the file-downloader by using " + FileDownloader.class
+                    .getSimpleName() + ".init(FileDownloadConfiguration) or " + FileDownloadManager.class
+                    .getSimpleName() + ".init(FileDownloadConfiguration) if the version is below 0.2.0 !");
         }
+    }
+
+    /**
+     * release resources
+     */
+    public void release() {
+        getDownloadTaskManager().release(new OnReleaseListener() {
+            @Override
+            public void onReleased() {
+                synchronized (mInitLock) {
+                    if (mConfiguration != null) {
+                        mConfiguration.getFileDetectEngine().shutdown();
+                        mConfiguration.getFileDownloadEngine().shutdown();
+                        mConfiguration.getFileOperationEngine().shutdown();
+                    }
+                    mDownloadFileCacher.release();
+                    sInstance = null;
+                }
+            }
+        });
     }
 
     // --------------------------------------getters--------------------------------------
@@ -306,7 +291,7 @@ public final class FileDownloadManager {
      * get DownloadFile by save file path
      *
      * @param savePath            save file path
-     * @param includeTempFilePath true means try use the savePath as temp file savePath if can not get DownloadFile
+     * @param includeTempFilePath true means try use the savePath as temp file savePath if it can not get DownloadFile
      *                            by savePath
      * @return DownloadFile
      * @deprecated use {@link #getDownloadFileBySavePath(String)} and {@link #getDownloadFileByTempPath(String)} instead
@@ -335,100 +320,49 @@ public final class FileDownloadManager {
         return mConfiguration.getFileDownloadDir();
     }
 
-    // --------------------------------------register listeners--------------------------------------
+    // --------------------------------------register & unregister listeners--------------------------------------
 
     /**
      * register an OnFileDownloadStatusListener
      *
-     * @param onFileDownloadStatusListener OnFileDownloadStatusListener,recommend to use {@link
-     *                                     OnRetryableFileDownloadStatusListener} instead to support retrying
-     *                                     download status
+     * @param onFileDownloadStatusListener OnFileDownloadStatusListener impl
      * @since 0.2.0
      */
-    void registerDownloadStatusListener(OnFileDownloadStatusListener onFileDownloadStatusListener) {
-        getDownloadTaskManager().registerDownloadStatusListener(onFileDownloadStatusListener);
-    }
-
-    /**
-     * register an OnFileDownloadStatusListener
-     *
-     * @param onFileDownloadStatusListener OnFileDownloadStatusListener,recommend to use {@link
-     *                                     OnRetryableFileDownloadStatusListener} instead to support retrying
-     *                                     download status
-     * @param downloadStatusConfiguration  Configuration for FileDownloadStatusListener
-     * @since 0.3.0
-     */
-    public void registerDownloadStatusListener(OnFileDownloadStatusListener onFileDownloadStatusListener, 
-                                               DownloadStatusConfiguration downloadStatusConfiguration) {
-        getDownloadTaskManager().registerDownloadStatusListener(onFileDownloadStatusListener, 
-                downloadStatusConfiguration);
+    public void registerDownloadStatusListener(OnFileDownloadStatusListener onFileDownloadStatusListener) {
+        registerDownloadStatusListener(onFileDownloadStatusListener, null);
     }
 
     /**
      * unregister an OnFileDownloadStatusListener
      *
-     * @param onFileDownloadStatusListener OnFileDownloadStatusListener,recommend to use {@link
-     *                                     OnRetryableFileDownloadStatusListener} instead to support retrying
-     *                                     download status
+     * @param onFileDownloadStatusListener registered OnFileDownloadStatusListener or
+     *                                     OnRetryableFileDownloadStatusListener impl
      * @since 0.2.0
      */
-    void unregisterDownloadStatusListener(OnFileDownloadStatusListener onFileDownloadStatusListener) {
+    public void unregisterDownloadStatusListener(OnFileDownloadStatusListener onFileDownloadStatusListener) {
         getDownloadTaskManager().unregisterDownloadStatusListener(onFileDownloadStatusListener);
     }
 
-    /**
-     * register a DownloadFileChangeListener
-     *
-     * @param onDownloadFileChangeListener    the OnDownloadFileChangeListener impl
-     * @param downloadFileChangeConfiguration the Configuration for the DownloadFileChangeListener
-     * @since 0.3.0
-     */
-    void registerDownloadFileChangeListener(OnDownloadFileChangeListener onDownloadFileChangeListener, 
-                                            DownloadFileChangeConfiguration downloadFileChangeConfiguration) {
-        mDownloadFileCacher.registerDownloadFileChangeListener(onDownloadFileChangeListener, 
-                downloadFileChangeConfiguration);
-    }
+    // --------------------------------------detect url files--------------------------------------
 
     /**
-     * register an OnDownloadFileChangeListener
-     *
-     * @param onDownloadFileChangeListener the OnDownloadFileChangeListener impl
-     * @since 0.2.0
-     */
-    void registerDownloadFileChangeListener(OnDownloadFileChangeListener onDownloadFileChangeListener) {
-        mDownloadFileCacher.registerDownloadFileChangeListener(onDownloadFileChangeListener, null);
-    }
-
-    /**
-     * unregister an OnDownloadFileChangeListener
-     *
-     * @param onDownloadFileChangeListener the OnDownloadFileChangeListener impl
-     * @since 0.2.0
-     */
-    void unregisterDownloadFileChangeListener(OnDownloadFileChangeListener onDownloadFileChangeListener) {
-        mDownloadFileCacher.unregisterDownloadFileChangeListener(onDownloadFileChangeListener);
-    }
-
-    // --------------------------------------detect url file--------------------------------------
-
-    /**
-     * detect url file
+     * detect a url file
      *
      * @param url                     file url
-     * @param onDetectUrlFileListener DetectUrlFileListener,recommend to use {@link OnDetectBigUrlFileListener}
-     *                                instead to support downloading the file more than 2G
+     * @param onDetectUrlFileListener OnDetectUrlFileListener impl
      */
     public void detect(String url, OnDetectUrlFileListener onDetectUrlFileListener) {
         getDownloadTaskManager().detect(url, onDetectUrlFileListener);
     }
 
-    // --------------------------------------create/continue download--------------------------------------
+    // --------------------------------------create/continue downloads--------------------------------------
 
     /**
-     * create download task,please use {@link #detect(String, OnDetectUrlFileListener)} to detect url file first
+     * create a new download after detected a url file by using {@link #detect(String, OnDetectUrlFileListener)}
      * <br/>
-     * if the caller cares for the download status，please ues {@link #registerDownloadStatusListener
-     * (OnFileDownloadStatusListener)} to register the callback
+     * if the caller cares for the download status, please register an listener before by using
+     * <br/>
+     * {@link #registerDownloadStatusListener(OnFileDownloadStatusListener)}
      *
      * @param url      file url
      * @param saveDir  saveDir
@@ -440,26 +374,32 @@ public final class FileDownloadManager {
     }
 
     /**
-     * create download task,please use {@link #detect(String, OnDetectUrlFileListener)} to detect url file first
+     * create a new download after detected a url file by using {@link #detect(String, OnDetectUrlFileListener)}
      *
      * @param url                          file url
      * @param saveDir                      saveDir
      * @param fileName                     saveFileName
-     * @param onFileDownloadStatusListener FileDownloadStatusListener
+     * @param onFileDownloadStatusListener OnFileDownloadStatusListener impl
      * @deprecated use {@link #createAndStart(String, String, String)} instead
      */
     @Deprecated
     public void createAndStart(String url, String saveDir, String fileName, OnFileDownloadStatusListener 
             onFileDownloadStatusListener) {
-        registerDownloadStatusListener(onFileDownloadStatusListener);
+
+        DownloadStatusConfiguration.Builder builder = new Builder();
+        builder.addListenUrl(url);
+        builder.configAutoRelease(true);
+        registerDownloadStatusListener(onFileDownloadStatusListener, builder.build());
+
         createAndStart(url, saveDir, fileName);
     }
 
     /**
-     * start/continue download
+     * start/continue a download
      * <br/>
-     * if the caller cares for the download status，please ues {@link #registerDownloadStatusListener
-     * (OnFileDownloadStatusListener)} to register the callback
+     * if the caller cares for the download status, please register an listener before by using
+     * <br/>
+     * {@link #registerDownloadStatusListener(OnFileDownloadStatusListener)}
      *
      * @param url file url
      * @since 0.2.0
@@ -469,20 +409,29 @@ public final class FileDownloadManager {
     }
 
     /**
-     * start/continue download
+     * start/continue a download
      *
      * @param url                          file url
-     * @param onFileDownloadStatusListener FileDownloadStatusListener
+     * @param onFileDownloadStatusListener OnFileDownloadStatusListener impl
      * @deprecated use {@link #start(String)} instead
      */
     @Deprecated
     public void start(String url, OnFileDownloadStatusListener onFileDownloadStatusListener) {
-        registerDownloadStatusListener(onFileDownloadStatusListener);
+
+        DownloadStatusConfiguration.Builder builder = new Builder();
+        builder.addListenUrl(url);
+        builder.configAutoRelease(true);
+        registerDownloadStatusListener(onFileDownloadStatusListener, builder.build());
+
         start(url);
     }
 
     /**
-     * start/continue multi download
+     * start/continue multi downloads
+     * <br/>
+     * if the caller cares for the download status, please register an listener before by using
+     * <br/>
+     * {@link #registerDownloadStatusListener(OnFileDownloadStatusListener)}
      *
      * @param urls file urls
      * @since 0.2.0
@@ -492,22 +441,27 @@ public final class FileDownloadManager {
     }
 
     /**
-     * start/continue multi download
+     * start/continue multi downloads
      *
      * @param urls                         file urls
-     * @param onFileDownloadStatusListener FileDownloadStatusListener
+     * @param onFileDownloadStatusListener OnFileDownloadStatusListener impl
      * @deprecated use {@link #start(List)} instead
      */
     @Deprecated
     public void start(List<String> urls, OnFileDownloadStatusListener onFileDownloadStatusListener) {
-        registerDownloadStatusListener(onFileDownloadStatusListener);
+
+        DownloadStatusConfiguration.Builder builder = new Builder();
+        builder.addListenUrls(urls);
+        builder.configAutoRelease(true);
+        registerDownloadStatusListener(onFileDownloadStatusListener, builder.build());
+
         start(urls);
     }
 
-    // --------------------------------------pause download--------------------------------------
+    // --------------------------------------pause downloads--------------------------------------
 
     /**
-     * pause download
+     * pause a download
      *
      * @param url file url
      */
@@ -516,7 +470,7 @@ public final class FileDownloadManager {
     }
 
     /**
-     * pause multi download
+     * pause multi downloads
      *
      * @param urls file urls
      */
@@ -525,19 +479,20 @@ public final class FileDownloadManager {
     }
 
     /**
-     * pause all download
+     * pause all downloads
      */
     public void pauseAll() {
         getDownloadTaskManager().pauseAll(null);
     }
 
-    // --------------------------------------restart download--------------------------------------
+    // --------------------------------------restart downloads--------------------------------------
 
     /**
-     * restart download
+     * restart a download
      * <br/>
-     * if the caller cares for the download status，please ues {@link #registerDownloadStatusListener
-     * (OnFileDownloadStatusListener)} to register the callback
+     * if the caller cares for the download status, please register an listener before by using
+     * <br/>
+     * {@link #registerDownloadStatusListener(OnFileDownloadStatusListener)}
      *
      * @param url file url
      * @since 0.2.0
@@ -547,23 +502,29 @@ public final class FileDownloadManager {
     }
 
     /**
-     * restart download
+     * restart a download
      *
      * @param url                          file url
-     * @param onFileDownloadStatusListener FileDownloadStatusListener
+     * @param onFileDownloadStatusListener OnFileDownloadStatusListener impl
      * @deprecated use {@link #reStart(String)} instead
      */
     @Deprecated
     public void reStart(String url, OnFileDownloadStatusListener onFileDownloadStatusListener) {
-        registerDownloadStatusListener(onFileDownloadStatusListener);
+
+        DownloadStatusConfiguration.Builder builder = new Builder();
+        builder.addListenUrl(url);
+        builder.configAutoRelease(true);
+        registerDownloadStatusListener(onFileDownloadStatusListener, builder.build());
+
         reStart(url);
     }
 
     /**
-     * restart multi download
+     * restart multi downloads
      * <br/>
-     * if the caller cares for the download status，please ues {@link #registerDownloadStatusListener
-     * (OnFileDownloadStatusListener)} to register the callback
+     * if the caller cares for the download status, please register an listener before by using
+     * <br/>
+     * {@link #registerDownloadStatusListener(OnFileDownloadStatusListener)}
      *
      * @param urls file urls
      * @since 0.2.0
@@ -573,51 +534,56 @@ public final class FileDownloadManager {
     }
 
     /**
-     * restart multi download
+     * restart multi downloads
      *
-     * @param urls                         file mUrls
-     * @param onFileDownloadStatusListener FileDownloadStatusListener
+     * @param urls                         file urls
+     * @param onFileDownloadStatusListener OnFileDownloadStatusListener impl
      * @deprecated use {@link #reStart(List)} instead
      */
     @Deprecated
     public void reStart(List<String> urls, OnFileDownloadStatusListener onFileDownloadStatusListener) {
-        registerDownloadStatusListener(onFileDownloadStatusListener);
+
+        DownloadStatusConfiguration.Builder builder = new Builder();
+        builder.addListenUrls(urls);
+        builder.configAutoRelease(true);
+        registerDownloadStatusListener(onFileDownloadStatusListener, builder.build());
+
         reStart(urls);
     }
 
-    // --------------------------------------move download--------------------------------------
+    // --------------------------------------move download files--------------------------------------
 
     /**
-     * move download
+     * move a download file
      *
      * @param url                        file url
      * @param newDirPath                 new dir path
-     * @param onMoveDownloadFileListener MoveDownloadFileListener
+     * @param onMoveDownloadFileListener OnMoveDownloadFileListener impl
      */
     public void move(String url, String newDirPath, OnMoveDownloadFileListener onMoveDownloadFileListener) {
         getDownloadMoveManager().move(url, newDirPath, onMoveDownloadFileListener);
     }
 
     /**
-     * move multi downloads
+     * move multi download files
      *
-     * @param urls                        file mUrls
+     * @param urls                        file urls
      * @param newDirPath                  new dir path
-     * @param onMoveDownloadFilesListener MoveDownloadFilesListener
-     * @return the control for the operation
+     * @param onMoveDownloadFilesListener OnMoveDownloadFilesListener impl
+     * @return a control for the operation
      */
     public Control move(List<String> urls, String newDirPath, OnMoveDownloadFilesListener onMoveDownloadFilesListener) {
         return getDownloadMoveManager().move(urls, newDirPath, onMoveDownloadFilesListener);
     }
 
-    // --------------------------------------delete download--------------------------------------
+    // --------------------------------------delete download files--------------------------------------
 
     /**
-     * delete download
+     * delete a download file
      *
      * @param url                          file url
      * @param deleteDownloadedFileInPath   whether delete file in path
-     * @param onDeleteDownloadFileListener DeleteDownloadFileListener
+     * @param onDeleteDownloadFileListener OnDeleteDownloadFileListener impl
      */
     public void delete(String url, boolean deleteDownloadedFileInPath, OnDeleteDownloadFileListener 
             onDeleteDownloadFileListener) {
@@ -625,12 +591,12 @@ public final class FileDownloadManager {
     }
 
     /**
-     * delete multi downloads
+     * delete multi download files
      *
-     * @param urls                          file mUrls
+     * @param urls                          file urls
      * @param deleteDownloadedFile          whether delete file in path
-     * @param onDeleteDownloadFilesListener DeleteDownloadFilesListener
-     * @return the control for the operation
+     * @param onDeleteDownloadFilesListener OnDeleteDownloadFilesListener impl
+     * @return a control for the operation
      */
     public Control delete(List<String> urls, boolean deleteDownloadedFile, OnDeleteDownloadFilesListener 
             onDeleteDownloadFilesListener) {
@@ -640,34 +606,76 @@ public final class FileDownloadManager {
     // --------------------------------------rename download--------------------------------------
 
     /**
-     * rename download
+     * rename a download file
      *
      * @param url                          file url
      * @param newFileName                  new file name
-     * @param includedSuffix               true means the newFileName include the suffix
-     * @param onRenameDownloadFileListener RenameDownloadFileListener
+     * @param includedSuffix               true means the newFileName has been included the suffix, otherwise the
+     *                                     newFileName not include the suffix
+     * @param onRenameDownloadFileListener OnRenameDownloadFileListener impl
      */
     public void rename(String url, String newFileName, boolean includedSuffix, OnRenameDownloadFileListener 
             onRenameDownloadFileListener) {
         getDownloadRenameManager().rename(url, newFileName, includedSuffix, onRenameDownloadFileListener);
     }
 
+    // =========================================for FileDownloader only=========================================
+
+    // -------------------------get file download configuration-------------------------
+
     /**
-     * release resources
+     * get FileDownloadConfiguration
+     *
+     * @since 0.3.0
      */
-    public void release() {
-        getDownloadTaskManager().release(new OnReleaseListener() {
-            @Override
-            public void onReleased() {
-                if (mConfiguration != null) {
-                    mConfiguration.getFileDetectEngine().shutdown();
-                    mConfiguration.getFileDownloadEngine().shutdown();
-                    mConfiguration.getFileOperationEngine().shutdown();
+    static FileDownloadConfiguration getFileDownloadConfiguration() {
+        if (sInstance != null) {
+            synchronized (sInstance.mInitLock) {
+                if (sInstance != null) {
+                    return sInstance.mConfiguration;
                 }
-                mDownloadFileCacher.release();
-                sInstance = null;
             }
-        });
+        }
+        return null;
     }
 
+    // -------------------------register download status listener with configuration-------------------------
+
+    /**
+     * register an OnFileDownloadStatusListener with Configuration
+     *
+     * @param onFileDownloadStatusListener OnFileDownloadStatusListener impl
+     * @param downloadStatusConfiguration  Configuration for the OnFileDownloadStatusListener impl
+     * @since 0.3.0
+     */
+    void registerDownloadStatusListener(OnFileDownloadStatusListener onFileDownloadStatusListener, 
+                                        DownloadStatusConfiguration downloadStatusConfiguration) {
+        getDownloadTaskManager().registerDownloadStatusListener(onFileDownloadStatusListener, 
+                downloadStatusConfiguration);
+    }
+
+    // -------------------------register & unregister download file change listener-------------------------
+
+    /**
+     * register a DownloadFileChangeListener with Configuration
+     *
+     * @param onDownloadFileChangeListener    OnDownloadFileChangeListener impl
+     * @param downloadFileChangeConfiguration Configuration for the OnDownloadFileChangeListener impl
+     * @since 0.3.0
+     */
+    void registerDownloadFileChangeListener(OnDownloadFileChangeListener onDownloadFileChangeListener, 
+                                            DownloadFileChangeConfiguration downloadFileChangeConfiguration) {
+        mDownloadFileCacher.registerDownloadFileChangeListener(onDownloadFileChangeListener, 
+                downloadFileChangeConfiguration);
+    }
+
+    /**
+     * unregister an OnDownloadFileChangeListener
+     *
+     * @param onDownloadFileChangeListener registered OnDownloadFileChangeListener impl
+     * @since 0.3.0
+     */
+    void unregisterDownloadFileChangeListener(OnDownloadFileChangeListener onDownloadFileChangeListener) {
+        mDownloadFileCacher.unregisterDownloadFileChangeListener(onDownloadFileChangeListener);
+    }
 }

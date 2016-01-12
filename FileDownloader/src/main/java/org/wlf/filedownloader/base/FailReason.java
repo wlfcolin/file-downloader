@@ -3,22 +3,23 @@ package org.wlf.filedownloader.base;
 import android.text.TextUtils;
 
 /**
- * fail reason,which extends {@link Exception},it is need to care about type({@link #getType()})
- * and cause({@link #getCause()})
+ * fail reason, which extends {@link Exception}, it is need to care about the type({@link #getType()}) and the cause
+ * ({@link #getCause()}), and sometime may need to care about the original cause({@link #getOriginalCause()})
  * <br/>
- * 失败原因类，扩展自{@link Exception}类，使用时只需要关心type({@link #getType()})和cause(
- * {@link #getCause()})即可，可以满足各种同步和异步场合需求
+ * 失败原因类，扩展自{@link Exception}类，使用时一般只需要关心失败类型({@link #getType()})和失败原因({@link #getCause()})即可，有时候可能还需要关心原始的失败原因
+ * ({@link #getOriginalCause()})，可以满足各种同步和异步场合需求
  *
  * @author wlf(Andy)
  * @email 411086563@qq.com
  */
-public class FailReason extends Exception {
+public abstract class FailReason extends Exception {
+
     /**
-     * UNKNOWN
+     * TYPE UNKNOWN
      */
     public static final String TYPE_UNKNOWN = FailReason.class.getName() + "_TYPE_UNKNOWN";
     /**
-     * NULL_POINTER
+     * TYPE NULL_POINTER
      */
     public static final String TYPE_NULL_POINTER = FailReason.class.getName() + "_TYPE_NULL_POINTER";
 
@@ -26,6 +27,8 @@ public class FailReason extends Exception {
      * fail type
      */
     private String mType = TYPE_UNKNOWN;
+
+    // --------------------------------------constructor--------------------------------------
 
     /**
      * constructor of FailReason
@@ -109,7 +112,7 @@ public class FailReason extends Exception {
         initType(throwable);
     }
 
-    // --------------------------------------------------------------
+    // --------------------------------------init--------------------------------------
 
     /**
      * whether init fail type
@@ -212,6 +215,8 @@ public class FailReason extends Exception {
         }
     }
 
+    // --------------------------------------getters & setters--------------------------------------
+
     /**
      * set fail type
      *
@@ -230,14 +235,12 @@ public class FailReason extends Exception {
         return mType;
     }
 
-
     /**
-     * Returns the cause of original cause,the difference between {@link #getCause()} and {@link #getOriginalCause()}
-     * is,
-     * {@link #getCause()} may return the result including {@link FailReason} and it's child,{@link #getOriginalCause()}
-     * will never return {@link FailReason} and it's child
+     * Returns the original cause, the difference between {@link #getCause()} and {@link #getOriginalCause()} is,
+     * {@link #getCause()} may return the result including {@link FailReason} and it's child, {@link
+     * #getOriginalCause()} will never return {@link FailReason} and it's child
      *
-     * @return Throwable this {@code Throwable}'s cause.
+     * @return the throwable of original cause
      */
     public Throwable getOriginalCause() {
         return getOriginalCauseInternal(this);

@@ -18,15 +18,15 @@ public interface Pauseable {
      * whether is downloading
      *
      * @param url file url
-     * @return true means the download task is running
+     * @return true means the download task of the url is running
      */
     boolean isDownloading(String url);
 
     /**
-     * pause download
+     * pause a download
      *
      * @param url                            file url
-     * @param onStopFileDownloadTaskListener OnStopFileDownloadTaskListener
+     * @param onStopFileDownloadTaskListener OnStopFileDownloadTaskListener impl
      */
     void pause(String url, OnStopFileDownloadTaskListener onStopFileDownloadTaskListener);
 }

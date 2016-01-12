@@ -1,4 +1,4 @@
-package org.wlf.filedownloader.file_download;
+package org.wlf.filedownloader;
 
 import org.wlf.filedownloader.util.CollectionUtil;
 import org.wlf.filedownloader.util.UrlUtil;
@@ -23,8 +23,14 @@ public class DownloadStatusConfiguration {
      */
     public static class Builder {
 
-        private Set<String> mListenUrls = new HashSet<String>();
-        private boolean mAutoRelease;// auto release when download finished
+        /**
+         * all listen urls, default is null which means listen all
+         */
+        private Set<String> mListenUrls;
+        /**
+         * whether auto release the listener when the listen url downloads finished, default is false
+         */
+        private boolean mAutoRelease;
 
         /**
          * add the url for listening
@@ -34,6 +40,9 @@ public class DownloadStatusConfiguration {
          */
         public Builder addListenUrl(String url) {
             if (UrlUtil.isUrl(url)) {
+                if (mListenUrls == null) {
+                    mListenUrls = new HashSet<String>();
+                }
                 mListenUrls.add(url);
             }
             return this;
@@ -57,15 +66,19 @@ public class DownloadStatusConfiguration {
             }
 
             if (!CollectionUtil.isEmpty(needAdd)) {
+                if (mListenUrls == null) {
+                    mListenUrls = new HashSet<String>();
+                }
                 mListenUrls.addAll(needAdd);
             }
             return this;
         }
 
         /**
-         * config whether auto release the listener when download finished
+         * config whether auto release the listener when the listen url downloads finished
          *
-         * @param autoRelease true means will auto release the listener when download finished
+         * @param autoRelease true means will auto release the listener the listen url downloads finished, default is
+         *                    false
          * @return the Builder
          */
         public Builder configAutoRelease(boolean autoRelease) {
@@ -103,9 +116,9 @@ public class DownloadStatusConfiguration {
     }
 
     /**
-     * is auto release
+     * is auto release the listener when the listen url downloads finished
      *
-     * @return true means auto release
+     * @return true means auto release, default is false
      */
     public boolean isAutoRelease() {
         if (mBuilder == null) {
@@ -113,5 +126,4 @@ public class DownloadStatusConfiguration {
         }
         return mBuilder.mAutoRelease;
     }
-
 }

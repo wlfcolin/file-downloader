@@ -1,7 +1,7 @@
 package org.wlf.filedownloader.base;
 
 /**
- * fail exception,use for sync method call
+ * fail exception, use for sync method call
  * <br/>
  * 失败异常，用于同步调用抛出的异常
  *

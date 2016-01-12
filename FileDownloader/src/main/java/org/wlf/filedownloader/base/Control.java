@@ -17,7 +17,7 @@ public interface Control {
     /**
      * whether is the operation stopped
      *
-     * @return true means stopped
+     * @return true means the operation has been stopped
      */
     boolean isStopped();
 }

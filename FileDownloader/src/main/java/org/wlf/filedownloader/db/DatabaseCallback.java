@@ -4,7 +4,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
 /**
- * database callback,ref{@link SQLiteOpenHelper}.onXXX
+ * database callback, see {@link SQLiteOpenHelper}.onXXXX
  *
  * @author wlf(Andy)
  * @email 411086563@qq.com

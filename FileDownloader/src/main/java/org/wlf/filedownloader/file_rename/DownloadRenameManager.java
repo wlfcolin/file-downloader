@@ -30,11 +30,11 @@ public class DownloadRenameManager {
      */
     private ExecutorService mTaskEngine;
     /**
-     * DownloadFileRenamer,to rename download files
+     * DownloadFileRenamer, which to rename download files in record
      */
     private DownloadFileRenamer mDownloadFileRenamer;
     /**
-     * Pauseable,to pause download tasks
+     * Pauseable, which to pause download tasks
      */
     private Pauseable mDownloadTaskPauseable;
 
@@ -49,7 +49,7 @@ public class DownloadRenameManager {
      * start a task
      */
     private void addAndRunTask(Runnable task) {
-        // exec a task
+        // exec the task
         mTaskEngine.execute(task);
     }
 
@@ -64,25 +64,26 @@ public class DownloadRenameManager {
     }
 
     /**
-     * rename download
+     * rename a download
      */
     private void renameInternal(String url, String newFileName, boolean includedSuffix, OnRenameDownloadFileListener 
             onRenameDownloadFileListener) {
-        // create rename download task
+        // create a rename download task
         RenameDownloadFileTask task = new RenameDownloadFileTask(url, newFileName, includedSuffix, 
                 mDownloadFileRenamer);
         task.setOnRenameDownloadFileListener(onRenameDownloadFileListener);
-        // run task
+        // run the task
         addAndRunTask(task);
     }
 
     /**
-     * rename download
+     * rename a download file
      *
      * @param url                          file url
      * @param newFileName                  new file name
-     * @param includedSuffix               true means the newFileName include the suffix
-     * @param onRenameDownloadFileListener RenameDownloadFileListener
+     * @param includedSuffix               true means the newFileName has been included the suffix, otherwise the
+     *                                     newFileName not include the suffix
+     * @param onRenameDownloadFileListener OnRenameDownloadFileListener impl
      */
     public void rename(String url, final String newFileName, final boolean includedSuffix, final 
     OnRenameDownloadFileListener onRenameDownloadFileListener) {
@@ -91,19 +92,19 @@ public class DownloadRenameManager {
 
         if (!mDownloadTaskPauseable.isDownloading(url)) {
 
-            Log.d(TAG, "rename 直接重命名,url:" + url);
+            Log.d(TAG, TAG + ".rename 下载任务已经暂停，可以直接重命名，url:" + url);
 
             renameInternal(url, newFileName, includedSuffix, onRenameDownloadFileListener);
         } else {
 
-            Log.d(TAG, "rename 需要先暂停后重命名,url:" + url);
+            Log.d(TAG, TAG + ".rename 需要先暂停下载任务后重命名,url:" + url);
 
             // pause
             mDownloadTaskPauseable.pause(url, new OnStopFileDownloadTaskListener() {
                 @Override
                 public void onStopFileDownloadTaskSucceed(String url) {
 
-                    Log.d(TAG, "rename 暂停成功，开始重命名,url:" + finalUrl);
+                    Log.d(TAG, TAG + ".rename 暂停下载任务成功，开始重命名，url:" + finalUrl);
 
                     renameInternal(finalUrl, newFileName, includedSuffix, onRenameDownloadFileListener);
                 }
@@ -111,9 +112,17 @@ public class DownloadRenameManager {
                 @Override
                 public void onStopFileDownloadTaskFailed(String url, StopDownloadFileTaskFailReason failReason) {
 
-                    Log.d(TAG, "rename 暂停失败，无法重命名,url:" + finalUrl);
+                    if (failReason != null) {
+                        if (StopDownloadFileTaskFailReason.TYPE_TASK_HAS_BEEN_STOPPED.equals(failReason.getType())) {
+                            // has been stopped, so can restart normally
+                            renameInternal(finalUrl, newFileName, includedSuffix, onRenameDownloadFileListener);
+                            return;
+                        }
+                    }
 
-                    // error
+                    Log.d(TAG, TAG + ".rename 暂停下载任务失败，无法重命名，url:" + finalUrl);
+
+                    // otherwise error occur, notify caller
                     notifyRenameDownloadFileFailed(getDownloadFile(finalUrl), new OnRenameDownloadFileFailReason
                             (failReason), onRenameDownloadFileListener);
                 }
@@ -121,15 +130,14 @@ public class DownloadRenameManager {
         }
     }
 
-    // -----------------------notify caller-----------------------
+    // --------------------------------------notify caller--------------------------------------
 
+    /**
+     * notifyRenameDownloadFileFailed
+     */
     private void notifyRenameDownloadFileFailed(DownloadFileInfo downloadFileInfo, RenameDownloadFileFailReason 
             failReason, OnRenameDownloadFileListener onRenameDownloadFileListener) {
-        if (onRenameDownloadFileListener == null) {
-            return;
-        }
-
-        // notify caller
+        // main thread notify caller
         OnRenameDownloadFileListener.MainThreadHelper.onRenameDownloadFileFailed(downloadFileInfo, failReason, 
                 onRenameDownloadFileListener);
     }

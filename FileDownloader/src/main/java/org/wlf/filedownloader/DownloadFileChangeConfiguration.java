@@ -23,9 +23,13 @@ public class DownloadFileChangeConfiguration {
      */
     public static class Builder {
 
-        private Set<String> mListenUrls = new HashSet<String>();
-
-        // whether the caller hope the callback method is sync 
+        /**
+         * all listen urls, default is null which means listen all
+         */
+        private Set<String> mListenUrls;
+        /**
+         * whether the callback method is sync, default is false
+         */
         private boolean mIsSyncCallback = false;
 
         /**
@@ -36,6 +40,9 @@ public class DownloadFileChangeConfiguration {
          */
         public Builder addListenUrl(String url) {
             if (UrlUtil.isUrl(url)) {
+                if (mListenUrls == null) {
+                    mListenUrls = new HashSet<String>();
+                }
                 mListenUrls.add(url);
             }
             return this;
@@ -59,6 +66,9 @@ public class DownloadFileChangeConfiguration {
             }
 
             if (!CollectionUtil.isEmpty(needAdd)) {
+                if (mListenUrls == null) {
+                    mListenUrls = new HashSet<String>();
+                }
                 mListenUrls.addAll(needAdd);
             }
             return this;
@@ -96,7 +106,7 @@ public class DownloadFileChangeConfiguration {
     /**
      * get listen urls
      *
-     * @return listen urls
+     * @return listen urls, default is null which means listen all
      */
     public Set<String> getListenUrls() {
         if (mBuilder == null) {
