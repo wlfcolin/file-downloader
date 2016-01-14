@@ -5,7 +5,7 @@ import android.text.TextUtils;
 import org.wlf.filedownloader.DownloadFileInfo;
 import org.wlf.filedownloader.base.Log;
 import org.wlf.filedownloader.file_download.base.DownloadRecorder;
-import org.wlf.filedownloader.listener.OnDetectUrlFileListener;
+import org.wlf.filedownloader.listener.OnDetectBigUrlFileListener;
 import org.wlf.filedownloader.listener.OnDetectUrlFileListener.DetectUrlFileFailReason;
 import org.wlf.filedownloader.util.UrlUtil;
 
@@ -36,7 +36,7 @@ class DetectUrlFileTask implements Runnable {
 
     private DetectUrlFileCacher mDetectUrlFileCacher;
     private DownloadRecorder mDownloadRecorder;
-    private OnDetectUrlFileListener mOnDetectUrlFileListener;
+    private OnDetectBigUrlFileListener mOnDetectBigUrlFileListener;
 
     private ExecutorService mCloseConnectionEngine;// engine use for closing the http connection
 
@@ -50,12 +50,12 @@ class DetectUrlFileTask implements Runnable {
     }
 
     /**
-     * set DetectUrlFileListener
+     * set OnDetectBigUrlFileListener
      *
-     * @param onDetectUrlFileListener DetectUrlFileListener
+     * @param onDetectBigUrlFileListener OnDetectBigUrlFileListener impl
      */
-    public void setOnDetectUrlFileListener(OnDetectUrlFileListener onDetectUrlFileListener) {
-        this.mOnDetectUrlFileListener = onDetectUrlFileListener;
+    public void setOnDetectBigUrlFileListener(OnDetectBigUrlFileListener onDetectBigUrlFileListener) {
+        this.mOnDetectBigUrlFileListener = onDetectBigUrlFileListener;
     }
 
     /**
@@ -196,8 +196,8 @@ class DetectUrlFileTask implements Runnable {
         Log.d(TAG, "探测文件已存在，url：" + mUrl);
 
         // notify caller
-        if (mOnDetectUrlFileListener != null) {
-            OnDetectUrlFileListener.MainThreadHelper.onDetectUrlFileExist(mUrl, mOnDetectUrlFileListener);
+        if (mOnDetectBigUrlFileListener != null) {
+            OnDetectBigUrlFileListener.MainThreadHelper.onDetectUrlFileExist(mUrl, mOnDetectBigUrlFileListener);
             return true;
         }
         return false;
@@ -207,9 +207,9 @@ class DetectUrlFileTask implements Runnable {
 
         Log.d(TAG, "探测文件不存在，需要创建，url：" + mUrl);
 
-        if (mOnDetectUrlFileListener != null) {
-            OnDetectUrlFileListener.MainThreadHelper.onDetectNewDownloadFile(mUrl, fileName, saveDir, fileSize, 
-                    mOnDetectUrlFileListener);
+        if (mOnDetectBigUrlFileListener != null) {
+            OnDetectBigUrlFileListener.MainThreadHelper.onDetectNewDownloadFile(mUrl, fileName, saveDir, fileSize, 
+                    mOnDetectBigUrlFileListener);
             return true;
         }
         return false;
@@ -219,8 +219,9 @@ class DetectUrlFileTask implements Runnable {
 
         Log.d(TAG, "探测文件失败，url：" + mUrl);
 
-        if (mOnDetectUrlFileListener != null) {
-            OnDetectUrlFileListener.MainThreadHelper.onDetectUrlFileFailed(mUrl, failReason, mOnDetectUrlFileListener);
+        if (mOnDetectBigUrlFileListener != null) {
+            OnDetectBigUrlFileListener.MainThreadHelper.onDetectUrlFileFailed(mUrl, failReason, 
+                    mOnDetectBigUrlFileListener);
             return true;
         }
         return false;

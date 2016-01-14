@@ -374,7 +374,7 @@ public class MainActivity extends Activity implements OnItemSelectListener {
                     }
 
                     @Override
-                    public void onDetectUrlFileFailed(String url, DetectUrlFileFailReason failReason) {
+                    public void onDetectUrlFileFailed(String url, DetectBigUrlFileFailReason failReason) {
                         String msg = null;
                         if (failReason != null) {
                             msg = failReason.getMessage();

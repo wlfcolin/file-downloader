@@ -53,6 +53,18 @@ class RenameDownloadFileTask implements Runnable {
     @Override
     public void run() {
 
+        /**
+         * rename logic
+         *
+         * 1.if downloading, pause(impl by rename manager), make sure the download status is right
+         * 2.check illegal conditions such as file system not mount, download file not exist and so on
+         * 3.backup save file name
+         * 4.rename save file name in database
+         * 5.check and rename save file in the file system
+         * 6.if step 5 succeed, finish, otherwise, rollback the temp file name and save file name in database that 
+         * backup in step 3
+         */
+
         DownloadFileInfo downloadFileInfo = null;
         RenameDownloadFileFailReason failReason = null;
 
@@ -93,15 +105,8 @@ class RenameDownloadFileTask implements Runnable {
                 mNewFileName = mNewFileName + suffix;
             }
 
-            File file = new File(dirPath, oldFileName);
-            File newFile = new File(dirPath, mNewFileName);
 
-            if (!file.exists()) {
-                failReason = new OnRenameDownloadFileFailReason("the original file not exist!", 
-                        OnRenameDownloadFileFailReason.TYPE_ORIGINAL_FILE_NOT_EXIST);
-                // goto finally,notifyFailed()
-                return;
-            }
+            File newFile = new File(dirPath, mNewFileName);
 
             if (TextUtils.isEmpty(mNewFileName)) {
                 failReason = new OnRenameDownloadFileFailReason("new file name is empty!", 
@@ -138,8 +143,16 @@ class RenameDownloadFileTask implements Runnable {
 
             // need rename save file
             if (DownloadFileUtil.isCompleted(downloadFileInfo)) {
-                // success, rename save file
-                renameResult = file.renameTo(newFile);
+                File oldSaveFile = new File(dirPath, oldFileName);
+                // finished download and file exists
+                if (oldSaveFile.exists()) {
+                    // success, rename save file
+                    renameResult = oldSaveFile.renameTo(newFile);
+                } else {
+                    renameResult = false;
+                    failReason = new OnRenameDownloadFileFailReason("the original file not exist!", 
+                            OnRenameDownloadFileFailReason.TYPE_ORIGINAL_FILE_NOT_EXIST);
+                }
 
                 if (!renameResult) {
                     // rollback in db
@@ -156,8 +169,10 @@ class RenameDownloadFileTask implements Runnable {
                         }
                     }
 
-                    failReason = new OnRenameDownloadFileFailReason("rename file in file system failed!", 
-                            OnRenameDownloadFileFailReason.TYPE_UNKNOWN);
+                    if (failReason == null) {
+                        failReason = new OnRenameDownloadFileFailReason("rename file in file system failed!", 
+                                OnRenameDownloadFileFailReason.TYPE_UNKNOWN);
+                    }
                     // goto finally,notifyFailed()
                     return;
                 }

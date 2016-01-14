@@ -3,7 +3,7 @@ package org.wlf.filedownloader.listener;
 import org.wlf.filedownloader.DownloadFileInfo;
 
 /**
- * OnFileDownloadStatusListener2
+ * OnRetryableFileDownloadStatusListener
  * <br/>
  * 文件下载状态改变监听器
  *

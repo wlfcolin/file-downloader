@@ -1,5 +1,8 @@
 package org.wlf.filedownloader.util;
 
+import android.text.TextUtils;
+
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
@@ -39,6 +42,27 @@ public class DateUtil {
             threadLocal.set(sdf);
         }
         return sdf;
+    }
+
+    /**
+     * get datetime by date string which formatted with yyyy-MM-dd HH:mm:ss
+     *
+     * @param strDate formatted with yyyy-MM-dd HH:mm:ss
+     * @return date object
+     */
+    public static Date string2Date_yyyy_MM_dd_HH_mm_ss(String strDate) {
+
+        if (TextUtils.isEmpty(strDate)) {
+            return null;
+        }
+
+        SimpleDateFormat sdf = getSimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        try {
+            return sdf.parse(strDate);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     /**

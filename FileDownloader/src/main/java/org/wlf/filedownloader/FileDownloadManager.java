@@ -2,16 +2,17 @@ package org.wlf.filedownloader;
 
 import android.content.Context;
 
+import org.wlf.filedownloader.DownloadStatusConfiguration.Builder;
 import org.wlf.filedownloader.base.Control;
 import org.wlf.filedownloader.base.Log;
 import org.wlf.filedownloader.file_delete.DownloadDeleteManager;
-import org.wlf.filedownloader.DownloadStatusConfiguration.Builder;
 import org.wlf.filedownloader.file_download.DownloadTaskManager;
 import org.wlf.filedownloader.file_download.DownloadTaskManager.OnReleaseListener;
 import org.wlf.filedownloader.file_move.DownloadMoveManager;
 import org.wlf.filedownloader.file_rename.DownloadRenameManager;
 import org.wlf.filedownloader.listener.OnDeleteDownloadFileListener;
 import org.wlf.filedownloader.listener.OnDeleteDownloadFilesListener;
+import org.wlf.filedownloader.listener.OnDetectBigUrlFileListener;
 import org.wlf.filedownloader.listener.OnDetectUrlFileListener;
 import org.wlf.filedownloader.listener.OnDownloadFileChangeListener;
 import org.wlf.filedownloader.listener.OnFileDownloadStatusListener;
@@ -350,9 +351,22 @@ public final class FileDownloadManager {
      *
      * @param url                     file url
      * @param onDetectUrlFileListener OnDetectUrlFileListener impl
+     * @deprecated this method can not detect the url file which bigger than 2G, use {@link #detect(String,
+     * OnDetectBigUrlFileListener)}instead
      */
+    @Deprecated
     public void detect(String url, OnDetectUrlFileListener onDetectUrlFileListener) {
         getDownloadTaskManager().detect(url, onDetectUrlFileListener);
+    }
+
+    /**
+     * detect a url file
+     *
+     * @param url                        file url
+     * @param onDetectBigUrlFileListener OnDetectBigUrlFileListener impl
+     */
+    public void detect(String url, OnDetectBigUrlFileListener onDetectBigUrlFileListener) {
+        getDownloadTaskManager().detect(url, onDetectBigUrlFileListener);
     }
 
     // --------------------------------------create/continue downloads--------------------------------------

@@ -11,7 +11,7 @@ import org.wlf.filedownloader.file_download.http_downloader.HttpDownloader.HttpD
 import org.wlf.filedownloader.listener.OnDetectUrlFileListener.DetectUrlFileFailReason;
 
 /**
- * OnFileDownloadStatusListener
+ * OnFileDownloadStatusListener, use {@link OnRetryableFileDownloadStatusListener} can be retry
  * <br/>
  * 文件下载状态改变监听器
  *

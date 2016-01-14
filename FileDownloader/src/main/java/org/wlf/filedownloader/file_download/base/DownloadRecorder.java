@@ -18,10 +18,11 @@ public interface DownloadRecorder extends DownloadFileDbRecorder {
     /**
      * record download file
      *
-     * @param url file url
+     * @param url        file url
+     * @param deleteMode true means delete all resource
      * @throws Exception any exception during record
      */
-    void resetDownloadFile(String url) throws Exception;
+    void resetDownloadFile(String url, boolean deleteMode) throws Exception;
 
     DownloadFileInfo createDownloadFileInfo(DetectUrlFileInfo detectUrlFileInfo);
 }

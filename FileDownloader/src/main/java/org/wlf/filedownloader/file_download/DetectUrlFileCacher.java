@@ -1,7 +1,14 @@
 package org.wlf.filedownloader.file_download;
 
+import android.text.TextUtils;
+
+import org.wlf.filedownloader.util.DateUtil;
+import org.wlf.filedownloader.util.DownloadFileUtil;
 import org.wlf.filedownloader.util.UrlUtil;
 
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -53,13 +60,47 @@ class DetectUrlFileCacher {
     }
 
     /**
+     * remove DetectUrlFile
+     *
+     * @param url file url
+     */
+    public void removeDetectUrlFile(String url) {
+        synchronized (mModifyLock) {// lock
+            mDetectUrlFileInfoMap.remove(url);
+        }
+    }
+
+    /**
      * get DetectUrlFile by url
      *
      * @param url file url
      * @return DetectUrlFile
      */
     public DetectUrlFileInfo getDetectUrlFile(String url) {
-        return mDetectUrlFileInfoMap.get(url);
+        DetectUrlFileInfo detectUrlFileInfo = mDetectUrlFileInfoMap.get(url);
+        // check and remove
+        if (DownloadFileUtil.isLegal(detectUrlFileInfo)) {
+            String createDatetime = detectUrlFileInfo.getCreateDatetime();
+            if (!TextUtils.isEmpty(detectUrlFileInfo.getCreateDatetime())) {
+                // check whether is longer than 24 hours(one day)
+                Date createDate = DateUtil.string2Date_yyyy_MM_dd_HH_mm_ss(createDatetime);
+                if (createDate != null) {
+                    GregorianCalendar createDateCalendar = new GregorianCalendar();
+                    createDateCalendar.setTime(createDate);
+
+                    GregorianCalendar curDateCalendar = new GregorianCalendar();
+                    curDateCalendar.setTime(new Date());
+
+                    createDateCalendar.add(Calendar.DAY_OF_YEAR, 1);// one day, 24 hours
+                    if (curDateCalendar.after(createDateCalendar)) {
+                        // remove the cache
+                        removeDetectUrlFile(detectUrlFileInfo.getUrl());
+                        detectUrlFileInfo = null;
+                    }
+                }
+            }
+        }
+        return detectUrlFileInfo;
     }
 
     /**

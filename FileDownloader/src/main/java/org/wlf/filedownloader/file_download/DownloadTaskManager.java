@@ -237,7 +237,7 @@ public class DownloadTaskManager implements Pauseable {
         // prepare the DetectUrlFileTask
         DetectUrlFileTask detectUrlFileTask = new DetectUrlFileTask(url, mConfiguration.getFileDownloadDir(), 
                 mDetectUrlFileCacher, mDownloadRecorder);
-        detectUrlFileTask.setOnDetectUrlFileListener(onDetectBigUrlFileListener);
+        detectUrlFileTask.setOnDetectBigUrlFileListener(onDetectBigUrlFileListener);
         // set the CloseConnectionEngine
         detectUrlFileTask.setCloseConnectionEngine(mConfiguration.getFileOperationEngine());
 
@@ -315,10 +315,10 @@ public class DownloadTaskManager implements Pauseable {
     /**
      * notifyDetectUrlFileFailed
      */
-    private void notifyDetectUrlFileFailed(String url, DetectUrlFileFailReason failReason, OnDetectUrlFileListener 
-            onDetectUrlFileListener) {
+    private void notifyDetectUrlFileFailed(String url, DetectUrlFileFailReason failReason, OnDetectBigUrlFileListener
+            onDetectBigUrlFileListener) {
         // main thread notify caller
-        OnDetectUrlFileListener.MainThreadHelper.onDetectUrlFileFailed(url, failReason, onDetectUrlFileListener);
+        OnDetectBigUrlFileListener.MainThreadHelper.onDetectUrlFileFailed(url, failReason, onDetectBigUrlFileListener);
     }
 
     /**
@@ -435,8 +435,7 @@ public class DownloadTaskManager implements Pauseable {
      */
     @Deprecated
     public void detect(String url, final OnDetectUrlFileListener onDetectUrlFileListener) {
-        // start detect task
-        addAndRunDetectUrlFileTask(url, new OnDetectBigUrlFileListener() {// use interface adapter
+        detect(url, new OnDetectBigUrlFileListener() {// inner change callback
             @Override
             public void onDetectNewDownloadFile(String url, String fileName, String saveDir, long fileSize) {
                 // continue notify caller
@@ -454,10 +453,10 @@ public class DownloadTaskManager implements Pauseable {
             }
 
             @Override
-            public void onDetectUrlFileFailed(String url, DetectUrlFileFailReason failReason) {
+            public void onDetectUrlFileFailed(String url, DetectBigUrlFileFailReason failReason) {
                 // continue notify caller
                 if (onDetectUrlFileListener != null) {
-                    onDetectUrlFileListener.onDetectUrlFileFailed(url, failReason);
+                    onDetectUrlFileListener.onDetectUrlFileFailed(url, new DetectUrlFileFailReason(failReason));
                 }
             }
         });
@@ -530,6 +529,12 @@ public class DownloadTaskManager implements Pauseable {
         // 2.create new downloadFileInfo
         DownloadFileInfo downloadFileInfo = mDownloadRecorder.createDownloadFileInfo(detectUrlFileInfo);
 
+        // delete detected file if succeed create DownloadFileInfo
+        if (DownloadFileUtil.isLegal(downloadFileInfo)) {
+            // remove the detected cache
+            removeDetectUrlFile(detectUrlFileInfo.getUrl());
+        }
+
         // 3.start download task
         startInternal(callerUrl, downloadFileInfo);
     }
@@ -572,7 +577,7 @@ public class DownloadTaskManager implements Pauseable {
                 // detect first
                 detect(finalUrl, new OnDetectBigUrlFileListener() {
                     @Override
-                    public void onDetectUrlFileFailed(String url, DetectUrlFileFailReason failReason) {
+                    public void onDetectUrlFileFailed(String url, DetectBigUrlFileFailReason failReason) {
                         // notify download status caller
                         notifyDownloadStatusFailed(finalUrl, new OnFileDownloadStatusFailReason(failReason), false);
                     }
@@ -707,7 +712,7 @@ public class DownloadTaskManager implements Pauseable {
     /**
      * restart a download
      */
-    private void reStartInternal(String url) {
+    private void reStartInternal(String url, boolean resetAll) {
 
         FileDownloadStatusFailReason failReason = null;// null means there are not errors
 
@@ -721,7 +726,11 @@ public class DownloadTaskManager implements Pauseable {
         DownloadFileInfo downloadFileInfo = getDownloadFile(url);
         if (failReason == null && downloadFileInfo != null && downloadFileInfo.getDownloadedSizeLong() > 0) {
             try {
-                mDownloadRecorder.resetDownloadFile(url);
+                mDownloadRecorder.resetDownloadFile(url, resetAll);
+                if (resetAll) {
+                    // delete detected cache
+                    removeDetectUrlFile(url);
+                }
             } catch (Exception e) {
                 e.printStackTrace();
                 failReason = new OnFileDownloadStatusFailReason(e);// TODO need a special exception ?
@@ -757,7 +766,7 @@ public class DownloadTaskManager implements Pauseable {
                 @Override
                 public void onStopFileDownloadTaskSucceed(String url) {
                     // stop succeed, restart
-                    reStartInternal(finalUrl);
+                    reStartInternal(finalUrl, true);
                 }
 
                 @Override
@@ -766,7 +775,7 @@ public class DownloadTaskManager implements Pauseable {
                     if (failReason != null) {
                         if (StopDownloadFileTaskFailReason.TYPE_TASK_HAS_BEEN_STOPPED.equals(failReason.getType())) {
                             // has been stopped, so can restart normally
-                            reStartInternal(finalUrl);
+                            reStartInternal(finalUrl, true);
                             return;
                         }
                     }
@@ -777,7 +786,7 @@ public class DownloadTaskManager implements Pauseable {
             });
         } else {
             // has been stopped, restart directly
-            reStartInternal(url);
+            reStartInternal(url, true);
         }
     }
 
@@ -794,6 +803,16 @@ public class DownloadTaskManager implements Pauseable {
         for (String url : urls) {
             reStart(url);
         }
+    }
+
+    // --------------------------------------others--------------------------------------
+
+    /**
+     * remove the detect url file
+     */
+    private void removeDetectUrlFile(String url) {
+        // remove the detected cache
+        mDetectUrlFileCacher.removeDetectUrlFile(url);
     }
 
     // --------------------------------------interfaces--------------------------------------

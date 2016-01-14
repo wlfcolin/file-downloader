@@ -725,20 +725,26 @@ public class DownloadCacher implements DownloadRecorder, DownloadFileMover, Down
     }
 
     @Override
-    public void resetDownloadFile(String url) throws Exception {
+    public void resetDownloadFile(String url, boolean deleteMode) throws Exception {
         DownloadFileInfo downloadFileInfo = getDownloadFile(url);
         if (!DownloadFileUtil.isLegal(downloadFileInfo)) {
             return;
         }
-        synchronized (mModifyLock) {// lock
-            long oldDownloadedSize = downloadFileInfo.getDownloadedSizeLong();
-            downloadFileInfo.setDownloadedSize(0);
-            boolean isSucceed = updateDownloadFileInternal(downloadFileInfo, false, Type.DOWNLOADED_SIZE);
-            if (!isSucceed) {
-                // rollback
-                downloadFileInfo.setDownloadedSize(oldDownloadedSize);
-                throw new Exception("reset failed !");
+
+        if (!deleteMode) {
+            synchronized (mModifyLock) {// lock
+                long oldDownloadedSize = downloadFileInfo.getDownloadedSizeLong();
+                downloadFileInfo.setDownloadedSize(0);// reset download size
+                boolean isSucceed = updateDownloadFileInternal(downloadFileInfo, false, Type.DOWNLOADED_SIZE);
+                if (!isSucceed) {
+                    // rollback
+                    downloadFileInfo.setDownloadedSize(oldDownloadedSize);
+                    throw new Exception("reset failed !");
+                }
             }
+        } else {
+            // delete the download file
+            deleteDownloadFile(url);
         }
     }
 
