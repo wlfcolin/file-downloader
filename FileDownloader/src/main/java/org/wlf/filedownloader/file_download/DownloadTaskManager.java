@@ -750,7 +750,7 @@ public class DownloadTaskManager implements Pauseable {
                         // delete old one
                         mDownloadRecorder.resetDownloadFile(finalUrl, isDelete);
                         // create new one
-                        createAndStart(finalUrl, oldFileName, oldFileDir);
+                        createAndStart(finalUrl, oldFileDir, oldFileName);
                     } catch (Exception e) {
                         e.printStackTrace();
                         // TODO need a special exception ?
