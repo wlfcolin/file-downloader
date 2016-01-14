@@ -180,4 +180,24 @@ public class FileUtil {
         }
     }
 
+    /**
+     * whether the file exist
+     *
+     * @param filePath the check file path
+     * @return true means exist
+     */
+    public static boolean isFileExist(String filePath) {
+
+        if (!isFilePath(filePath)) {
+            return false;
+        }
+
+        File file = new File(filePath);
+        if (file != null && file.exists() && file.isFile()) {
+            return true;
+        }
+
+        return false;
+    }
+
 }

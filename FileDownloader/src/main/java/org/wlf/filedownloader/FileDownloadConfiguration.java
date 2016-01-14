@@ -137,10 +137,10 @@ public class FileDownloadConfiguration {
         /**
          * config IsDebug, debug mode can print log and some debug operations
          *
-         * @param isDebug true means debug mode
+         * @param isDebugMode true means debug mode
          */
-        public void configDebugMode(boolean isDebug) {
-            this.mIsDebugMode = isDebug;
+        public void configDebugMode(boolean isDebugMode) {
+            this.mIsDebugMode = isDebugMode;
             // set log mode
             Log.setDebugMode(mIsDebugMode);
         }

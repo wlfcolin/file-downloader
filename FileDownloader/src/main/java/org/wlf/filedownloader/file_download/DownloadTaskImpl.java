@@ -20,6 +20,7 @@ import org.wlf.filedownloader.file_download.http_downloader.Range;
 import org.wlf.filedownloader.listener.OnFileDownloadStatusListener;
 import org.wlf.filedownloader.listener.OnFileDownloadStatusListener.FileDownloadStatusFailReason;
 import org.wlf.filedownloader.listener.OnFileDownloadStatusListener.OnFileDownloadStatusFailReason;
+import org.wlf.filedownloader.util.DownloadFileUtil;
 import org.wlf.filedownloader.util.FileUtil;
 import org.wlf.filedownloader.util.UrlUtil;
 
@@ -307,7 +308,16 @@ class DownloadTaskImpl implements DownloadTask, OnHttpDownloadListener, OnFileSa
             // download finished, in this case, mFinishState will not be null
         } catch (Exception e) {
             e.printStackTrace();
-            mFinishState = new FinishState(Status.DOWNLOAD_STATUS_ERROR, 0, new OnFileDownloadStatusFailReason(e));
+
+            int status = Status.DOWNLOAD_STATUS_ERROR;
+
+            if (e instanceof FileSaveException) {
+                FileSaveException fileSaveException = (FileSaveException) e;
+                if (FileSaveException.TYPE_TEMP_FILE_DOES_NOT_EXIST.equals(fileSaveException.getType())) {
+                    status = Status.DOWNLOAD_STATUS_FILE_NOT_EXIST;
+                }
+            }
+            mFinishState = new FinishState(status, 0, new OnFileDownloadStatusFailReason(e));
         } finally {
             DownloadFileInfo downloadFileInfo = getDownloadFile();
             if (downloadFileInfo == null) {
@@ -318,7 +328,11 @@ class DownloadTaskImpl implements DownloadTask, OnHttpDownloadListener, OnFileSa
                 // confirm the download file size legal
                 long downloadedSize = downloadFileInfo.getDownloadedSizeLong();
                 long fileSize = downloadFileInfo.getFileSizeLong();
-                if (downloadedSize == fileSize) {
+
+                boolean fileExist = DownloadFileUtil.checkFileExistIfNecessary(downloadFileInfo);
+                if (!fileExist) {
+                    mFinishState = new FinishState(Status.DOWNLOAD_STATUS_FILE_NOT_EXIST, 0, null);
+                } else if (downloadedSize == fileSize) {
                     // mFinishState.mStatus should completed
                     if (mFinishState != null) {
                         if (mFinishState.mStatus != Status.DOWNLOAD_STATUS_COMPLETED) {
@@ -331,7 +345,7 @@ class DownloadTaskImpl implements DownloadTask, OnHttpDownloadListener, OnFileSa
                     // pause download, if mFinishState.mFailReason is null, mFinishState.mStatus should paused
                     if (mFinishState != null) {
                         if (mFinishState.mFailReason == null) {
-                            if (mFinishState.mStatus != Status.DOWNLOAD_STATUS_PAUSED) {
+                            if (!DownloadFileUtil.hasException(mFinishState.mStatus)) {
                                 mFinishState = new FinishState(Status.DOWNLOAD_STATUS_PAUSED, 0, null);
                             }
                         }
@@ -355,8 +369,8 @@ class DownloadTaskImpl implements DownloadTask, OnHttpDownloadListener, OnFileSa
             notifyTaskFinish();
             notifyStopTaskSucceedIfNecessary();
 
-            boolean hasException = (mFinishState != null && mFinishState.mFailReason != null && mFinishState.mStatus 
-                    == Status.DOWNLOAD_STATUS_ERROR) ? true : false;
+            boolean hasException = (mFinishState != null && mFinishState.mFailReason != null && DownloadFileUtil
+                    .hasException(mFinishState.mStatus)) ? true : false;
 
             Log.d(TAG, TAG + ".run 7、文件下载任务【已结束】，是否有异常：" + hasException + "，url：" + mTaskParamInfo.url);
         }
@@ -595,6 +609,7 @@ class DownloadTaskImpl implements DownloadTask, OnHttpDownloadListener, OnFileSa
             case Status.DOWNLOAD_STATUS_PAUSED:
             case Status.DOWNLOAD_STATUS_COMPLETED:
             case Status.DOWNLOAD_STATUS_ERROR:
+            case Status.DOWNLOAD_STATUS_FILE_NOT_EXIST:
                 if (mIsNotifyTaskFinish) {
                     return;
                 }
@@ -626,6 +641,16 @@ class DownloadTaskImpl implements DownloadTask, OnHttpDownloadListener, OnFileSa
                             }
 
                             Log.i(TAG, "file-downloader-status 记录【错误状态】成功，url：" + mTaskParamInfo.url);
+
+                            mIsNotifyTaskFinish = true;
+                            break;
+                        case Status.DOWNLOAD_STATUS_FILE_NOT_EXIST:
+                            if (mOnFileDownloadStatusListener != null) {
+                                mOnFileDownloadStatusListener.onFileDownloadStatusFailed(getUrl(), getDownloadFile(),
+                                        failReason);
+                            }
+
+                            Log.i(TAG, "file-downloader-status 记录【文件不存在状态】成功，url：" + mTaskParamInfo.url);
 
                             mIsNotifyTaskFinish = true;
                             break;

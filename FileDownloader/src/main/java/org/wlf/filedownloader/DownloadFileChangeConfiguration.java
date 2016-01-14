@@ -28,9 +28,10 @@ public class DownloadFileChangeConfiguration {
          */
         private Set<String> mListenUrls;
         /**
-         * whether the callback method is sync, default is false
+         * whether the callback method is in a single thread, true means the callback method is in a single thread,
+         * otherwise in main thread, default is false
          */
-        private boolean mIsSyncCallback = false;
+        private boolean mIsThreadCallback = false;
 
         /**
          * add the url for listening
@@ -77,11 +78,12 @@ public class DownloadFileChangeConfiguration {
         /**
          * config whether the caller hope the callback method is sync
          *
-         * @param isSyncCallback true means the callback method is sync, default is false
+         * @param isThreadCallback true means the callback method is in a single thread, otherwise in main thread,
+         *                         default is false
          * @return the Builder
          */
-        public Builder configSyncCallback(boolean isSyncCallback) {
-            this.mIsSyncCallback = isSyncCallback;
+        public Builder configTreadCallback(boolean isThreadCallback) {
+            this.mIsThreadCallback = isThreadCallback;
             return this;
         }
 
@@ -118,9 +120,12 @@ public class DownloadFileChangeConfiguration {
     /**
      * whether the callback method is sync
      *
-     * @return true means the callback method is sync, default is false
+     * @return true means the callback method is in a single thread, otherwise in main thread, default is false
      */
-    public boolean isSyncCallback() {
-        return mBuilder.mIsSyncCallback;
+    public boolean isTreadCallback() {
+        if (mBuilder == null) {
+            return false;
+        }
+        return mBuilder.mIsThreadCallback;
     }
 }

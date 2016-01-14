@@ -38,6 +38,9 @@ class DetectUrlFileTask implements Runnable {
     private DownloadRecorder mDownloadRecorder;
     private OnDetectBigUrlFileListener mOnDetectBigUrlFileListener;
 
+    // if it id true, that means force detect without check whether the file is downloaded
+    private boolean mForceDetect = false;
+
     private ExecutorService mCloseConnectionEngine;// engine use for closing the http connection
 
     public DetectUrlFileTask(String url, String downloadSaveDir, DetectUrlFileCacher detectUrlFileCacher, 
@@ -67,6 +70,13 @@ class DetectUrlFileTask implements Runnable {
         mCloseConnectionEngine = closeConnectionEngine;
     }
 
+    /**
+     * enable force detect
+     */
+    public void enableForceDetect() {
+        mForceDetect = true;
+    }
+
     @Override
     public void run() {
 
@@ -87,7 +97,7 @@ class DetectUrlFileTask implements Runnable {
             }
 
             downloadFileInfo = mDownloadRecorder.getDownloadFile(mUrl);
-            if (downloadFileInfo != null) {
+            if (downloadFileInfo != null && !mForceDetect) {
                 // goto finally, download file exist
                 return;
             }
@@ -165,8 +175,8 @@ class DetectUrlFileTask implements Runnable {
 
             boolean isNotify = false;
 
-            if (downloadFileInfo != null) {
-                // 1.in the download file database,notify
+            if (downloadFileInfo != null && !mForceDetect) {
+                // 1.in the download file database, notify
                 isNotify = notifyDetectUrlFileExist();
             }
 

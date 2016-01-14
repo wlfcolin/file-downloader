@@ -159,6 +159,12 @@ public class DownloadFileUtil {
         }
     }
 
+    /**
+     * whether is downloading status
+     *
+     * @param downloadFileInfo
+     * @return true means it is downloading
+     */
     public static boolean isDownloadingStatus(DownloadFileInfo downloadFileInfo) {
 
         if (!DownloadFileUtil.isLegal(downloadFileInfo)) {
@@ -173,6 +179,39 @@ public class DownloadFileUtil {
             case Status.DOWNLOAD_STATUS_PREPARED:
             case Status.DOWNLOAD_STATUS_DOWNLOADING:
                 return true;
+        }
+        return false;
+    }
+
+    /**
+     * whether has exception
+     *
+     * @param status
+     * @return true means has exception
+     */
+    public static boolean hasException(int status) {
+
+        switch (status) {
+            case Status.DOWNLOAD_STATUS_ERROR:
+            case Status.DOWNLOAD_STATUS_FILE_NOT_EXIST:
+                return true;
+        }
+
+        return false;
+    }
+
+    public static boolean checkFileExistIfNecessary(DownloadFileInfo downloadFileInfo) {
+        if (!DownloadFileUtil.isLegal(downloadFileInfo)) {
+            return false;
+        }
+        if (downloadFileInfo.getDownloadedSizeLong() > 0) {
+            // only the status below is downloading
+            switch (downloadFileInfo.getStatus()) {
+                case Status.DOWNLOAD_STATUS_COMPLETED:
+                    return FileUtil.isFileExist(downloadFileInfo.getFilePath());
+                default:
+                    return FileUtil.isFileExist(downloadFileInfo.getTempFilePath());
+            }
         }
         return false;
     }
