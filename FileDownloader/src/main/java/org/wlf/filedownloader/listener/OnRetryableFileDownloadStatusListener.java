@@ -1,5 +1,8 @@
 package org.wlf.filedownloader.listener;
 
+import android.os.Handler;
+import android.os.Looper;
+
 import org.wlf.filedownloader.DownloadFileInfo;
 
 /**
@@ -20,4 +23,32 @@ public interface OnRetryableFileDownloadStatusListener extends OnFileDownloadSta
      * @param retryTimes       the times to retry
      */
     void onFileDownloadStatusRetrying(DownloadFileInfo downloadFileInfo, int retryTimes);
+
+    /**
+     * Callback helper for main thread
+     */
+    public static class MainThreadHelper {
+        /**
+         * retry download
+         *
+         * @param downloadFileInfo download file info
+         * @param retryTimes       the times to retry
+         */
+        public static void onFileDownloadStatusRetrying(final DownloadFileInfo downloadFileInfo, final int 
+                retryTimes, final OnRetryableFileDownloadStatusListener onRetryableFileDownloadStatusListener) {
+            if (onRetryableFileDownloadStatusListener == null) {
+                return;
+            }
+            Handler handler = new Handler(Looper.getMainLooper());
+            handler.post(new Runnable() {
+                @Override
+                public void run() {
+                    if (onRetryableFileDownloadStatusListener == null) {
+                        return;
+                    }
+                    onRetryableFileDownloadStatusListener.onFileDownloadStatusRetrying(downloadFileInfo, retryTimes);
+                }
+            });
+        }
+    }
 }

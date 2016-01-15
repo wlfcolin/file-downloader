@@ -37,32 +37,6 @@ public interface OnDownloadFileChangeListener {
     void onDownloadFileDeleted(DownloadFileInfo downloadFileInfo);
 
     /**
-     * DownloadFile Update Type
-     */
-    public static enum Type {
-        /**
-         * download status changed
-         */
-        DOWNLOAD_STATUS,
-        /**
-         * downloaded size changed
-         */
-        DOWNLOADED_SIZE,
-        /**
-         * save dir changed
-         */
-        SAVE_DIR,
-        /**
-         * save file name changed
-         */
-        SAVE_FILE_NAME,
-        /**
-         * other,except {@link #DOWNLOAD_STATUS},{@link #DOWNLOADED_SIZE},{@link #SAVE_DIR} and {@link #SAVE_FILE_NAME}
-         */
-        OTHER
-    }
-
-    /**
      * Callback helper for main thread
      */
     public static class MainThreadHelper {
@@ -133,5 +107,31 @@ public interface OnDownloadFileChangeListener {
                 }
             });
         }
+    }
+
+    /**
+     * DownloadFile Update Type
+     */
+    public static enum Type {
+        /**
+         * download status changed
+         */
+        DOWNLOAD_STATUS,
+        /**
+         * downloaded size changed
+         */
+        DOWNLOADED_SIZE,
+        /**
+         * save dir changed
+         */
+        SAVE_DIR,
+        /**
+         * save file name changed
+         */
+        SAVE_FILE_NAME,
+        /**
+         * other,except {@link #DOWNLOAD_STATUS},{@link #DOWNLOADED_SIZE},{@link #SAVE_DIR} and {@link #SAVE_FILE_NAME}
+         */
+        OTHER
     }
 }

@@ -154,7 +154,7 @@ public class DownloadFileInfo extends BaseUrlFileInfo {
         this.mAcceptRangeType = detectUrlFileInfo.getAcceptRangeType();
         this.mFileDir = detectUrlFileInfo.getFileDir();
         this.mTempFileName = mFileName + "." + TEMP_FILE_SUFFIX;
-        // this.mStatus = Status.DOWNLOAD_STATUS_WAITING;// download status
+        // this.status = Status.DOWNLOAD_STATUS_WAITING;// download status
         this.mCreateDatetime = DateUtil.date2String_yyyy_MM_dd_HH_mm_ss(new Date());
     }
 

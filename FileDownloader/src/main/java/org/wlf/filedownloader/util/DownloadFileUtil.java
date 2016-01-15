@@ -5,6 +5,8 @@ import org.wlf.filedownloader.base.BaseUrlFileInfo;
 import org.wlf.filedownloader.base.Status;
 import org.wlf.filedownloader.file_download.db_recorder.Record;
 
+import java.io.File;
+
 /**
  * Util for {@link Status}
  *
@@ -211,6 +213,23 @@ public class DownloadFileUtil {
                     return FileUtil.isFileExist(downloadFileInfo.getFilePath());
                 default:
                     return FileUtil.isFileExist(downloadFileInfo.getTempFilePath());
+            }
+        }
+        return false;
+    }
+
+    public static boolean renameTempFileToSaveFileIfNecessary(DownloadFileInfo downloadFileInfo) {
+        if (downloadFileInfo.getDownloadedSizeLong() == downloadFileInfo.getFileSizeLong()) {
+            File tempFile = new File(downloadFileInfo.getTempFilePath());
+            File saveFile = new File(downloadFileInfo.getFilePath());
+            // the temp file exist, but the save not exist and it is really finished download, so rename the 
+            // temp file to save file
+            if (tempFile.exists() && tempFile.length() == downloadFileInfo.getDownloadedSizeLong() && !saveFile
+                    .exists()) {
+                // rename temp file to save file
+                boolean isSucceed = tempFile.renameTo(saveFile);
+                return isSucceed;
+
             }
         }
         return false;

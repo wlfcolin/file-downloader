@@ -56,7 +56,7 @@ class RenameDownloadFileTask implements Runnable {
         /**
          * rename logic
          *
-         * 1.if downloading, pause(impl by rename manager), make sure the download status is right
+         * 1.if downloading, pause(check by rename manager), make sure the download status is right
          * 2.check illegal conditions such as file system not mount, download file not exist and so on
          * 3.backup save file name
          * 4.rename save file name in database

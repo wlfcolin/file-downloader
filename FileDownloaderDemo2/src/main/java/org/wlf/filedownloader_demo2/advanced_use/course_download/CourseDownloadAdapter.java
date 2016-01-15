@@ -179,25 +179,25 @@ public class CourseDownloadAdapter extends RecyclerView.Adapter<CourseDownloadVi
             holder.mTvPercent.setText(MathUtil.formatNumber(percent) + "%");
 
             final TextView tvText = holder.mTvText;
-            // mStatus
+            // status
             switch (downloadFileInfo.getStatus()) {
-                // download file mStatus:unknown
+                // download file status:unknown
                 case Status.DOWNLOAD_STATUS_UNKNOWN:
                     tvText.setText(context.getString(R.string.advanced_use__can_not_download));
                     break;
-                // download file mStatus:waiting
+                // download file status:waiting
                 case Status.DOWNLOAD_STATUS_WAITING:
                     tvText.setText(context.getString(R.string.advanced_use__waiting));
                     break;
-                // download file mStatus:preparing
+                // download file status:preparing
                 case Status.DOWNLOAD_STATUS_PREPARING:
                     tvText.setText(context.getString(R.string.advanced_use__getting_resource));
                     break;
-                // download file mStatus:prepared
+                // download file status:prepared
                 case Status.DOWNLOAD_STATUS_PREPARED:
                     tvText.setText(context.getString(R.string.advanced_use__connected_resource));
                     break;
-                // download file mStatus:downloading
+                // download file status:downloading
                 case Status.DOWNLOAD_STATUS_DOWNLOADING:
                     if (payload != null && payload.mDownloadSpeed > 0 && payload.mRemainingTime > 0) {
                         tvText.setText(MathUtil.formatNumber(payload.mDownloadSpeed) + "KB/s   " + TimeUtil
@@ -206,11 +206,11 @@ public class CourseDownloadAdapter extends RecyclerView.Adapter<CourseDownloadVi
                         tvText.setText(context.getString(R.string.advanced_use__downloading));
                     }
                     break;
-                // download file mStatus:paused
+                // download file status:paused
                 case Status.DOWNLOAD_STATUS_PAUSED:
                     tvText.setText(context.getString(R.string.advanced_use__paused));
                     break;
-                // download file mStatus:error
+                // download file status:error
                 case Status.DOWNLOAD_STATUS_ERROR:
 
                     String msg = context.getString(R.string.advanced_use__download_error);
@@ -230,7 +230,7 @@ public class CourseDownloadAdapter extends RecyclerView.Adapter<CourseDownloadVi
 
                     tvText.setText(context.getString(R.string.advanced_use__download_error));
                     break;
-                // download file mStatus:completed
+                // download file status:completed
                 case Status.DOWNLOAD_STATUS_COMPLETED:
                     holder.mTvDownloadSize.setText("");
                     //mp4
@@ -247,7 +247,7 @@ public class CourseDownloadAdapter extends RecyclerView.Adapter<CourseDownloadVi
                         tvText.setText(context.getString(R.string.advanced_use__download_completed));
                     }
                     break;
-                // download file mStatus:file not exist
+                // download file status:file not exist
                 case Status.DOWNLOAD_STATUS_FILE_NOT_EXIST:
                     holder.mTvDownloadSize.setText("");
                     tvText.setText(context.getString(R.string.advanced_use__file_not_exist));
@@ -290,7 +290,7 @@ public class CourseDownloadAdapter extends RecyclerView.Adapter<CourseDownloadVi
             }
         });
 
-        // set check mStatus
+        // set check status
         boolean isChecked = false;
         for (CoursePreviewInfo selectCoursePreviewInfo : mSelectCoursePreviewInfos) {
             if (selectCoursePreviewInfo == coursePreviewInfo) {
@@ -330,7 +330,7 @@ public class CourseDownloadAdapter extends RecyclerView.Adapter<CourseDownloadVi
                 final Context context = v.getContext();
                 if (downloadFileInfo != null) {
                     switch (downloadFileInfo.getStatus()) {
-                        // download file mStatus:unknown
+                        // download file status:unknown
                         case Status.DOWNLOAD_STATUS_UNKNOWN:
 
                             showToast(context, context.getString(R.string.advanced_use__can_not_download2) +
@@ -338,7 +338,7 @@ public class CourseDownloadAdapter extends RecyclerView.Adapter<CourseDownloadVi
                                     .advanced_use__re_download));
 
                             break;
-                        // download file mStatus:error & paused
+                        // download file status:error & paused
                         case Status.DOWNLOAD_STATUS_ERROR:
                         case Status.DOWNLOAD_STATUS_PAUSED:
 
@@ -347,7 +347,7 @@ public class CourseDownloadAdapter extends RecyclerView.Adapter<CourseDownloadVi
 
                             showToast(context, context.getString(R.string.advanced_use__start_download) + courseName);
                             break;
-                        // download file mStatus:file not exist
+                        // download file status:file not exist
                         case Status.DOWNLOAD_STATUS_FILE_NOT_EXIST:
 
                             // show dialog
@@ -368,7 +368,7 @@ public class CourseDownloadAdapter extends RecyclerView.Adapter<CourseDownloadVi
                                     });
                             builder.show();
                             break;
-                        // download file mStatus:waiting & preparing & prepared & downloading
+                        // download file status:waiting & preparing & prepared & downloading
                         case Status.DOWNLOAD_STATUS_WAITING:
                         case Status.DOWNLOAD_STATUS_PREPARING:
                         case Status.DOWNLOAD_STATUS_PREPARED:
@@ -383,7 +383,7 @@ public class CourseDownloadAdapter extends RecyclerView.Adapter<CourseDownloadVi
                                 holder.mTvText.setText(context.getString(R.string.advanced_use__paused));
                             }
                             break;
-                        // download file mStatus:completed
+                        // download file status:completed
                         case Status.DOWNLOAD_STATUS_COMPLETED:
 
                             if (holder.mTvDownloadSize != null) {
@@ -574,11 +574,11 @@ public class CourseDownloadAdapter extends RecyclerView.Adapter<CourseDownloadVi
         @Override
         public String toString() {
             return "Payload{" +
-                    "mStatus=" + mStatus +
+                    "status=" + mStatus +
                     ", mUrl='" + mUrl + '\'' +
                     ", mDownloadSpeed=" + mDownloadSpeed +
                     ", mRemainingTime=" + mRemainingTime +
-                    ", mFailReason=" + mFailReason +
+                    ", failReason=" + mFailReason +
                     '}';
         }
     }

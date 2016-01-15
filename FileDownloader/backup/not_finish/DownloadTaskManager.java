@@ -302,9 +302,9 @@ public class DownloadTaskManager implements Pauseable {
             return;
         }
 
-        //        // create download task
-        //        DownloadTaskImpl downloadTask = new DownloadTaskImpl(FileDownloadTaskParam.createByDownloadFile
-        //                (downloadFileInfo), mDownloadRecorder, mDownloadStatusObserver, mConfiguration.getFileDetectEngine());
+//        // create download task
+//        DownloadTaskImpl downloadTask = new DownloadTaskImpl(FileDownloadTaskParam.createByDownloadFile
+//                (downloadFileInfo), mDownloadRecorder, mDownloadStatusObserver, mConfiguration.getFileDetectEngine());
 
         // create retryable download task
         RetryableDownloadTaskImpl downloadTask = new RetryableDownloadTaskImpl(FileDownloadTaskParam

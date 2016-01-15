@@ -6,6 +6,7 @@ import org.wlf.filedownloader.DownloadFileInfo;
 import org.wlf.filedownloader.base.Log;
 import org.wlf.filedownloader.file_download.base.DownloadRecorder;
 import org.wlf.filedownloader.listener.OnDetectBigUrlFileListener;
+import org.wlf.filedownloader.listener.OnDetectBigUrlFileListener.DetectBigUrlFileFailReason;
 import org.wlf.filedownloader.listener.OnDetectUrlFileListener.DetectUrlFileFailReason;
 import org.wlf.filedownloader.util.UrlUtil;
 
@@ -39,7 +40,7 @@ class DetectUrlFileTask implements Runnable {
     private OnDetectBigUrlFileListener mOnDetectBigUrlFileListener;
 
     // if it id true, that means force detect without check whether the file is downloaded
-    private boolean mForceDetect = false;
+    private boolean mIsForceDetect = false;
 
     private ExecutorService mCloseConnectionEngine;// engine use for closing the http connection
 
@@ -74,11 +75,23 @@ class DetectUrlFileTask implements Runnable {
      * enable force detect
      */
     public void enableForceDetect() {
-        mForceDetect = true;
+        mIsForceDetect = true;
     }
 
     @Override
     public void run() {
+
+        /**
+         * detect logic
+         *
+         * 1.check illegal conditions such as url illegal, network error and so on
+         * 2.if url file detected and not force detect flag, ignore, make sure do not detect duplicate
+         * 3.check illegal response status such as response code is not 20X
+         * 4.rename save file name in database
+         * 5.create DetectUrlFileInfo
+         *
+         * note: DetectUrlFileFailReason extends from DetectBigUrlFileFailReason, so they are compatible
+         */
 
         HttpURLConnection conn = null;
         InputStream inputStream = null;
@@ -88,19 +101,25 @@ class DetectUrlFileTask implements Runnable {
         DetectUrlFileFailReason failReason = null;
 
         try {
-            // check URL
-            if (!UrlUtil.isUrl(mUrl)) {
-                // error url illegal
-                failReason = new DetectUrlFileFailReason("url illegal!", DetectUrlFileFailReason.TYPE_URL_ILLEGAL);
-                // goto finally, url error
-                return;
-            }
+            // ------------start checking conditions------------
+            {
+                // check URL
+                if (!UrlUtil.isUrl(mUrl)) {
+                    // error, url illegal
+                    failReason = new DetectUrlFileFailReason("url illegal !", DetectUrlFileFailReason.TYPE_URL_ILLEGAL);
+                    // goto finally, url error
+                    return;
+                }
 
-            downloadFileInfo = mDownloadRecorder.getDownloadFile(mUrl);
-            if (downloadFileInfo != null && !mForceDetect) {
-                // goto finally, download file exist
-                return;
+                // network check by caller
+
+                downloadFileInfo = mDownloadRecorder.getDownloadFile(mUrl);
+                if (downloadFileInfo != null && !mIsForceDetect) {
+                    // goto finally, download file exist
+                    return;
+                }
             }
+            // ------------end checking conditions------------
 
             conn = HttpConnectionHelper.createDetectConnection(mUrl, mConnectTimeout, mCharset);
 
@@ -117,7 +136,7 @@ class DetectUrlFileTask implements Runnable {
                 // error over max redirect
                 failReason = new DetectUrlFileFailReason("over max redirect:" + MAX_REDIRECT_TIMES + "!", 
                         DetectUrlFileFailReason.TYPE_URL_OVER_REDIRECT_COUNT);
-                // goto finally, redirect limit error
+                // goto finally, over redirect limit error
                 return;
             }
 
@@ -142,27 +161,28 @@ class DetectUrlFileTask implements Runnable {
                     if (fileSize > 0) {
                         detectUrlFileInfo = new DetectUrlFileInfo(mUrl, fileSize, eTag, acceptRangeType, 
                                 mDownloadSaveDir, fileName);
-                        // add to memory cache
+                        // add or update to memory cache
                         mDetectUrlFileCacher.addOrUpdateDetectUrlFile(detectUrlFileInfo);
-                        // goto finally,the detectUrlFileInfo created
+                        // goto finally, the detectUrlFileInfo created
                         return;
                     }
                     break;
                 // 404 not found
                 case HttpURLConnection.HTTP_NOT_FOUND:
                     // error url file does not exist
-                    failReason = new DetectUrlFileFailReason("url file does not exist!", DetectUrlFileFailReason
+                    failReason = new DetectUrlFileFailReason("url file does not exist !", DetectUrlFileFailReason
                             .TYPE_HTTP_FILE_NOT_EXIST);
                     break;
-                // other,ResponseCode error
+                // other, ResponseCode error
                 default:
                     // error ResponseCode error
                     failReason = new DetectUrlFileFailReason("ResponseCode:" + conn.getResponseCode() + " " +
-                            "error,can not read data!", DetectUrlFileFailReason.TYPE_BAD_HTTP_RESPONSE_CODE);
+                            "error, can not read data !", DetectUrlFileFailReason.TYPE_BAD_HTTP_RESPONSE_CODE);
                     break;
             }
         } catch (Exception e) {
             e.printStackTrace();
+            // cast Exception to DetectUrlFileFailReason
             failReason = new DetectUrlFileFailReason(e);
         } finally {
             // close inputStream & url connection
@@ -175,49 +195,69 @@ class DetectUrlFileTask implements Runnable {
 
             boolean isNotify = false;
 
-            if (downloadFileInfo != null && !mForceDetect) {
-                // 1.in the download file database, notify
-                isNotify = notifyDetectUrlFileExist();
-            }
-
-            if (!isNotify && detectUrlFileInfo != null) {
-                // 2.need to create download file
-                isNotify = notifyDetectNewDownloadFile(detectUrlFileInfo.getFileName(), detectUrlFileInfo.getFileDir
-                        (), detectUrlFileInfo.getFileSizeLong());
-            }
-
-            if (!isNotify) {
-                if (failReason == null) {
-                    failReason = new DetectUrlFileFailReason("the file need to download may not access!", 
-                            DetectUrlFileFailReason.TYPE_UNKNOWN);
+            // ------------start notifying caller------------
+            {
+                // notify file exist
+                if (downloadFileInfo != null && !mIsForceDetect) {
+                    // in the download file database, notify
+                    isNotify = notifyDetectUrlFileExist();
                 }
-                // 2.error
-                isNotify = notifyDetectUrlFileFailed(failReason);
+
+                // detect new one
+                if (!isNotify && detectUrlFileInfo != null) {
+                    // delete the old one and tell the caller that need to create new download file
+                    try {
+                        mDownloadRecorder.resetDownloadFile(mUrl, true);
+                        isNotify = notifyDetectNewDownloadFile(detectUrlFileInfo.getFileName(), detectUrlFileInfo
+                                .getFileDir(), detectUrlFileInfo.getFileSizeLong());
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        failReason = new DetectUrlFileFailReason(e);
+                    }
+                }
+
+                if (!isNotify) {
+                    if (failReason == null) {
+                        failReason = new DetectUrlFileFailReason("the file need to download may not access !", 
+                                DetectUrlFileFailReason.TYPE_UNKNOWN);
+                    }
+                    // error occur
+                    isNotify = notifyDetectUrlFileFailed(failReason);
+                }
             }
+            // ------------end notifying caller------------
 
             boolean hasException = failReason == null ? true : false;
 
-            Log.d(TAG, TAG + ".run 探测文件任务【已结束】，是否有异常：" + hasException + "，url：" + mUrl);
+            Log.d(TAG, TAG + ".run 探测文件任务【已结束】，是否有异常：" + hasException + "，是否强制探测模式：" + mIsForceDetect +
+                    "，是否成功通知了调用者（如果没有设置监听者认为没有通知成功）：" + isNotify + "，url：" + mUrl);
         }
     }
 
+    /**
+     * notifyDetectUrlFileExist
+     */
     private boolean notifyDetectUrlFileExist() {
 
         Log.d(TAG, "探测文件已存在，url：" + mUrl);
 
-        // notify caller
         if (mOnDetectBigUrlFileListener != null) {
+            // main thread notify caller
             OnDetectBigUrlFileListener.MainThreadHelper.onDetectUrlFileExist(mUrl, mOnDetectBigUrlFileListener);
             return true;
         }
         return false;
     }
 
+    /**
+     * notifyDetectNewDownloadFile
+     */
     private boolean notifyDetectNewDownloadFile(String fileName, String saveDir, long fileSize) {
 
         Log.d(TAG, "探测文件不存在，需要创建，url：" + mUrl);
 
         if (mOnDetectBigUrlFileListener != null) {
+            // main thread notify caller
             OnDetectBigUrlFileListener.MainThreadHelper.onDetectNewDownloadFile(mUrl, fileName, saveDir, fileSize, 
                     mOnDetectBigUrlFileListener);
             return true;
@@ -225,11 +265,15 @@ class DetectUrlFileTask implements Runnable {
         return false;
     }
 
-    private boolean notifyDetectUrlFileFailed(DetectUrlFileFailReason failReason) {
+    /**
+     * notifyDetectUrlFileFailed
+     */
+    private boolean notifyDetectUrlFileFailed(DetectBigUrlFileFailReason failReason) {
 
         Log.d(TAG, "探测文件失败，url：" + mUrl);
 
         if (mOnDetectBigUrlFileListener != null) {
+            // main thread notify caller
             OnDetectBigUrlFileListener.MainThreadHelper.onDetectUrlFileFailed(mUrl, failReason, 
                     mOnDetectBigUrlFileListener);
             return true;

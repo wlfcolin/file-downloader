@@ -11,7 +11,7 @@ import org.wlf.filedownloader.file_download.http_downloader.HttpDownloader.HttpD
 import org.wlf.filedownloader.listener.OnDetectUrlFileListener.DetectUrlFileFailReason;
 
 /**
- * OnFileDownloadStatusListener, use {@link OnRetryableFileDownloadStatusListener} can be retry
+ * OnFileDownloadStatusListener, use {@link OnRetryableFileDownloadStatusListener} can be retry when failed once
  * <br/>
  * 文件下载状态改变监听器
  *
@@ -78,29 +78,6 @@ public interface OnFileDownloadStatusListener {
      * Callback helper for main thread
      */
     public static class MainThreadHelper {
-
-        /**
-         * retry download
-         *
-         * @param downloadFileInfo download file info
-         * @param retryTimes       the times to retry
-         */
-        public static void onFileDownloadStatusRetrying(final DownloadFileInfo downloadFileInfo, final int 
-                retryTimes, final OnRetryableFileDownloadStatusListener onRetryableFileDownloadStatusListener) {
-            if (onRetryableFileDownloadStatusListener == null) {
-                return;
-            }
-            Handler handler = new Handler(Looper.getMainLooper());
-            handler.post(new Runnable() {
-                @Override
-                public void run() {
-                    if (onRetryableFileDownloadStatusListener == null) {
-                        return;
-                    }
-                    onRetryableFileDownloadStatusListener.onFileDownloadStatusRetrying(downloadFileInfo, retryTimes);
-                }
-            });
-        }
 
         /**
          * waiting download

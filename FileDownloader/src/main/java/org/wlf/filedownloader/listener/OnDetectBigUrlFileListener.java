@@ -41,39 +41,6 @@ public interface OnDetectBigUrlFileListener {
     void onDetectUrlFileFailed(String url, DetectBigUrlFileFailReason failReason);
 
     /**
-     * DetectUrlFileFailReason
-     */
-    public static class DetectBigUrlFileFailReason extends HttpFailReason {
-        /**
-         * URL illegal
-         */
-        public static final String TYPE_URL_ILLEGAL = DetectBigUrlFileFailReason.class.getName() + "_TYPE_URL_ILLEGAL";
-        /**
-         * url over redirect count
-         */
-        public static final String TYPE_URL_OVER_REDIRECT_COUNT = DetectBigUrlFileFailReason.class.getName() + 
-                "_TYPE_URL_OVER_REDIRECT_COUNT";
-        /**
-         * bad http response code, not 2XX
-         */
-        public static final String TYPE_BAD_HTTP_RESPONSE_CODE = DetectBigUrlFileFailReason.class.getName() + 
-                "_TYPE_BAD_HTTP_RESPONSE_CODE";
-        /**
-         * the file need to download does not exist
-         */
-        public static final String TYPE_HTTP_FILE_NOT_EXIST = DetectBigUrlFileFailReason.class.getName() + 
-                "_TYPE_HTTP_FILE_NOT_EXIST";
-
-        public DetectBigUrlFileFailReason(String detailMessage, String type) {
-            super(detailMessage, type);
-        }
-
-        public DetectBigUrlFileFailReason(Throwable throwable) {
-            super(throwable);
-        }
-    }
-
-    /**
      * Callback helper for main thread
      */
     public static class MainThreadHelper {
@@ -148,6 +115,39 @@ public interface OnDetectBigUrlFileListener {
                 }
             });
         }
-
     }
+
+    /**
+     * DetectUrlFileFailReason
+     */
+    public static class DetectBigUrlFileFailReason extends HttpFailReason {
+        /**
+         * URL illegal
+         */
+        public static final String TYPE_URL_ILLEGAL = DetectBigUrlFileFailReason.class.getName() + "_TYPE_URL_ILLEGAL";
+        /**
+         * url over redirect count
+         */
+        public static final String TYPE_URL_OVER_REDIRECT_COUNT = DetectBigUrlFileFailReason.class.getName() + 
+                "_TYPE_URL_OVER_REDIRECT_COUNT";
+        /**
+         * bad http response code, not 2XX
+         */
+        public static final String TYPE_BAD_HTTP_RESPONSE_CODE = DetectBigUrlFileFailReason.class.getName() + 
+                "_TYPE_BAD_HTTP_RESPONSE_CODE";
+        /**
+         * the file need to download does not exist
+         */
+        public static final String TYPE_HTTP_FILE_NOT_EXIST = DetectBigUrlFileFailReason.class.getName() + 
+                "_TYPE_HTTP_FILE_NOT_EXIST";
+
+        public DetectBigUrlFileFailReason(String detailMessage, String type) {
+            super(detailMessage, type);
+        }
+
+        public DetectBigUrlFileFailReason(Throwable throwable) {
+            super(throwable);
+        }
+    }
+
 }

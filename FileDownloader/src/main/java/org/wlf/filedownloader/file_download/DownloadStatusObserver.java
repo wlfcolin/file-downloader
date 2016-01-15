@@ -80,7 +80,9 @@ class DownloadStatusObserver implements OnRetryableFileDownloadStatusListener {
                 // find, remove
                 mDownloadStatusListenerInfos.remove(listenerInfo);
 
-                String urls = (listenerInfo.mDownloadStatusConfiguration != null && !CollectionUtil.isEmpty(listenerInfo.mDownloadStatusConfiguration.getListenUrls())) ? listenerInfo.mDownloadStatusConfiguration.getListenUrls().toString() : "all";
+                String urls = (listenerInfo.mDownloadStatusConfiguration != null && !CollectionUtil.isEmpty
+                        (listenerInfo.mDownloadStatusConfiguration.getListenUrls())) ? listenerInfo
+                        .mDownloadStatusConfiguration.getListenUrls().toString() : "all";
 
                 Log.i(TAG, "file-downloader-listener 移除【文件下载状态监听器】成功，该listener监听的urls：" + urls);
                 break;
@@ -177,8 +179,8 @@ class DownloadStatusObserver implements OnRetryableFileDownloadStatusListener {
             listener) {
         if (listener instanceof OnRetryableFileDownloadStatusListener) {
             // main thread notify caller
-            OnFileDownloadStatusListener.MainThreadHelper.onFileDownloadStatusRetrying(downloadFileInfo, retryTimes, 
-                    (OnRetryableFileDownloadStatusListener) listener);
+            OnRetryableFileDownloadStatusListener.MainThreadHelper.onFileDownloadStatusRetrying(downloadFileInfo, 
+                    retryTimes, (OnRetryableFileDownloadStatusListener) listener);
 
             String url = downloadFileInfo != null ? downloadFileInfo.getUrl() : "unknown";
 
