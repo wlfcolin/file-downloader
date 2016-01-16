@@ -36,6 +36,7 @@
     <string name="advanced_use__course_download_play_flv">偶发flv课程</string>
     <string name="advanced_use__can_not_download">无法下载，请删除后重新下载</string>
     <string name="advanced_use__getting_resource">正在获取资源</string>
+    <string name="advanced_use__retrying_connect_resource">重试：重连资源</string>
     <string name="advanced_use__connected_resource">已连接资源</string>
     <string name="advanced_use__waiting">等待下载</string>
     <string name="advanced_use__paused">已暂停</string>
@@ -56,6 +57,12 @@
     <string name="advanced_use__check_network">(请检查网络)</string>
     <string name="advanced_use__url_illegal">(Url不合法)</string>
     <string name="advanced_use__network_timeout">(网络超时)</string>
+    <string name="advanced_use__storage_space_is_full">(存储空间已满)</string>
+    <string name="advanced_use__storage_space_can_not_write">(存储空间不可写)</string>
+    <string name="advanced_use__file_not_detect">(文件没有被探测到)</string>
+    <string name="advanced_use__http_bad_response_code">(Http 返回错误)</string>
+    <string name="advanced_use__http_file_not_exist">(Http请求文件不存在)</string>
+    <string name="advanced_use__save_file_not_exist">(保存文件不存在)</string>
 
     <string name="advanced_use__btn_pause">暂停</string>
     <string name="advanced_use__btn_start_or_continue">开始/继续</string>

@@ -160,7 +160,7 @@ class DownloadTaskImpl implements DownloadTask, OnHttpDownloadListener, OnFileSa
                 }
                 // other status
                 else if (downloadFileInfo.getDownloadedSizeLong() == downloadFileInfo.getFileSizeLong()) {
-                    boolean isSucceed = DownloadFileUtil.renameTempFileToSaveFileIfNecessary(downloadFileInfo);
+                    boolean isSucceed = DownloadFileUtil.tryToRenameTempFileToSaveFile(downloadFileInfo);
                     if (isSucceed) {
                         mFinishState = new FinishState(Status.DOWNLOAD_STATUS_COMPLETED);
                         return false;
@@ -413,7 +413,7 @@ class DownloadTaskImpl implements DownloadTask, OnHttpDownloadListener, OnFileSa
                     }
 
                     // file not exist check, this is important
-                    boolean fileExist = DownloadFileUtil.checkFileExistIfNecessary(downloadFileInfo);
+                    boolean fileExist = DownloadFileUtil.isSaveFileOrTempExistInErrorStatus(downloadFileInfo);
                     if (!fileExist) {
                         mFinishState = new FinishState(Status.DOWNLOAD_STATUS_FILE_NOT_EXIST);
                     }

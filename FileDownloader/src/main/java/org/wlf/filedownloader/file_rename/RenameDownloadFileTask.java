@@ -50,6 +50,8 @@ class RenameDownloadFileTask implements Runnable {
         this.mOnRenameDownloadFileListener = onRenameDownloadFileListener;
     }
 
+    // --------------------------------------run the task--------------------------------------
+
     @Override
     public void run() {
 
@@ -71,22 +73,20 @@ class RenameDownloadFileTask implements Runnable {
         try {
             downloadFileInfo = mDownloadFileRenamer.getDownloadFile(mUrl);
 
+            // ------------start checking conditions------------
+
             if (downloadFileInfo == null) {
-                failReason = new OnRenameDownloadFileFailReason("the download file is not exist!", 
-                        OnRenameDownloadFileFailReason.TYPE_FILE_RECORD_IS_NOT_EXIST);
-                // goto finally,notifyFailed()
+                failReason = new OnRenameDownloadFileFailReason("the download file is not exist !", OnRenameDownloadFileFailReason.TYPE_FILE_RECORD_IS_NOT_EXIST);
+                // goto finally, notifyFailed()
                 return;
             }
-
-            // 1.prepared
-            notifyPrepared(downloadFileInfo);
 
             // check status
             if (!DownloadFileUtil.canRename(downloadFileInfo)) {
 
-                failReason = new OnRenameDownloadFileFailReason("the download file status error!", 
+                failReason = new OnRenameDownloadFileFailReason("the download file status error !", 
                         OnRenameDownloadFileFailReason.TYPE_FILE_STATUS_ERROR);
-                // goto finally,notifyFailed()
+                // goto finally, notifyFailed()
                 return;
             }
 
@@ -109,18 +109,21 @@ class RenameDownloadFileTask implements Runnable {
             File newFile = new File(dirPath, mNewFileName);
 
             if (TextUtils.isEmpty(mNewFileName)) {
-                failReason = new OnRenameDownloadFileFailReason("new file name is empty!", 
-                        OnRenameDownloadFileFailReason.TYPE_NEW_FILE_NAME_IS_EMPTY);
-                // goto finally,notifyFailed()
+                failReason = new OnRenameDownloadFileFailReason("new file name is empty !", OnRenameDownloadFileFailReason.TYPE_NEW_FILE_NAME_IS_EMPTY);
+                // goto finally, notifyFailed()
                 return;
             }
 
             if (checkNewFileExist(newFile)) {
-                failReason = new OnRenameDownloadFileFailReason("the new file has been exist!", 
+                failReason = new OnRenameDownloadFileFailReason("the new file has been exist !", 
                         OnRenameDownloadFileFailReason.TYPE_NEW_FILE_HAS_BEEN_EXIST);
-                // goto finally,notifyFailed()
+                // goto finally, notifyFailed()
                 return;
             }
+            // ------------end checking conditions------------
+
+            // 1.prepared
+            notifyPrepared(downloadFileInfo);
 
             boolean renameResult = false;
 
@@ -133,9 +136,9 @@ class RenameDownloadFileTask implements Runnable {
             }
 
             if (!renameResult) {
-                failReason = new OnRenameDownloadFileFailReason("rename file in db failed!", 
+                failReason = new OnRenameDownloadFileFailReason("rename file in db failed !", 
                         OnRenameDownloadFileFailReason.TYPE_UNKNOWN);
-                // goto finally,notifyFailed()
+                // goto finally, notifyFailed()
                 return;
             }
 
@@ -150,7 +153,7 @@ class RenameDownloadFileTask implements Runnable {
                     renameResult = oldSaveFile.renameTo(newFile);
                 } else {
                     renameResult = false;
-                    failReason = new OnRenameDownloadFileFailReason("the original file not exist!", 
+                    failReason = new OnRenameDownloadFileFailReason("the original file not exist !", 
                             OnRenameDownloadFileFailReason.TYPE_ORIGINAL_FILE_NOT_EXIST);
                 }
 
@@ -170,10 +173,10 @@ class RenameDownloadFileTask implements Runnable {
                     }
 
                     if (failReason == null) {
-                        failReason = new OnRenameDownloadFileFailReason("rename file in file system failed!", 
+                        failReason = new OnRenameDownloadFileFailReason("rename file in file system failed !", 
                                 OnRenameDownloadFileFailReason.TYPE_UNKNOWN);
                     }
-                    // goto finally,notifyFailed()
+                    // goto finally, notifyFailed()
                     return;
                 }
 
@@ -185,18 +188,22 @@ class RenameDownloadFileTask implements Runnable {
             e.printStackTrace();
             failReason = new OnRenameDownloadFileFailReason(e);
         } finally {
-            // rename succeed
-            if (failReason == null) {
-                // 2.rename success
-                notifySuccess(downloadFileInfo);
+            // ------------start notifying caller------------
+            {
+                // rename succeed
+                if (failReason == null) {
+                    // 2.rename success
+                    notifySuccess(downloadFileInfo);
 
-                Log.d(TAG, TAG + ".run.run 重命名成功，url：" + mUrl);
-            } else {
-                // 2.rename failed
-                notifyFailed(downloadFileInfo, failReason);
+                    Log.d(TAG, TAG + ".run 重命名成功，url：" + mUrl);
+                } else {
+                    // 2.rename failed
+                    notifyFailed(downloadFileInfo, failReason);
 
-                Log.d(TAG, TAG + ".run 重命名失败，url：" + mUrl + ",failReason:" + failReason.getType());
+                    Log.d(TAG, TAG + ".run 重命名失败，url：" + mUrl + ",failReason:" + failReason.getType());
+                }
             }
+            // ------------end notifying caller------------
 
             Log.d(TAG, TAG + ".run 重命名任务【已结束】，是否有异常：" + (failReason == null) + "，url：" + mUrl);
         }
@@ -227,6 +234,8 @@ class RenameDownloadFileTask implements Runnable {
         }
         return false;
     }
+
+    // --------------------------------------notify caller--------------------------------------
 
     /**
      * notifyPrepared

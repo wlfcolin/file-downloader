@@ -21,14 +21,13 @@ import android.widget.TextView;
 import org.wlf.filedownloader.DownloadFileInfo;
 import org.wlf.filedownloader.FileDownloader;
 import org.wlf.filedownloader.base.Status;
-import org.wlf.filedownloader.listener.OnFileDownloadStatusListener;
+import org.wlf.filedownloader.listener.OnRetryableFileDownloadStatusListener;
 import org.wlf.filedownloader.util.FileUtil;
-import org.wlf.filedownloader_demo2.MathUtil;
+import org.wlf.filedownloader.util.MathUtil;
 import org.wlf.filedownloader_demo2.R;
 import org.wlf.filedownloader_demo2.ToastUtil;
 import org.wlf.filedownloader_demo2.advanced_use.course_download.CourseDownloadAdapter.CourseDownloadViewHolder;
 import org.wlf.filedownloader_demo2.advanced_use.model.CoursePreviewInfo;
-import org.wlf.filedownloader_demo2.custom_model.CustomVideoInfo;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -38,8 +37,7 @@ import java.util.List;
  * @datetime 2015-12-11 22:08 GMT+8
  * @email 411086563@qq.com
  */
-public class CourseDownloadAdapter extends RecyclerView.Adapter<CourseDownloadViewHolder> implements 
-        OnFileDownloadStatusListener {
+public class CourseDownloadAdapter extends RecyclerView.Adapter<CourseDownloadViewHolder> implements OnRetryableFileDownloadStatusListener {
 
     private List<CoursePreviewInfo> mCoursePreviewInfos = new ArrayList<CoursePreviewInfo>();
     private List<CoursePreviewInfo> mSelectCoursePreviewInfos = new ArrayList<CoursePreviewInfo>();
@@ -188,6 +186,14 @@ public class CourseDownloadAdapter extends RecyclerView.Adapter<CourseDownloadVi
                 // download file status:waiting
                 case Status.DOWNLOAD_STATUS_WAITING:
                     tvText.setText(context.getString(R.string.advanced_use__waiting));
+                    break;
+                // download file status:waiting
+                case Status.DOWNLOAD_STATUS_RETRYING:
+                    String retryTimesStr = "";
+                    if (payload != null) {
+                        retryTimesStr = "(" + payload.mRetryTimes + ")";
+                    }
+                    tvText.setText(context.getString(R.string.advanced_use__retrying_connect_resource) + retryTimesStr);
                     break;
                 // download file status:preparing
                 case Status.DOWNLOAD_STATUS_PREPARING:
@@ -435,8 +441,16 @@ public class CourseDownloadAdapter extends RecyclerView.Adapter<CourseDownloadVi
     public void onFileDownloadStatusWaiting(DownloadFileInfo downloadFileInfo) {
         int position = findPosition(downloadFileInfo);
         if (position >= 0 && position < getItemCount()) {
+            notifyItemChanged(position, new Payload(downloadFileInfo.getStatus(), downloadFileInfo.getUrl(), -1, -1, -1, null));
+        }
+    }
+
+    @Override
+    public void onFileDownloadStatusRetrying(DownloadFileInfo downloadFileInfo, int retryTimes) {
+        int position = findPosition(downloadFileInfo);
+        if (position >= 0 && position < getItemCount()) {
             notifyItemChanged(position, new Payload(downloadFileInfo.getStatus(), downloadFileInfo.getUrl(), -1, -1, 
-                    null));
+                    retryTimes, null));
         }
     }
 
@@ -444,8 +458,7 @@ public class CourseDownloadAdapter extends RecyclerView.Adapter<CourseDownloadVi
     public void onFileDownloadStatusPreparing(DownloadFileInfo downloadFileInfo) {
         int position = findPosition(downloadFileInfo);
         if (position >= 0 && position < getItemCount()) {
-            notifyItemChanged(position, new Payload(downloadFileInfo.getStatus(), downloadFileInfo.getUrl(), -1, -1, 
-                    null));
+            notifyItemChanged(position, new Payload(downloadFileInfo.getStatus(), downloadFileInfo.getUrl(), -1, -1, -1, null));
         }
     }
 
@@ -453,8 +466,7 @@ public class CourseDownloadAdapter extends RecyclerView.Adapter<CourseDownloadVi
     public void onFileDownloadStatusPrepared(DownloadFileInfo downloadFileInfo) {
         int position = findPosition(downloadFileInfo);
         if (position >= 0 && position < getItemCount()) {
-            notifyItemChanged(position, new Payload(downloadFileInfo.getStatus(), downloadFileInfo.getUrl(), -1, -1, 
-                    null));
+            notifyItemChanged(position, new Payload(downloadFileInfo.getStatus(), downloadFileInfo.getUrl(), -1, -1, -1, null));
         }
     }
 
@@ -463,8 +475,7 @@ public class CourseDownloadAdapter extends RecyclerView.Adapter<CourseDownloadVi
             remainingTime) {
         int position = findPosition(downloadFileInfo);
         if (position >= 0 && position < getItemCount()) {
-            notifyItemChanged(position, new Payload(downloadFileInfo.getStatus(), downloadFileInfo.getUrl(), 
-                    downloadSpeed, remainingTime, null));
+            notifyItemChanged(position, new Payload(downloadFileInfo.getStatus(), downloadFileInfo.getUrl(), downloadSpeed, remainingTime, -1, null));
         }
     }
 
@@ -472,8 +483,7 @@ public class CourseDownloadAdapter extends RecyclerView.Adapter<CourseDownloadVi
     public void onFileDownloadStatusPaused(DownloadFileInfo downloadFileInfo) {
         int position = findPosition(downloadFileInfo);
         if (position >= 0 && position < getItemCount()) {
-            notifyItemChanged(position, new Payload(downloadFileInfo.getStatus(), downloadFileInfo.getUrl(), -1, -1, 
-                    null));
+            notifyItemChanged(position, new Payload(downloadFileInfo.getStatus(), downloadFileInfo.getUrl(), -1, -1, -1, null));
         }
     }
 
@@ -481,8 +491,7 @@ public class CourseDownloadAdapter extends RecyclerView.Adapter<CourseDownloadVi
     public void onFileDownloadStatusCompleted(DownloadFileInfo downloadFileInfo) {
         int position = findPosition(downloadFileInfo);
         if (position >= 0 && position < getItemCount()) {
-            notifyItemChanged(position, new Payload(downloadFileInfo.getStatus(), downloadFileInfo.getUrl(), -1, -1, 
-                    null));
+            notifyItemChanged(position, new Payload(downloadFileInfo.getStatus(), downloadFileInfo.getUrl(), -1, -1, -1, null));
         }
     }
 
@@ -490,23 +499,37 @@ public class CourseDownloadAdapter extends RecyclerView.Adapter<CourseDownloadVi
     public void onFileDownloadStatusFailed(String url, DownloadFileInfo downloadFileInfo, FileDownloadStatusFailReason failReason) {
         int position = findPosition(downloadFileInfo);
         if (position >= 0 && position < getItemCount()) {
-            notifyItemChanged(position, new Payload(downloadFileInfo.getStatus(), downloadFileInfo.getUrl(), -1, -1, 
-                    failReason));
+            notifyItemChanged(position, new Payload(downloadFileInfo.getStatus(), downloadFileInfo.getUrl(), -1, -1, -1, failReason));
         }
 
 
         if (mContext != null) {
             String msg = mContext.getString(R.string.advanced_use__download_error);
 
-            if (FileDownloadStatusFailReason.TYPE_NETWORK_DENIED.equals(failReason.getType())) {
-                msg += mContext.getString(R.string.advanced_use__check_network);
-            } else if (FileDownloadStatusFailReason.TYPE_URL_ILLEGAL.equals(failReason.getType())) {
-                msg += mContext.getString(R.string.advanced_use__url_illegal);
-            } else if (FileDownloadStatusFailReason.TYPE_NETWORK_TIMEOUT.equals(failReason.getType())) {
-                msg += mContext.getString(R.string.advanced_use__network_timeout);
+            if (failReason != null) {
+                if (FileDownloadStatusFailReason.TYPE_NETWORK_DENIED.equals(failReason.getType())) {
+                    msg += mContext.getString(R.string.advanced_use__check_network);
+                } else if (FileDownloadStatusFailReason.TYPE_URL_ILLEGAL.equals(failReason.getType())) {
+                    msg = mContext.getString(R.string.advanced_use__url_illegal);
+                } else if (FileDownloadStatusFailReason.TYPE_NETWORK_TIMEOUT.equals(failReason.getType())) {
+                    msg = mContext.getString(R.string.advanced_use__network_timeout);
+                } else if (FileDownloadStatusFailReason.TYPE_STORAGE_SPACE_IS_FULL.equals(failReason.getType())) {
+                    msg = mContext.getString(R.string.advanced_use__storage_space_is_full);
+                } else if (FileDownloadStatusFailReason.TYPE_STORAGE_SPACE_CAN_NOT_WRITE.equals(failReason.getType())) {
+                    msg = mContext.getString(R.string.advanced_use__storage_space_can_not_write);
+                } else if (FileDownloadStatusFailReason.TYPE_FILE_NOT_DETECT.equals(failReason.getType())) {
+                    msg = mContext.getString(R.string.advanced_use__file_not_detect);
+                } else if (FileDownloadStatusFailReason.TYPE_BAD_HTTP_RESPONSE_CODE.equals(failReason.getType())) {
+                    msg = mContext.getString(R.string.advanced_use__http_bad_response_code);
+                } else if (FileDownloadStatusFailReason.TYPE_HTTP_FILE_NOT_EXIST.equals(failReason.getType())) {
+                    msg = mContext.getString(R.string.advanced_use__http_file_not_exist);
+                } else if (FileDownloadStatusFailReason.TYPE_SAVE_FILE_NOT_EXIST.equals(failReason.getType())) {
+                    msg = mContext.getString(R.string.advanced_use__save_file_not_exist);
+                }
             }
 
-            showToast(mContext, msg);
+
+            showToast(mContext, msg + "，url：" + url);
         }
     }
 
@@ -560,25 +583,27 @@ public class CourseDownloadAdapter extends RecyclerView.Adapter<CourseDownloadVi
         private String mUrl;
         private float mDownloadSpeed;
         private long mRemainingTime;
+        private int mRetryTimes;
         private FileDownloadStatusFailReason mFailReason;
 
-        public Payload(int status, String url, float downloadSpeed, long remainingTime, FileDownloadStatusFailReason 
-                failReason) {
+        public Payload(int status, String url, float downloadSpeed, long remainingTime, int retryTimes, FileDownloadStatusFailReason failReason) {
             this.mStatus = status;
-            mUrl = url;
-            mDownloadSpeed = downloadSpeed;
-            mRemainingTime = remainingTime;
-            mFailReason = failReason;
+            this.mUrl = url;
+            this.mDownloadSpeed = downloadSpeed;
+            this.mRemainingTime = remainingTime;
+            this.mRetryTimes = retryTimes;
+            this.mFailReason = failReason;
         }
 
         @Override
         public String toString() {
             return "Payload{" +
-                    "status=" + mStatus +
+                    "mStatus=" + mStatus +
                     ", mUrl='" + mUrl + '\'' +
                     ", mDownloadSpeed=" + mDownloadSpeed +
                     ", mRemainingTime=" + mRemainingTime +
-                    ", failReason=" + mFailReason +
+                    ", mRetryTimes=" + mRetryTimes +
+                    ", mFailReason=" + mFailReason +
                     '}';
         }
     }

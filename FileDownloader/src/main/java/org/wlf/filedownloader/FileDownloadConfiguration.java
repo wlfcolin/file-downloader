@@ -34,7 +34,7 @@ public class FileDownloadConfiguration {
         public static final int DEFAULT_DOWNLOAD_TASK_SIZE = 2;
 
         /**
-         * max retry download times, max is 5
+         * max retry download times, max is 10
          */
         public static final int MAX_RETRY_DOWNLOAD_TIMES = 10;
         /**
@@ -118,13 +118,13 @@ public class FileDownloadConfiguration {
         /**
          * config RetryDownloadTimes
          *
-         * @param retryDownloadTimes DownloadTaskSize at the same time,please set 1 to {@link
-         *                           #MAX_RETRY_DOWNLOAD_TIMES},
-         *                           if not set,default is {@link #DEFAULT_RETRY_DOWNLOAD_TIMES}
+         * @param retryDownloadTimes DownloadTaskSize at the same time, please set 0 to {@link
+         *                           #MAX_RETRY_DOWNLOAD_TIMES}, if not set,default is {@link
+         *                           #DEFAULT_RETRY_DOWNLOAD_TIMES}, set 0 means not retry
          * @return the builder
          */
         public Builder configRetryDownloadTimes(int retryDownloadTimes) {
-            if (retryDownloadTimes > 0 && retryDownloadTimes <= MAX_RETRY_DOWNLOAD_TIMES) {
+            if (retryDownloadTimes >= 0 && retryDownloadTimes <= MAX_RETRY_DOWNLOAD_TIMES) {
                 this.mRetryDownloadTimes = retryDownloadTimes;
             } else if (retryDownloadTimes > MAX_RETRY_DOWNLOAD_TIMES) {
                 this.mRetryDownloadTimes = MAX_RETRY_DOWNLOAD_TIMES;
@@ -135,7 +135,7 @@ public class FileDownloadConfiguration {
         }
 
         /**
-         * config IsDebug, debug mode can print log and some debug operations
+         * config whether is debug, debug mode can print log and some debug operations
          *
          * @param isDebugMode true means debug mode
          */

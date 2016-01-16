@@ -57,6 +57,12 @@ public class FileDownloadApplication extends Application {
         // allow 3 download task at the same time
         builder.configDownloadTaskSize(3);
 
+        // config retry download times when failed
+        builder.configRetryDownloadTimes(5);
+
+        // enable debug mode
+        builder.configDebugMode(true);
+
         // 3.init FileDownloader with the configuration
         // build FileDownloadConfiguration with the builder
         FileDownloadConfiguration configuration = builder.build();

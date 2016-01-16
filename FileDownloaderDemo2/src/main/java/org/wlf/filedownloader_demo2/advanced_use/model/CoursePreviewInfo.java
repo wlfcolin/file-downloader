@@ -62,8 +62,7 @@ public class CoursePreviewInfo implements OnDownloadFileChangeListener {
     }
 
     public void init() {
-        // register DownloadFileChangeListener, you may not care about to unregister the reference,because it is a 
-        // WeakReference
+        // register DownloadFileChangeListener
         FileDownloader.registerDownloadFileChangeListener(this);
 
         // init DownloadFileInfo if has been downloaded

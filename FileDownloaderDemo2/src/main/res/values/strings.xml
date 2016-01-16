@@ -36,6 +36,7 @@
     <string name="advanced_use__course_download_play_flv">Play flv course</string>
     <string name="advanced_use__can_not_download">Can not download, please delete the file</string>
     <string name="advanced_use__getting_resource">Getting resource</string>
+    <string name="advanced_use__retrying_connect_resource">Retrying connect resource</string>
     <string name="advanced_use__connected_resource">Connected resource</string>
     <string name="advanced_use__waiting">Waiting</string>
     <string name="advanced_use__paused">Paused</string>
@@ -56,6 +57,12 @@
     <string name="advanced_use__check_network">(Check network)</string>
     <string name="advanced_use__url_illegal">Url illegal</string>
     <string name="advanced_use__network_timeout">(Network timeout)</string>
+    <string name="advanced_use__storage_space_is_full">(Storage space is full)</string>
+    <string name="advanced_use__storage_space_can_not_write">(Storage space can not write)</string>
+    <string name="advanced_use__file_not_detect">(File not detect)</string>
+    <string name="advanced_use__http_bad_response_code">(Http bad response code)</string>
+    <string name="advanced_use__http_file_not_exist">(Http file not exist)</string>
+    <string name="advanced_use__save_file_not_exist">(Save file not exist)</string>
 
     <string name="advanced_use__btn_pause">Pause</string>
     <string name="advanced_use__btn_start_or_continue">Start/Continue</string>

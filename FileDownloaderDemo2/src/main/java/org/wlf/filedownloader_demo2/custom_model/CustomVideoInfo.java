@@ -28,8 +28,7 @@ public class CustomVideoInfo implements OnDownloadFileChangeListener {
         mStartTime = startTime;
         mEndTime = endTime;
 
-        // register DownloadFileChangeListener, you may not care about to unregister the reference,because it is a 
-        // WeakReference
+        // register DownloadFileChangeListener
         FileDownloader.registerDownloadFileChangeListener(this);
 
         // init DownloadFileInfo if has been downloaded

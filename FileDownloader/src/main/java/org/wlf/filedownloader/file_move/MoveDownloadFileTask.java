@@ -52,6 +52,8 @@ class MoveDownloadFileTask implements Runnable {
         mIsSyncCallback = true;
     }
 
+    // --------------------------------------run the task--------------------------------------
+
     @Override
     public void run() {
 
@@ -61,29 +63,19 @@ class MoveDownloadFileTask implements Runnable {
         try {
             downloadFileInfo = mDownloadFileMover.getDownloadFile(mUrl);
 
+            // ------------start checking conditions------------
             // check null
             if (downloadFileInfo == null) {
-                //                failReason = new MoveDownloadFileFailReason("the DownloadFile is empty!", 
-                // MoveDownloadFileFailReason
-                //                        .TYPE_NULL_POINTER);
-
-                failReason = new OnMoveDownloadFileFailReason("the DownloadFile is empty!", 
-                        OnMoveDownloadFileFailReason.TYPE_NULL_POINTER);
-                // goto finally,notifyFailed()
+                failReason = new OnMoveDownloadFileFailReason("the DownloadFile is empty !", OnMoveDownloadFileFailReason.TYPE_NULL_POINTER);
+                // goto finally, notifyFailed()
                 return;
             }
 
-            // 1.prepared
-            notifyPrepared(downloadFileInfo);
-
             // check status
             if (!DownloadFileUtil.canMove(downloadFileInfo)) {
-                //                failReason = new MoveDownloadFileFailReason("the download file status error!", 
-                //                        MoveDownloadFileFailReason.TYPE_FILE_STATUS_ERROR);
-
-                failReason = new OnMoveDownloadFileFailReason("the download file status error!", 
+                failReason = new OnMoveDownloadFileFailReason("the download file status error !", 
                         OnMoveDownloadFileFailReason.TYPE_FILE_STATUS_ERROR);
-                // goto finally,notifyFailed()
+                // goto finally, notifyFailed()
                 return;
             }
 
@@ -101,24 +93,17 @@ class MoveDownloadFileTask implements Runnable {
 
             // check original file
             if (oldFile == null || !oldFile.exists()) {
-                //                failReason = new MoveDownloadFileFailReason("the original file does not exist!", 
-                //                        MoveDownloadFileFailReason.TYPE_ORIGINAL_FILE_NOT_EXIST);
-
-                failReason = new OnMoveDownloadFileFailReason("the original file does not exist!", 
+                failReason = new OnMoveDownloadFileFailReason("the original file does not exist !", 
                         OnMoveDownloadFileFailReason.TYPE_ORIGINAL_FILE_NOT_EXIST);
-                // goto finally,notifyFailed()
+                // goto finally, notifyFailed()
                 return;
             }
 
             // check new file
             if (newFile != null && newFile.exists()) {
-                //                failReason = new MoveDownloadFileFailReason("the target file exist!", 
-                // MoveDownloadFileFailReason
-                //                        .TYPE_TARGET_FILE_EXIST);
-
-                failReason = new OnMoveDownloadFileFailReason("the target file exist!", OnMoveDownloadFileFailReason
+                failReason = new OnMoveDownloadFileFailReason("the target file exist !", OnMoveDownloadFileFailReason
                         .TYPE_TARGET_FILE_EXIST);
-                // goto finally,notifyFailed()
+                // goto finally, notifyFailed()
                 return;
             }
 
@@ -126,8 +111,12 @@ class MoveDownloadFileTask implements Runnable {
             if (newFile != null && newFile.getParentFile() != null && !newFile.getParentFile().exists()) {
                 FileUtil.createFileParentDir(newFile.getAbsolutePath());
             }
+            // ------------end checking conditions------------
 
-            // backup oldDirPath;
+            // 1.prepared
+            notifyPrepared(downloadFileInfo);
+
+            // backup oldDirPath
             String oldDirPath = downloadFileInfo.getFileDir();
 
             // move result
@@ -142,14 +131,9 @@ class MoveDownloadFileTask implements Runnable {
 
             if (!moveResult) {
                 // move in db failed
-                //                failReason = new MoveDownloadFileFailReason("update record error!", 
-                // MoveDownloadFileFailReason
-                //                        .TYPE_UPDATE_RECORD_ERROR);
-
-                // move in db failed
-                failReason = new OnMoveDownloadFileFailReason("update record error!", OnMoveDownloadFileFailReason
+                failReason = new OnMoveDownloadFileFailReason("update record error !", OnMoveDownloadFileFailReason
                         .TYPE_UPDATE_RECORD_ERROR);
-                // goto finally,notifyFailed()
+                // goto finally, notifyFailed()
                 return;
             }
 
@@ -170,41 +154,39 @@ class MoveDownloadFileTask implements Runnable {
                         // ignore   
                     }
                 }
-
-                //                failReason = new MoveDownloadFileFailReason("update record error!", 
-                // MoveDownloadFileFailReason
-                //                        .TYPE_UPDATE_RECORD_ERROR);
-
-                failReason = new OnMoveDownloadFileFailReason("update record error!", OnMoveDownloadFileFailReason
+                failReason = new OnMoveDownloadFileFailReason("update record error !", OnMoveDownloadFileFailReason
                         .TYPE_UPDATE_RECORD_ERROR);
-                // goto finally,notifyFailed()
+                // goto finally, notifyFailed()
                 return;
             }
 
             // move success
         } catch (Exception e) {
             e.printStackTrace();
-
-            //            failReason = new MoveDownloadFileFailReason(e);
-
             failReason = new OnMoveDownloadFileFailReason(e);
         } finally {
-            // move succeed
-            if (failReason == null) {
-                // 2.move success
-                notifySuccess(downloadFileInfo);
+            // ------------start notifying caller------------
+            {
+                // move succeed
+                if (failReason == null) {
+                    // 2.move success
+                    notifySuccess(downloadFileInfo);
 
-                Log.d(TAG, TAG + ".run.run 移动成功，url：" + mUrl);
-            } else {
-                // 2.move failed
-                notifyFailed(downloadFileInfo, failReason);
+                    Log.d(TAG, TAG + ".run 移动成功，url：" + mUrl);
+                } else {
+                    // 2.move failed
+                    notifyFailed(downloadFileInfo, failReason);
 
-                Log.d(TAG, TAG + ".run 移动失败，url：" + mUrl + ",failReason:" + failReason.getType());
+                    Log.d(TAG, TAG + ".run 移动失败，url：" + mUrl + ",failReason:" + failReason.getType());
+                }
             }
+            // ------------end notifying caller------------
 
             Log.d(TAG, TAG + ".run 文件移动任务【已结束】，是否有异常：" + (failReason == null) + "，url：" + mUrl);
         }
     }
+
+    // --------------------------------------notify caller--------------------------------------
 
     /**
      * notifyPrepared

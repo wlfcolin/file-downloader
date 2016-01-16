@@ -52,6 +52,8 @@ class DeleteDownloadFileTask implements Runnable {
         mIsSyncCallback = true;
     }
 
+    // --------------------------------------run the task--------------------------------------
+
     @Override
     public void run() {
 
@@ -61,29 +63,28 @@ class DeleteDownloadFileTask implements Runnable {
         try {
             downloadFileInfo = mDownloadFileDeleter.getDownloadFile(mUrl);
 
-            if (downloadFileInfo == null) {
-                //                failReason = new DeleteDownloadFileFailReason("the download file not exist!", 
-                //                        DeleteDownloadFileFailReason.TYPE_FILE_RECORD_IS_NOT_EXIST);
+            // ------------start checking conditions------------
+            {
+                if (downloadFileInfo == null) {
+                    failReason = new OnDeleteDownloadFileFailReason("the download file not exist !", 
+                            OnDeleteDownloadFileFailReason.TYPE_FILE_RECORD_IS_NOT_EXIST);
 
-                failReason = new OnDeleteDownloadFileFailReason("the download file not exist!", 
-                        OnDeleteDownloadFileFailReason.TYPE_FILE_RECORD_IS_NOT_EXIST);
-                // goto finally,notifyFailed()
-                return;
+                    // goto finally, notifyFailed()
+                    return;
+                }
+
+                // check status
+                if (!DownloadFileUtil.canDelete(downloadFileInfo)) {
+                    failReason = new OnDeleteDownloadFileFailReason("the download file status error !", 
+                            OnDeleteDownloadFileFailReason.TYPE_FILE_STATUS_ERROR);
+                    // goto finally, notifyFailed()
+                    return;
+                }
             }
+            // ------------end checking conditions------------
 
             // 1.prepared
             notifyPrepared(downloadFileInfo);
-
-            // check status
-            if (!DownloadFileUtil.canDelete(downloadFileInfo)) {
-                //                failReason = new DeleteDownloadFileFailReason("the download file status error!", 
-                //                        DeleteDownloadFileFailReason.TYPE_FILE_STATUS_ERROR);
-
-                failReason = new OnDeleteDownloadFileFailReason("the download file status error!", 
-                        OnDeleteDownloadFileFailReason.TYPE_FILE_STATUS_ERROR);
-                // goto finally,notifyFailed()
-                return;
-            }
 
             // delete in database record
             boolean deleteResult = false;
@@ -95,12 +96,8 @@ class DeleteDownloadFileTask implements Runnable {
             }
 
             if (!deleteResult) {
-                //                failReason = new DeleteDownloadFileFailReason("delete file in record failed!", 
-                //                        DeleteDownloadFileFailReason.TYPE_UNKNOWN);
-
-                failReason = new OnDeleteDownloadFileFailReason("delete file in record failed!", 
-                        OnDeleteDownloadFileFailReason.TYPE_UNKNOWN);
-                // goto finally,notifyFailed()
+                failReason = new OnDeleteDownloadFileFailReason("delete file in record failed !", OnDeleteDownloadFileFailReason.TYPE_UNKNOWN);
+                // goto finally, notifyFailed()
                 return;
             }
 
@@ -112,7 +109,7 @@ class DeleteDownloadFileTask implements Runnable {
                 if (file != null && file.exists()) {
                     deleteResult = file.delete();
                 }
-                // has been deleted in file path or not complete,look up the temp file
+                // has been deleted in file path or not complete, look up the temp file
                 else {
                     file = new File(downloadFileInfo.getFileDir(), downloadFileInfo.getTempFileName());
                     if (file.exists()) {
@@ -122,39 +119,39 @@ class DeleteDownloadFileTask implements Runnable {
             }
 
             if (!deleteResult) {
-                //                failReason = new DeleteDownloadFileFailReason("delete file in path failed!", 
-                //                        DeleteDownloadFileFailReason.TYPE_UNKNOWN);
-
-                failReason = new OnDeleteDownloadFileFailReason("delete file in path failed!", 
+                failReason = new OnDeleteDownloadFileFailReason("delete file in path failed !", 
                         OnDeleteDownloadFileFailReason.TYPE_UNKNOWN);
-                // goto finally,notifyFailed()
+                // goto finally, notifyFailed()
                 return;
             }
 
-            Log.d(TAG, TAG + ".run.run 文件删除成功url：" + mUrl);
+            Log.d(TAG, TAG + ".run 文件删除成功url：" + mUrl);
         } catch (Exception e) {
             e.printStackTrace();
-
-            //            failReason = new DeleteDownloadFileFailReason(e);
-
             failReason = new OnDeleteDownloadFileFailReason(e);
         } finally {
-            // delete succeed
-            if (failReason == null) {
-                // 2.delete success
-                notifySuccess(downloadFileInfo);
+            // ------------start notifying caller------------
+            {
+                // delete succeed
+                if (failReason == null) {
+                    // 2.delete success
+                    notifySuccess(downloadFileInfo);
 
-                Log.d(TAG, TAG + ".run.run 删除成功，url：" + mUrl);
-            } else {
-                // 2.delete failed
-                notifyFailed(downloadFileInfo, failReason);
+                    Log.d(TAG, TAG + ".run 删除成功，url：" + mUrl);
+                } else {
+                    // 2.delete failed
+                    notifyFailed(downloadFileInfo, failReason);
 
-                Log.d(TAG, TAG + ".run 删除失败，url：" + mUrl + ",failReason:" + failReason.getType());
+                    Log.d(TAG, TAG + ".run 删除失败，url：" + mUrl + "，failReason:" + failReason.getType());
+                }
             }
+            // ------------end notifying caller------------
 
             Log.d(TAG, TAG + ".run 文件删除任务【已结束】，是否有异常：" + (failReason == null) + "，url：" + mUrl);
         }
     }
+
+    // --------------------------------------notify caller--------------------------------------
 
     /**
      * notifyPrepared

@@ -187,7 +187,7 @@ class DownloadFileChangeObserver implements OnDownloadFileChangeListener {
                     if (!UrlUtil.isUrl(listenUrl)) {
                         continue;
                     }
-                    if (url.equals(listenUrl)) {
+                    if (url.equals(listenUrl) || url.trim().equals(listenUrl.trim())) {
                         // find match url, notify match caller
                         notifyDownloadFileCreated(downloadFileInfo, listenerInfo.mListener, listenerInfo
                                 .mDownloadFileChangeConfiguration.isTreadCallback());
@@ -228,7 +228,7 @@ class DownloadFileChangeObserver implements OnDownloadFileChangeListener {
                     if (!UrlUtil.isUrl(listenUrl)) {
                         continue;
                     }
-                    if (url.equals(listenUrl)) {
+                    if (url.equals(listenUrl) || url.trim().equals(listenUrl.trim())) {
                         // find match url, notify caller
                         notifyDownloadFileUpdated(downloadFileInfo, type, listenerInfo.mListener, listenerInfo
                                 .mDownloadFileChangeConfiguration.isTreadCallback());
@@ -269,7 +269,7 @@ class DownloadFileChangeObserver implements OnDownloadFileChangeListener {
                     if (!UrlUtil.isUrl(listenUrl)) {
                         continue;
                     }
-                    if (url.equals(listenUrl)) {
+                    if (url.equals(listenUrl) || url.trim().equals(listenUrl.trim())) {
                         // find match url, notify caller
                         notifyDownloadFileDeleted(downloadFileInfo, listenerInfo.mListener, listenerInfo
                                 .mDownloadFileChangeConfiguration.isTreadCallback());

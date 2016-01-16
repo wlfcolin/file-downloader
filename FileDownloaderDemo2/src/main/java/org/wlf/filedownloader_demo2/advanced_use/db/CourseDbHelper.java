@@ -10,7 +10,11 @@ import org.wlf.filedownloader_demo2.advanced_use.model.CoursePreviewInfo;
 import java.util.List;
 
 /**
- * Created by wlf on 15/12/12.
+ * CourseDbHelper
+ *
+ * @author wlf(Andy)
+ * @datetime 2015-12-12 09:23 GMT+8
+ * @email 411086563@qq.com
  */
 public class CourseDbHelper extends BaseOrmLiteSQLiteHelper {
 

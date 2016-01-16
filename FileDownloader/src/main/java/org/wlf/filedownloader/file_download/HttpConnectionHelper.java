@@ -81,11 +81,12 @@ public class HttpConnectionHelper {
 
         String encodedUrl = UrlUtil.getASCIIEncodedUrl(url);
         if (TextUtils.isEmpty(encodedUrl)) {
-            throw new IllegalAccessException("URL Illegal");
+            throw new IllegalAccessException("URL Illegal !");
         }
 
         HttpURLConnection conn = (HttpURLConnection) new URL(encodedUrl).openConnection();
         conn.setConnectTimeout(connectTimeout);
+        conn.setReadTimeout(connectTimeout);// FIXME read timeout equals to connect timeout
         conn.setRequestProperty("Charset", charset);
         conn.setRequestProperty("Accept-Encoding", "identity");// FIXME now identity only
         // set range

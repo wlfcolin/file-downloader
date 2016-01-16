@@ -14,7 +14,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * 基本的数据库帮助类,使用了OrmLite框架进行管理
+ * base database helper class
+ * <br/>
+ * 基本的数据库帮助类，使用了OrmLite框架进行管理
  *
  * @author wlf(Andy)
  * @datetime 2015-11-19 09:23 GMT+8
@@ -57,7 +59,8 @@ public abstract class BaseOrmLiteSQLiteHelper extends OrmLiteSqliteOpenHelper {
                 return super.getDao(clazz);
             }
         }
-        throw new SQLException("不支持的数据库表，请在" + this.getClass().getSimpleName() + "中配置通过OrmLite映射过的java bean class：" + clazz.getSimpleName());
+        throw new SQLException("不支持的数据库表，请在" + this.getClass().getSimpleName() + "中配置通过OrmLite映射过的java bean class：" +
+                clazz.getSimpleName());
     }
 
     /**

@@ -16,25 +16,44 @@ import java.io.File;
 public class DownloadFileUtil {
 
     /**
-     * whether the download file can delete
+     * whether is downloading status
      *
-     * @param downloadFileInfo
-     * @return
+     * @param downloadFileInfo download file
+     * @return true means the download is downloading
      */
-    public static boolean canDelete(DownloadFileInfo downloadFileInfo) {
+    public static boolean isDownloadingStatus(DownloadFileInfo downloadFileInfo) {
 
-        if (downloadFileInfo == null) {
+        if (!DownloadFileUtil.isLegal(downloadFileInfo)) {
             return false;
         }
 
+        // only the status below is downloading
         switch (downloadFileInfo.getStatus()) {
-            // only the status below can NOT be deleted
             case Status.DOWNLOAD_STATUS_WAITING:
             case Status.DOWNLOAD_STATUS_RETRYING:
             case Status.DOWNLOAD_STATUS_PREPARING:
             case Status.DOWNLOAD_STATUS_PREPARED:
             case Status.DOWNLOAD_STATUS_DOWNLOADING:
-                return false;
+                return true;
+        }
+        return false;
+    }
+
+    /**
+     * whether the download file can delete
+     *
+     * @param downloadFileInfo download file
+     * @return true means can delete
+     */
+    public static boolean canDelete(DownloadFileInfo downloadFileInfo) {
+
+        if (!DownloadFileUtil.isLegal(downloadFileInfo)) {
+            return false;
+        }
+
+        if (isDownloadingStatus(downloadFileInfo)) {
+            // only the file is downloading can NOT be deleted
+            return false;
         }
 
         return true;
@@ -43,37 +62,52 @@ public class DownloadFileUtil {
     /**
      * whether the download file can move
      *
-     * @param downloadFileInfo
-     * @return
+     * @param downloadFileInfo download file
+     * @return true means can move
      */
     public static boolean canMove(DownloadFileInfo downloadFileInfo) {
 
-        if (downloadFileInfo == null) {
+        if (!DownloadFileUtil.isLegal(downloadFileInfo)) {
             return false;
         }
 
-        switch (downloadFileInfo.getStatus()) {
-            // only the status below can NOT be moved
-            case Status.DOWNLOAD_STATUS_WAITING:
-            case Status.DOWNLOAD_STATUS_RETRYING:
-            case Status.DOWNLOAD_STATUS_PREPARING:
-            case Status.DOWNLOAD_STATUS_PREPARED:
-            case Status.DOWNLOAD_STATUS_DOWNLOADING:
-                return false;
+        if (isDownloadingStatus(downloadFileInfo)) {
+            // only the file is downloading can NOT be moved
+            return false;
         }
 
         return true;
     }
 
     /**
-     * whether the download file download completed
+     * whether the download file can rename
      *
-     * @param downloadFileInfo
-     * @return
+     * @param downloadFileInfo download file
+     * @return true means can rename
+     */
+    public static boolean canRename(DownloadFileInfo downloadFileInfo) {
+
+        if (!DownloadFileUtil.isLegal(downloadFileInfo)) {
+            return false;
+        }
+
+        if (isDownloadingStatus(downloadFileInfo)) {
+            // only the file is downloading can NOT be renamed
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * whether the download file is completed
+     *
+     * @param downloadFileInfo download file
+     * @return true means is completed
      */
     public static boolean isCompleted(DownloadFileInfo downloadFileInfo) {
 
-        if (downloadFileInfo == null) {
+        if (!DownloadFileUtil.isLegal(downloadFileInfo)) {
             return false;
         }
 
@@ -86,30 +120,11 @@ public class DownloadFileUtil {
     }
 
     /**
-     * whether the download file can rename
+     * whether the url file is legal
      *
-     * @param downloadFileInfo
-     * @return
+     * @param baseUrlFileInfo url file
+     * @return true means is legal
      */
-    public static boolean canRename(DownloadFileInfo downloadFileInfo) {
-
-        if (downloadFileInfo == null) {
-            return false;
-        }
-
-        switch (downloadFileInfo.getStatus()) {
-            // only the status below can NOT be renamed
-            case Status.DOWNLOAD_STATUS_WAITING:
-            case Status.DOWNLOAD_STATUS_RETRYING:
-            case Status.DOWNLOAD_STATUS_PREPARING:
-            case Status.DOWNLOAD_STATUS_PREPARED:
-            case Status.DOWNLOAD_STATUS_DOWNLOADING:
-                return false;
-        }
-
-        return true;
-    }
-
     public static boolean isLegal(BaseUrlFileInfo baseUrlFileInfo) {
 
         if (baseUrlFileInfo == null || !UrlUtil.isUrl(baseUrlFileInfo.getUrl())) {
@@ -119,6 +134,83 @@ public class DownloadFileUtil {
         return true;
     }
 
+    /**
+     * whether has exception
+     *
+     * @param status download file status
+     * @return true means has the exception
+     */
+    public static boolean hasException(int status) {
+
+        switch (status) {
+            case Status.DOWNLOAD_STATUS_ERROR:
+            case Status.DOWNLOAD_STATUS_FILE_NOT_EXIST:
+                return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * whether the temp file is exist
+     *
+     * @param downloadFileInfo download file
+     * @return true means the saved file is exist
+     */
+    public static boolean isTempFileExist(DownloadFileInfo downloadFileInfo) {
+
+        if (!DownloadFileUtil.isLegal(downloadFileInfo)) {
+            return false;
+        }
+
+        if (downloadFileInfo.getDownloadedSizeLong() >= 0) {
+            return FileUtil.isFileExist(downloadFileInfo.getTempFilePath());
+        }
+        return false;
+    }
+
+    /**
+     * try to rename temp file to save file
+     *
+     * @param downloadFileInfo download file
+     * @return true means rename succeed or has been renamed
+     */
+    public static boolean tryToRenameTempFileToSaveFile(DownloadFileInfo downloadFileInfo) {
+
+        if (!DownloadFileUtil.isLegal(downloadFileInfo)) {
+            return false;
+        }
+
+        if (isCompleted(downloadFileInfo)) {
+            File saveFile = new File(downloadFileInfo.getFilePath());
+            if (saveFile.exists() && saveFile.length() == downloadFileInfo.getDownloadedSizeLong() && saveFile.length
+                    () == downloadFileInfo.getFileSizeLong()) {
+                return true;
+            }
+        } else {
+            if (downloadFileInfo.getDownloadedSizeLong() == downloadFileInfo.getFileSizeLong()) {
+                File tempFile = new File(downloadFileInfo.getTempFilePath());
+                File saveFile = new File(downloadFileInfo.getFilePath());
+                // the temp file exist, but the save not exist and it is really finished download, so rename the 
+                // temp file to save file
+                if (tempFile.exists() && tempFile.length() == downloadFileInfo.getDownloadedSizeLong() && !saveFile
+                        .exists()) {
+                    // rename temp file to save file
+                    boolean isSucceed = tempFile.renameTo(saveFile);
+                    return isSucceed;
+
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * try to recovery exception status
+     *
+     * @param record           the record
+     * @param downloadFileInfo download file
+     */
     public static void recoveryExceptionStatus(Record record, DownloadFileInfo downloadFileInfo) {
 
         if (!DownloadFileUtil.isLegal(downloadFileInfo)) {
@@ -161,77 +253,5 @@ public class DownloadFileUtil {
         }
     }
 
-    /**
-     * whether is downloading status
-     *
-     * @param downloadFileInfo
-     * @return true means it is downloading
-     */
-    public static boolean isDownloadingStatus(DownloadFileInfo downloadFileInfo) {
 
-        if (!DownloadFileUtil.isLegal(downloadFileInfo)) {
-            return false;
-        }
-
-        // only the status below is downloading
-        switch (downloadFileInfo.getStatus()) {
-            case Status.DOWNLOAD_STATUS_WAITING:
-            case Status.DOWNLOAD_STATUS_RETRYING:
-            case Status.DOWNLOAD_STATUS_PREPARING:
-            case Status.DOWNLOAD_STATUS_PREPARED:
-            case Status.DOWNLOAD_STATUS_DOWNLOADING:
-                return true;
-        }
-        return false;
-    }
-
-    /**
-     * whether has exception
-     *
-     * @param status
-     * @return true means has exception
-     */
-    public static boolean hasException(int status) {
-
-        switch (status) {
-            case Status.DOWNLOAD_STATUS_ERROR:
-            case Status.DOWNLOAD_STATUS_FILE_NOT_EXIST:
-                return true;
-        }
-
-        return false;
-    }
-
-    public static boolean checkFileExistIfNecessary(DownloadFileInfo downloadFileInfo) {
-        if (!DownloadFileUtil.isLegal(downloadFileInfo)) {
-            return false;
-        }
-        if (downloadFileInfo.getDownloadedSizeLong() > 0) {
-            // only the status below is downloading
-            switch (downloadFileInfo.getStatus()) {
-                case Status.DOWNLOAD_STATUS_COMPLETED:
-                    return FileUtil.isFileExist(downloadFileInfo.getFilePath());
-                default:
-                    return FileUtil.isFileExist(downloadFileInfo.getTempFilePath());
-            }
-        }
-        return false;
-    }
-
-    public static boolean renameTempFileToSaveFileIfNecessary(DownloadFileInfo downloadFileInfo) {
-        if (downloadFileInfo.getDownloadedSizeLong() == downloadFileInfo.getFileSizeLong()) {
-            File tempFile = new File(downloadFileInfo.getTempFilePath());
-            File saveFile = new File(downloadFileInfo.getFilePath());
-            // the temp file exist, but the save not exist and it is really finished download, so rename the 
-            // temp file to save file
-            if (tempFile.exists() && tempFile.length() == downloadFileInfo.getDownloadedSizeLong() && !saveFile
-                    .exists()) {
-                // rename temp file to save file
-                boolean isSucceed = tempFile.renameTo(saveFile);
-                return isSucceed;
-
-            }
-        }
-        return false;
-    }
 }

@@ -91,6 +91,8 @@ class MoveDownloadFilesTask implements Runnable, Stoppable {
         return mIsStop;
     }
 
+    // --------------------------------------run the task--------------------------------------
+
     @Override
     public void run() {
 
@@ -155,7 +157,7 @@ class MoveDownloadFilesTask implements Runnable, Stoppable {
 
                             Log.d(TAG, TAG + ".run 暂停单个下载任务成功，开始移动，url:" + finalUrl);
 
-                            // if the task stopped,notify completed
+                            // if the task stopped, notify completed
                             if (isStopped()) {
 
                                 Log.d(TAG, TAG + ".run 批量移动任务被取消，无法继续移动，任务即将结束");
@@ -302,6 +304,8 @@ class MoveDownloadFilesTask implements Runnable, Stoppable {
         }
     }
 
+    // --------------------------------------notify caller--------------------------------------
+
     /**
      * notifyMoveDownloadFilesPrepared
      */
@@ -351,6 +355,9 @@ class MoveDownloadFilesTask implements Runnable, Stoppable {
                 "，跳过数量是否等于失败数量：" + (failedSize == mDownloadFilesSkip.size()));
     }
 
+    /**
+     * check and rollback those failed
+     */
     private void checkRollback() {
         if (CollectionUtil.isEmpty(mDownloadFilesSkip)) {
             return;

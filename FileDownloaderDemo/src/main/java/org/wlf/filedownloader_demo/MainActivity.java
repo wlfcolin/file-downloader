@@ -73,6 +73,14 @@ public class MainActivity extends Activity implements OnItemSelectListener {
         mDownloadFileListAdapter.setOnItemSelectListener(this);
 
         // registerDownloadStatusListener 
+
+        // listen special url
+        //        DownloadStatusConfiguration.Builder builder = new Builder();
+        //        builder.addListenUrl("http://182.254.149.157/ftp/image/shop/product/Kids Addition & Subtraction 1.0
+        // .apk");
+        //        FileDownloader.registerDownloadStatusListener(mDownloadFileListAdapter, builder.build());
+
+        // listen all
         FileDownloader.registerDownloadStatusListener(mDownloadFileListAdapter);
     }
 
@@ -83,6 +91,16 @@ public class MainActivity extends Activity implements OnItemSelectListener {
         if (mDownloadFileListAdapter != null) {
             mDownloadFileListAdapter.updateShow();
         }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+
+        // pause all downloads
+        FileDownloader.pauseAll();
+        // unregisterDownloadStatusListener
+        FileDownloader.unregisterDownloadStatusListener(mDownloadFileListAdapter);
     }
 
     @Override
@@ -394,16 +412,6 @@ public class MainActivity extends Activity implements OnItemSelectListener {
         builder.show();
     }
 
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-
-        // pause all downloads
-        FileDownloader.pauseAll();
-        // unregisterDownloadStatusListener
-        FileDownloader.unregisterDownloadStatusListener(mDownloadFileListAdapter);
-    }
-
     // show toast
     private void showToast(CharSequence text) {
         if (mToast == null) {
@@ -474,7 +482,8 @@ public class MainActivity extends Activity implements OnItemSelectListener {
                         }
 
                         @Override
-                        public void onDeleteDownloadFileFailed(DownloadFileInfo downloadFileInfo, DeleteDownloadFileFailReason failReason) {
+                        public void onDeleteDownloadFileFailed(DownloadFileInfo downloadFileInfo, 
+                                                               DeleteDownloadFileFailReason failReason) {
                             showToast(getString(R.string.main__delete) + downloadFileInfo.getFileName() + getString(R
                                     .string.main__failed));
                             Log.e("wlf", "出错回调，删除" + downloadFileInfo.getFileName() + "失败");
@@ -568,7 +577,8 @@ public class MainActivity extends Activity implements OnItemSelectListener {
                                 }
 
                                 @Override
-                                public void onMoveDownloadFileFailed(DownloadFileInfo downloadFileInfo, MoveDownloadFileFailReason failReason) {
+                                public void onMoveDownloadFileFailed(DownloadFileInfo downloadFileInfo, 
+                                                                     MoveDownloadFileFailReason failReason) {
                                     showToast(getString(R.string.main__move) + downloadFileInfo.getFileName() +
                                             getString(R.string.main__failed));
                                     Log.e("wlf", "出错回调，移动" + downloadFileInfo.getFileName() + "失败");
@@ -694,7 +704,8 @@ public class MainActivity extends Activity implements OnItemSelectListener {
                                 }
 
                                 @Override
-                                public void onRenameDownloadFileFailed(DownloadFileInfo downloadFileInfo, RenameDownloadFileFailReason failReason) {
+                                public void onRenameDownloadFileFailed(DownloadFileInfo downloadFileInfo, 
+                                                                       RenameDownloadFileFailReason failReason) {
                                     showToast(getString(R.string.main__rename_failed));
                                     Log.e("wlf", "出错回调，重命名失败");
                                 }

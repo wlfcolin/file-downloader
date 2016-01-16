@@ -84,32 +84,43 @@ class DownloadTaskImpl implements DownloadTask, OnHttpDownloadListener, OnFileSa
         // listener init here because it is need to use in constructor
         this.mOnFileDownloadStatusListener = onFileDownloadStatusListener;
 
-        // check whether the task can be executed
-        if (!checkTaskCanExecute()) {
-            // stop self
-            stop();
-            // finish
-            notifyTaskFinish();
-            return;
-        }
+        // ------------start checking base conditions------------
+        {
+            // check whether the task can be executed
+            if (!checkTaskCanExecute()) {
+                // stop self
+                stop();
+                // finish
+                notifyTaskFinish();
+                return;
+            }
 
-        // notifyStatusWaiting
-        if (!notifyStatusWaiting()) {
-            // stop self
-            stop();
-            // finish
-            notifyTaskFinish();
-            return;
-        }
+            // notifyStatusWaiting
+            if (!notifyStatusWaiting()) {
+                // stop self
+                stop();
+                // finish
+                notifyTaskFinish();
+                return;
+            }
 
-        // make sure before the task run exec, the internal impl can not be stopped
-        if (mSaver == null || mSaver.isStopped()) {
-            // stop self
-            stop();
-            // finish
-            notifyTaskFinish();
-            return;
+            // make sure before the task run exec, the internal impl can not be stopped
+            if (mSaver == null || mSaver.isStopped()) {
+                // stop self
+                stop();
+                // finish
+                notifyTaskFinish();
+                return;
+            }
+
+            if (mIsTaskStop) {
+                // stop internal impl
+                stopInternalImpl();
+                // finish
+                notifyTaskFinish();
+            }
         }
+        // ------------end checking base conditions------------
     }
 
     // 1.init task
@@ -132,6 +143,94 @@ class DownloadTaskImpl implements DownloadTask, OnHttpDownloadListener, OnFileSa
         // DownloadRecorder will init by the constructor
     }
 
+    /**
+     * check whether the task can execute
+     *
+     * @return true means can execute
+     */
+    private boolean checkTaskCanExecute() {
+
+        FileDownloadStatusFailReason failReason = null;
+
+        if (mTaskParamInfo == null) {
+            // error, param is null pointer
+            failReason = new OnFileDownloadStatusFailReason("init param is null pointer !", OnFileDownloadStatusFailReason.TYPE_NULL_POINTER);
+        }
+        if (failReason == null && !UrlUtil.isUrl(mTaskParamInfo.url)) {
+            // error, url illegal
+            failReason = new OnFileDownloadStatusFailReason("url illegal !", OnFileDownloadStatusFailReason
+                    .TYPE_URL_ILLEGAL);
+        }
+        if (failReason == null && !FileUtil.isFilePath(mTaskParamInfo.filePath)) {
+            // error, saveDir illegal
+            failReason = new OnFileDownloadStatusFailReason("saveDir illegal !", OnFileDownloadStatusFailReason
+                    .TYPE_FILE_SAVE_PATH_ILLEGAL);
+        }
+        if (failReason == null && (!FileUtil.canWrite(mTaskParamInfo.tempFilePath) || !FileUtil.canWrite
+                (mTaskParamInfo.filePath))) {
+            // error, savePath can not write
+            failReason = new OnFileDownloadStatusFailReason("savePath can not write !", 
+                    OnFileDownloadStatusFailReason.TYPE_STORAGE_SPACE_CAN_NOT_WRITE);
+        }
+
+        // check download file complete status & file not exist status
+        if (failReason == null) {
+            DownloadFileInfo downloadFileInfo = getDownloadFile();
+            if (downloadFileInfo != null) {
+                // status is completed
+                if (downloadFileInfo.getStatus() == Status.DOWNLOAD_STATUS_COMPLETED) {
+                    // error, the file has been downloaded completely
+                    mFinishState = new FinishState(Status.DOWNLOAD_STATUS_COMPLETED);
+                    return false;
+                }
+                // other status
+                else if (downloadFileInfo.getDownloadedSizeLong() == downloadFileInfo.getFileSizeLong()) {
+                    boolean isSucceed = DownloadFileUtil.tryToRenameTempFileToSaveFile(downloadFileInfo);
+                    if (isSucceed) {
+                        mFinishState = new FinishState(Status.DOWNLOAD_STATUS_COMPLETED);
+                        return false;
+                    }
+                }
+            }
+        }
+
+        // check storage space
+        if (failReason == null) {
+            try {
+                String checkPath = null;
+                File file = new File(mTaskParamInfo.filePath);
+                if (file != null) {
+                    checkPath = file.getParentFile().getAbsolutePath();
+                }
+                if (!FileUtil.isFilePath(checkPath)) {
+                    failReason = new OnFileDownloadStatusFailReason("file save path illegal !", 
+                            OnFileDownloadStatusFailReason.TYPE_FILE_SAVE_PATH_ILLEGAL);
+                } else {
+                    long freeSize = FileUtil.getAvailableSpace(checkPath);
+                    long needDownloadSize = mTaskParamInfo.fileTotalSize - mTaskParamInfo.startPosInTotal;
+                    if (freeSize == -1 || needDownloadSize > freeSize) {
+                        // error storage space is full
+                        failReason = new OnFileDownloadStatusFailReason("storage space is full or storage can not " +
+                                "write !", OnFileDownloadStatusFailReason.TYPE_STORAGE_SPACE_IS_FULL);
+                    }
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+                // cast Exception to OnFileDownloadStatusFailReason
+                failReason = new OnFileDownloadStatusFailReason(e);
+            }
+        }
+
+        // error occur
+        if (failReason != null) {
+            mFinishState = new FinishState(Status.DOWNLOAD_STATUS_ERROR, failReason);
+            return false;
+        }
+        return true;
+    }
+
+    // --------------------------------------setters--------------------------------------
+
     @Override
     public void setOnStopFileDownloadTaskListener(OnStopFileDownloadTaskListener onStopFileDownloadTaskListener) {
         this.mOnStopFileDownloadTaskListener = onStopFileDownloadTaskListener;
@@ -148,6 +247,8 @@ class DownloadTaskImpl implements DownloadTask, OnHttpDownloadListener, OnFileSa
             mDownloader.setCloseConnectionEngine(mCloseConnectionEngine);
         }
     }
+
+    // --------------------------------------getters--------------------------------------
 
     /**
      * get current DownloadFile
@@ -173,134 +274,55 @@ class DownloadTaskImpl implements DownloadTask, OnHttpDownloadListener, OnFileSa
         return mFinishState;
     }
 
-    /**
-     * check whether the task can execute
-     *
-     * @return true means can execute
-     */
-    private boolean checkTaskCanExecute() {
-
-        FileDownloadStatusFailReason failReason = null;
-
-        if (mTaskParamInfo == null) {
-            // error param is null pointer
-            failReason = new OnFileDownloadStatusFailReason("init param is null pointer!", 
-                    OnFileDownloadStatusFailReason.TYPE_NULL_POINTER);
-        }
-        if (failReason == null && !UrlUtil.isUrl(mTaskParamInfo.url)) {
-            // error url illegal
-            failReason = new OnFileDownloadStatusFailReason("url illegal!", OnFileDownloadStatusFailReason
-                    .TYPE_URL_ILLEGAL);
-        }
-        if (failReason == null && !FileUtil.isFilePath(mTaskParamInfo.filePath)) {
-            // error saveDir illegal
-            failReason = new OnFileDownloadStatusFailReason("saveDir illegal!", OnFileDownloadStatusFailReason
-                    .TYPE_FILE_SAVE_PATH_ILLEGAL);
-        }
-        if (failReason == null && (!FileUtil.canWrite(mTaskParamInfo.tempFilePath) || !FileUtil.canWrite
-                (mTaskParamInfo.filePath))) {
-            // error savePath can not write
-            failReason = new OnFileDownloadStatusFailReason("savePath can not write!", OnFileDownloadStatusFailReason
-                    .TYPE_STORAGE_SPACE_CAN_NOT_WRITE);
-        }
-        if (failReason == null) {
-            DownloadFileInfo downloadFileInfo = getDownloadFile();
-            if (downloadFileInfo != null) {
-                if (downloadFileInfo.getStatus() == Status.DOWNLOAD_STATUS_COMPLETED) {
-                    // error the file has been download complete
-                    mFinishState = new FinishState(Status.DOWNLOAD_STATUS_COMPLETED, 0, null);
-                    notifyTaskFinish();
-                    return false;
-                } else if (downloadFileInfo.getDownloadedSizeLong() == downloadFileInfo.getFileSizeLong()) {
-                    File tempFile = new File(downloadFileInfo.getTempFilePath());
-                    File saveFile = new File(downloadFileInfo.getFilePath());
-                    if (tempFile.exists() && tempFile.length() == downloadFileInfo.getDownloadedSizeLong() &&
-                            !saveFile.exists()) {
-                        // rename temp file to save file
-                        boolean isSucceed = tempFile.renameTo(saveFile);
-                        if (isSucceed) {
-                            // error the file has been download complete
-                            mFinishState = new FinishState(Status.DOWNLOAD_STATUS_COMPLETED, 0, null);
-                            notifyTaskFinish();
-                            return false;
-                        }
-                    }
-                }
-            }
-        }
-        if (failReason == null) {
-            try {
-                String checkPath;
-                File file = new File(mTaskParamInfo.filePath);
-                if (!file.exists()) {
-                    checkPath = file.getParentFile().getAbsolutePath();
-                } else {
-                    checkPath = mTaskParamInfo.filePath;
-                }
-                long freeSize = FileUtil.getAvailableSpace(checkPath);
-                long needDownloadSize = mTaskParamInfo.fileTotalSize - mTaskParamInfo.startPosInTotal;
-                if (freeSize == -1 || needDownloadSize > freeSize) {
-                    // error storage space is full
-                    failReason = new OnFileDownloadStatusFailReason("storage space is full!", 
-                            OnFileDownloadStatusFailReason.TYPE_STORAGE_SPACE_IS_FULL);
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-                failReason = new OnFileDownloadStatusFailReason(e);
-            }
-        }
-
-        if (failReason != null) {
-            mFinishState = new FinishState(Status.DOWNLOAD_STATUS_ERROR, 0, failReason);
-            return false;
-        }
-        return true;
-    }
-
-    // 2.run task
+    // --------------------------------------run the task--------------------------------------
     @Override
     public void run() {
 
         try {
             mCurrentTaskThread = Thread.currentThread();
 
-            if (mIsTaskStop) {
-                // stop internal impl
-                stopInternalImpl();
-                // goto finally,notifyTaskFinish()
-                return;
-            } else {
+            // ------------start checking conditions------------
+            {
+                if (mIsTaskStop) {
+                    // stop internal impl
+                    stopInternalImpl();
+                    // goto finally, notifyTaskFinish()
+                    return;
+                } else {
+                    if (mSaver == null || mSaver.isStopped()) {
+                        init();
+                    }
+                }
+
+                // make sure before the task run exec, the internal impl can not be stopped
                 if (mSaver == null || mSaver.isStopped()) {
-                    init();
+                    // stop internal impl
+                    stopInternalImpl();
+                    // goto finally, notifyTaskFinish()
+                    return;
+                }
+
+                Log.d(TAG, TAG + ".run 2、任务开始执行，正在获取资源，url：：" + mTaskParamInfo.url);
+
+                // 1.check url
+                if (!UrlUtil.isUrl(mTaskParamInfo.url)) {
+                    // error url illegal
+                    FileDownloadStatusFailReason failReason = new OnFileDownloadStatusFailReason("url illegal !", 
+                            OnFileDownloadStatusFailReason.TYPE_URL_ILLEGAL);
+
+                    mFinishState = new FinishState(Status.DOWNLOAD_STATUS_ERROR, failReason);
+                    // goto finally, url error
+                    return;
+                }
+
+                if (!notifyStatusPreparing()) {
+                    // stop internal impl
+                    stopInternalImpl();
+                    // goto finally, notifyTaskFinish()
+                    return;
                 }
             }
-
-            // make sure before the task run exec, the internal impl can not be stopped
-            if (mSaver == null || mSaver.isStopped()) {
-                // stop internal impl
-                stopInternalImpl();
-                // goto finally,notifyTaskFinish()
-                return;
-            }
-
-            Log.d(TAG, TAG + ".run 2、任务开始执行，正在获取资源，url：：" + mTaskParamInfo.url);
-
-            // 1.check url
-            if (!UrlUtil.isUrl(mTaskParamInfo.url)) {
-                // error url illegal
-                FileDownloadStatusFailReason failReason = new OnFileDownloadStatusFailReason("url illegal!", 
-                        OnFileDownloadStatusFailReason.TYPE_URL_ILLEGAL);
-                mFinishState = new FinishState(Status.DOWNLOAD_STATUS_ERROR, 0, failReason);
-                // goto finally, url error
-                return;
-            }
-
-            if (!notifyStatusPreparing()) {
-                // stop internal impl
-                stopInternalImpl();
-                // goto finally,notifyTaskFinish()
-                return;
-            }
+            // ------------end checking conditions------------
 
             mFinishState = null;// reset mFinishState
             // start download
@@ -311,66 +333,74 @@ class DownloadTaskImpl implements DownloadTask, OnHttpDownloadListener, OnFileSa
 
             int status = Status.DOWNLOAD_STATUS_ERROR;
 
+            // special error, file not exist
             if (e instanceof FileSaveException) {
                 FileSaveException fileSaveException = (FileSaveException) e;
                 if (FileSaveException.TYPE_TEMP_FILE_DOES_NOT_EXIST.equals(fileSaveException.getType())) {
                     status = Status.DOWNLOAD_STATUS_FILE_NOT_EXIST;
                 }
             }
-            mFinishState = new FinishState(status, 0, new OnFileDownloadStatusFailReason(e));
+            mFinishState = new FinishState(status, new OnFileDownloadStatusFailReason(e));
         } finally {
-            DownloadFileInfo downloadFileInfo = getDownloadFile();
-            if (downloadFileInfo == null) {
-                FileDownloadStatusFailReason failReason = new OnFileDownloadStatusFailReason("the DownloadFile is " +
-                        "null,may be not deleted?", OnFileDownloadStatusFailReason.TYPE_NULL_POINTER);
-                mFinishState = new FinishState(Status.DOWNLOAD_STATUS_ERROR, 0, failReason);
-            } else {
-                // confirm the download file size legal
-                long downloadedSize = downloadFileInfo.getDownloadedSizeLong();
-                long fileSize = downloadFileInfo.getFileSizeLong();
+            // finally, notify caller by the FinishState
 
-                boolean fileExist = DownloadFileUtil.checkFileExistIfNecessary(downloadFileInfo);
-                if (!fileExist) {
-                    mFinishState = new FinishState(Status.DOWNLOAD_STATUS_FILE_NOT_EXIST, 0, null);
-                } else if (downloadedSize == fileSize) {
-                    // mFinishState.mStatus should completed
-                    if (mFinishState != null) {
-                        if (mFinishState.mStatus != Status.DOWNLOAD_STATUS_COMPLETED) {
-                            mFinishState = new FinishState(Status.DOWNLOAD_STATUS_COMPLETED, 0, null);
-                        }
-                    } else {
-                        mFinishState = new FinishState(Status.DOWNLOAD_STATUS_COMPLETED, 0, null);
-                    }
-                } else if (downloadedSize < fileSize) {
-                    // pause download, if mFinishState.mFailReason is null, mFinishState.mStatus should paused
-                    if (mFinishState != null) {
-                        if (mFinishState.mFailReason == null) {
-                            if (!DownloadFileUtil.hasException(mFinishState.mStatus)) {
-                                mFinishState = new FinishState(Status.DOWNLOAD_STATUS_PAUSED, 0, null);
-                            }
-                        }
-                    } else {
-                        mFinishState = new FinishState(Status.DOWNLOAD_STATUS_PAUSED, 0, null);
-                    }
+            // ------------start checking mFinishState------------
+            {
+                DownloadFileInfo downloadFileInfo = getDownloadFile();
+                if (downloadFileInfo == null) {
+                    FileDownloadStatusFailReason failReason = new OnFileDownloadStatusFailReason("the DownloadFile " +
+                            "is" + " null, may be not deleted ?", OnFileDownloadStatusFailReason.TYPE_NULL_POINTER);
+                    mFinishState = new FinishState(Status.DOWNLOAD_STATUS_ERROR, failReason);
                 } else {
-                    // error download
-                    FileDownloadStatusFailReason failReason = new OnFileDownloadStatusFailReason("the download file "
-                            + "size error!", OnFileDownloadStatusFailReason.TYPE_DOWNLOAD_FILE_ERROR);
-                    mFinishState = new FinishState(Status.DOWNLOAD_STATUS_ERROR, 0, failReason);
+                    // confirm the download file size
+                    long downloadedSize = downloadFileInfo.getDownloadedSizeLong();
+                    long fileSize = downloadFileInfo.getFileSizeLong();
+
+                    if (downloadedSize == fileSize) {
+                        // mFinishState.status should completed
+                        if (mFinishState != null) {
+                            if (mFinishState.status != Status.DOWNLOAD_STATUS_COMPLETED) {
+                                mFinishState = new FinishState(Status.DOWNLOAD_STATUS_COMPLETED);
+                            }
+                        } else {
+                            mFinishState = new FinishState(Status.DOWNLOAD_STATUS_COMPLETED);
+                        }
+                    } else if (downloadedSize < fileSize) {
+                        // pause download, if mFinishState.failReason is null, mFinishState.status should paused
+                        if (mFinishState != null) {
+                            if (mFinishState.failReason == null) {
+                                if (!DownloadFileUtil.hasException(mFinishState.status)) {
+                                    mFinishState = new FinishState(Status.DOWNLOAD_STATUS_PAUSED);
+                                }
+                            }
+                        } else {
+                            mFinishState = new FinishState(Status.DOWNLOAD_STATUS_PAUSED);
+                        }
+                    } else {
+                        // error download
+                        FileDownloadStatusFailReason failReason = new OnFileDownloadStatusFailReason("the download " 
+                                + "file size error !", OnFileDownloadStatusFailReason.TYPE_DOWNLOAD_FILE_ERROR);
+                        mFinishState = new FinishState(Status.DOWNLOAD_STATUS_ERROR, failReason);
+                    }
                 }
             }
+            // ------------end checking mFinishState------------
 
             // identify cur task stopped
             mIsTaskStop = true;
             // stop internal impl
             stopInternalImpl();
 
-            // make sure to notify caller
-            notifyTaskFinish();
-            notifyStopTaskSucceedIfNecessary();
+            // ------------start notifying caller------------
+            {
+                // make sure to notify caller
+                notifyTaskFinish();
+                notifyStopTaskSucceedIfNecessary();
+            }
+            // ------------end notifying caller------------
 
-            boolean hasException = (mFinishState != null && mFinishState.mFailReason != null && DownloadFileUtil
-                    .hasException(mFinishState.mStatus)) ? true : false;
+            boolean hasException = (mFinishState != null && mFinishState.failReason != null && DownloadFileUtil
+                    .hasException(mFinishState.status)) ? true : false;
 
             Log.d(TAG, TAG + ".run 7、文件下载任务【已结束】，是否有异常：" + hasException + "，url：" + mTaskParamInfo.url);
         }
@@ -404,7 +434,7 @@ class DownloadTaskImpl implements DownloadTask, OnHttpDownloadListener, OnFileSa
         } catch (FileSaveException e) {
             e.printStackTrace();
             // error download
-            mFinishState = new FinishState(Status.DOWNLOAD_STATUS_ERROR, 0, new OnFileDownloadStatusFailReason(e));
+            mFinishState = new FinishState(Status.DOWNLOAD_STATUS_ERROR, new OnFileDownloadStatusFailReason(e));
         }
     }
 
@@ -415,7 +445,7 @@ class DownloadTaskImpl implements DownloadTask, OnHttpDownloadListener, OnFileSa
         if (mIsTaskStop) {
             // stop internal impl
             stopInternalImpl();
-            // wait for the task run method finished,notifyTaskFinish()
+            // wait for the task run method finished, notifyTaskFinish()
             return;
         }
 
@@ -424,7 +454,7 @@ class DownloadTaskImpl implements DownloadTask, OnHttpDownloadListener, OnFileSa
         if (!notifyStatusDownloading(0)) {
             // stop internal impl
             stopInternalImpl();
-            // wait for the task run method finished,notifyTaskFinish()
+            // wait for the task run method finished, notifyTaskFinish()
             return;
         }
     }
@@ -436,7 +466,7 @@ class DownloadTaskImpl implements DownloadTask, OnHttpDownloadListener, OnFileSa
         if (mIsTaskStop) {
             // stop internal impl
             stopInternalImpl();
-            // wait for the task run method finished,notifyTaskFinish()
+            // wait for the task run method finished, notifyTaskFinish()
             return;
         }
 
@@ -445,7 +475,7 @@ class DownloadTaskImpl implements DownloadTask, OnHttpDownloadListener, OnFileSa
         if (!notifyStatusDownloading(increaseSize)) {
             // stop internal impl
             stopInternalImpl();
-            // wait for the task run method finished,notifyTaskFinish()
+            // wait for the task run method finished, notifyTaskFinish()
             return;
         }
     }
@@ -455,17 +485,19 @@ class DownloadTaskImpl implements DownloadTask, OnHttpDownloadListener, OnFileSa
     public void onSaveDataEnd(int increaseSize, boolean complete) {
 
         if (!complete) {
-            mFinishState = new FinishState(Status.DOWNLOAD_STATUS_PAUSED, increaseSize, null);
+            mFinishState = new FinishState(Status.DOWNLOAD_STATUS_PAUSED, increaseSize);
 
             Log.d(TAG, TAG + ".run 6、暂停下载，url：" + mTaskParamInfo.url);
         } else {
-            mFinishState = new FinishState(Status.DOWNLOAD_STATUS_COMPLETED, increaseSize, null);
+            mFinishState = new FinishState(Status.DOWNLOAD_STATUS_COMPLETED, increaseSize);
 
             Log.d(TAG, TAG + ".run 6、下载完成，url：" + mTaskParamInfo.url);
         }
 
-        // save finished, wait for the task run method finished,notifyTaskFinish()
+        // save finished, wait for the task run method finished, notifyTaskFinish()
     }
+
+    // --------------------------------------notify caller--------------------------------------
 
     /**
      * notify waiting status to caller
@@ -484,7 +516,7 @@ class DownloadTaskImpl implements DownloadTask, OnHttpDownloadListener, OnFileSa
             return true;
         } catch (Exception e) {
             e.printStackTrace();
-            mFinishState = new FinishState(Status.DOWNLOAD_STATUS_ERROR, 0, new OnFileDownloadStatusFailReason(e));
+            mFinishState = new FinishState(Status.DOWNLOAD_STATUS_ERROR, new OnFileDownloadStatusFailReason(e));
             return false;
         }
     }
@@ -506,7 +538,7 @@ class DownloadTaskImpl implements DownloadTask, OnHttpDownloadListener, OnFileSa
             return true;
         } catch (Exception e) {
             e.printStackTrace();
-            mFinishState = new FinishState(Status.DOWNLOAD_STATUS_ERROR, 0, new OnFileDownloadStatusFailReason(e));
+            mFinishState = new FinishState(Status.DOWNLOAD_STATUS_ERROR, new OnFileDownloadStatusFailReason(e));
             return false;
         }
     }
@@ -528,7 +560,7 @@ class DownloadTaskImpl implements DownloadTask, OnHttpDownloadListener, OnFileSa
             return true;
         } catch (Exception e) {
             e.printStackTrace();
-            mFinishState = new FinishState(Status.DOWNLOAD_STATUS_ERROR, 0, new OnFileDownloadStatusFailReason(e));
+            mFinishState = new FinishState(Status.DOWNLOAD_STATUS_ERROR, new OnFileDownloadStatusFailReason(e));
             return false;
         }
     }
@@ -544,7 +576,7 @@ class DownloadTaskImpl implements DownloadTask, OnHttpDownloadListener, OnFileSa
 
             DownloadFileInfo downloadFileInfo = getDownloadFile();
             if (downloadFileInfo == null) {
-                // if error,make sure the increaseSize is zero
+                // if error, make sure the increaseSize is zero
                 increaseSize = 0;
                 FileDownloadStatusFailReason failReason = new OnFileDownloadStatusFailReason("the DownloadFile is " +
                         "null!", OnFileDownloadStatusFailReason.TYPE_NULL_POINTER);
@@ -561,7 +593,7 @@ class DownloadTaskImpl implements DownloadTask, OnHttpDownloadListener, OnFileSa
                 if (mLastDownloadingTime != -1) {
                     double increaseKbs = (double) increaseSize / 1024;
                     double increaseSeconds = (curDownloadingTime - mLastDownloadingTime) / (double) 1000;
-                    downloadSpeed = increaseKbs / increaseSeconds;// speed,KB/s
+                    downloadSpeed = increaseKbs / increaseSeconds;// download speed, KB/s
                 }
                 // calculate remain time
                 if (downloadSpeed > 0) {
@@ -583,7 +615,7 @@ class DownloadTaskImpl implements DownloadTask, OnHttpDownloadListener, OnFileSa
             return true;
         } catch (Exception e) {
             e.printStackTrace();
-            // if error,make sure the increaseSize is zero
+            // if error, make sure the increaseSize is zero
             increaseSize = 0;
             mFinishState = new FinishState(Status.DOWNLOAD_STATUS_ERROR, increaseSize, new 
                     OnFileDownloadStatusFailReason(e));
@@ -597,12 +629,12 @@ class DownloadTaskImpl implements DownloadTask, OnHttpDownloadListener, OnFileSa
     private void notifyTaskFinish() {
 
         if (mFinishState == null) {
-            mFinishState = new FinishState(Status.DOWNLOAD_STATUS_PAUSED, 0, null);// default paused
+            mFinishState = new FinishState(Status.DOWNLOAD_STATUS_PAUSED);// default paused
         }
 
-        int status = mFinishState.mStatus;
-        int increaseSize = mFinishState.mIncreaseSize;
-        FileDownloadStatusFailReason failReason = mFinishState.mFailReason;
+        int status = mFinishState.status;
+        int increaseSize = mFinishState.increaseSize;
+        FileDownloadStatusFailReason failReason = mFinishState.failReason;
 
         switch (status) {
             // pause,complete,error,means finish the task
@@ -658,8 +690,11 @@ class DownloadTaskImpl implements DownloadTask, OnHttpDownloadListener, OnFileSa
                 } catch (Exception e) {
                     e.printStackTrace();
                     // error
-                    // FIXME
-                    // mDownloadRecorder.recordStatus(mTaskParamInfo.url, Status.DOWNLOAD_STATUS_ERROR, 0);
+                    try {
+                        mDownloadRecorder.recordStatus(mTaskParamInfo.url, Status.DOWNLOAD_STATUS_ERROR, 0);
+                    } catch (Exception e1) {
+                        e1.printStackTrace();
+                    }
                     if (mOnFileDownloadStatusListener != null) {
                         mOnFileDownloadStatusListener.onFileDownloadStatusFailed(getUrl(), getDownloadFile(), new 
                                 OnFileDownloadStatusFailReason(e));
@@ -671,8 +706,12 @@ class DownloadTaskImpl implements DownloadTask, OnHttpDownloadListener, OnFileSa
                 } finally {
                     // if not notify finish, notify paused by default
                     if (!mIsNotifyTaskFinish) {
-                        // FIXME
-                        // mDownloadRecorder.recordStatus(mTaskParamInfo.url, Status.DOWNLOAD_STATUS_PAUSED, 0);
+                        // if not notify, however paused status will be recorded
+                        try {
+                            mDownloadRecorder.recordStatus(mTaskParamInfo.url, Status.DOWNLOAD_STATUS_PAUSED, 0);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
                         if (mOnFileDownloadStatusListener != null) {
                             mOnFileDownloadStatusListener.onFileDownloadStatusPaused(getDownloadFile());
                         }
@@ -786,26 +825,44 @@ class DownloadTaskImpl implements DownloadTask, OnHttpDownloadListener, OnFileSa
      */
     static class FinishState {
 
-        private final int mStatus;
-        private final int mIncreaseSize;
-        private final FileDownloadStatusFailReason mFailReason;
+        public final int status;
+        public final int increaseSize;
+        public final FileDownloadStatusFailReason failReason;
+
+        public FinishState(int status) {
+            this.status = status;
+            increaseSize = 0;
+            failReason = null;
+        }
+
+        public FinishState(int status, int increaseSize) {
+            this.status = status;
+            this.increaseSize = increaseSize;
+            failReason = null;
+        }
+
+        public FinishState(int status, FileDownloadStatusFailReason failReason) {
+            this.status = status;
+            increaseSize = 0;
+            this.failReason = failReason;
+        }
 
         public FinishState(int status, int increaseSize, FileDownloadStatusFailReason failReason) {
-            mStatus = status;
-            mIncreaseSize = increaseSize;
-            mFailReason = failReason;
+            this.status = status;
+            this.increaseSize = increaseSize;
+            this.failReason = failReason;
         }
 
         public int getStatus() {
-            return mStatus;
+            return status;
         }
 
         public int getIncreaseSize() {
-            return mIncreaseSize;
+            return increaseSize;
         }
 
         public FileDownloadStatusFailReason getFailReason() {
-            return mFailReason;
+            return failReason;
         }
     }
 

@@ -47,7 +47,7 @@ public class FileDownloadApplication extends Application {
                 "FileDownloader");
         // builder.configFileDownloadDir("/storage/sdcard1/FileDownloader");
 
-        // allow 3 download task at the same time
+        // allow 3 download tasks at the same time
         builder.configDownloadTaskSize(3);
 
         // config retry download times when failed

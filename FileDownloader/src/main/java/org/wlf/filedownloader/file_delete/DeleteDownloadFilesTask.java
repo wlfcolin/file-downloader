@@ -85,6 +85,8 @@ class DeleteDownloadFilesTask implements Runnable, Stoppable {
         return mIsStop;
     }
 
+    // --------------------------------------run the task--------------------------------------
+
     @Override
     public void run() {
 
@@ -109,7 +111,8 @@ class DeleteDownloadFilesTask implements Runnable, Stoppable {
             notifyDeleteDownloadFilesPrepared();
 
             // delete every single download file listener
-            final OnDeleteDownloadFileListener onDeleteEverySingleDownloadFileListener = new OnDeleteSingleDownloadFileListener();
+            final OnDeleteDownloadFileListener onDeleteEverySingleDownloadFileListener = new 
+                    OnDeleteSingleDownloadFileListener();
 
             // delete every single one
             for (int i = 0; i < mDownloadFilesNeedDelete.size(); i++) {
@@ -293,6 +296,8 @@ class DeleteDownloadFilesTask implements Runnable, Stoppable {
             }
         }
     }
+
+    // --------------------------------------notify caller--------------------------------------
 
     /**
      * notifyDeleteDownloadFilesPrepared

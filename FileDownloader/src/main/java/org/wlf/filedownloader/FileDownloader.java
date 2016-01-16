@@ -132,29 +132,22 @@ public final class FileDownloader {
     /**
      * register an OnFileDownloadStatusListener
      *
-     * @param onFileDownloadStatusListener OnFileDownloadStatusListener impl
+     * @param onFileDownloadStatusListener OnFileDownloadStatusListener impl, or use {@link
+     *                                     OnRetryableFileDownloadStatusListener}, which can retry download when
+     *                                     download failed once when use {@link FileDownloadConfiguration
+     *                                     .Builder#configRetryDownloadTimes(int)} to config the retry times
      */
     public static void registerDownloadStatusListener(OnFileDownloadStatusListener onFileDownloadStatusListener) {
         getFileDownloadManager().registerDownloadStatusListener(onFileDownloadStatusListener);
     }
 
     /**
-     * register an OnRetryableFileDownloadStatusListener, which can retry download when download failed once
-     * <br/>
-     * use {@link FileDownloadConfiguration.Builder#configRetryDownloadTimes(int)} to config the retry times
-     *
-     * @param onRetryableFileDownloadStatusListener OnRetryableFileDownloadStatusListener impl
-     * @since 0.3.0
-     */
-    public static void registerDownloadStatusListener(OnRetryableFileDownloadStatusListener 
-                                                              onRetryableFileDownloadStatusListener) {
-        getFileDownloadManager().registerDownloadStatusListener(onRetryableFileDownloadStatusListener);
-    }
-
-    /**
      * register an OnFileDownloadStatusListener with Configuration
      *
-     * @param onFileDownloadStatusListener OnFileDownloadStatusListener impl
+     * @param onFileDownloadStatusListener OnFileDownloadStatusListener impl, or use {@link
+     *                                     OnRetryableFileDownloadStatusListener}, which can retry download when
+     *                                     download failed once when use {@link FileDownloadConfiguration
+     *                                     .Builder#configRetryDownloadTimes(int)} to config the retry times
      * @param downloadStatusConfiguration  Configuration for the OnFileDownloadStatusListener impl
      * @since 0.3.0
      */
@@ -164,21 +157,36 @@ public final class FileDownloader {
                 downloadStatusConfiguration);
     }
 
-    /**
-     * register an OnRetryableFileDownloadStatusListener with Configuration, which can retry download when download
-     * failed once
-     * <br/>
-     * use {@link FileDownloadConfiguration.Builder#configRetryDownloadTimes(int)} to config the retry times
-     *
-     * @param onRetryableFileDownloadStatusListener OnRetryableFileDownloadStatusListener impl
-     * @param downloadStatusConfiguration           Configuration for the OnRetryableFileDownloadStatusListener impl
-     * @since 0.3.0
-     */
-    public static void registerDownloadStatusListener(OnRetryableFileDownloadStatusListener 
-                                                              onRetryableFileDownloadStatusListener, 
-                                                      DownloadStatusConfiguration downloadStatusConfiguration) {
-        getFileDownloadManager().registerDownloadStatusListener(onRetryableFileDownloadStatusListener);
-    }
+    //    /**
+    //     * register an OnRetryableFileDownloadStatusListener, which can retry download when download failed once
+    //     * <br/>
+    //     * use {@link FileDownloadConfiguration.Builder#configRetryDownloadTimes(int)} to config the retry times
+    //     *
+    //     * @param onRetryableFileDownloadStatusListener OnRetryableFileDownloadStatusListener impl
+    //     * @since 0.3.0
+    //     */
+    //    public static void registerDownloadStatusListener(OnRetryableFileDownloadStatusListener 
+    //                                                              onRetryableFileDownloadStatusListener) {
+    //        getFileDownloadManager().registerDownloadStatusListener(onRetryableFileDownloadStatusListener);
+    //    }
+    //
+    //    /**
+    //     * register an OnRetryableFileDownloadStatusListener with Configuration, which can retry download when 
+    // download
+    //     * failed once
+    //     * <br/>
+    //     * use {@link FileDownloadConfiguration.Builder#configRetryDownloadTimes(int)} to config the retry times
+    //     *
+    //     * @param onRetryableFileDownloadStatusListener OnRetryableFileDownloadStatusListener impl
+    //     * @param downloadStatusConfiguration           Configuration for the OnRetryableFileDownloadStatusListener
+    // impl
+    //     * @since 0.3.0
+    //     */
+    //    public static void registerDownloadStatusListener(OnRetryableFileDownloadStatusListener 
+    //                                                              onRetryableFileDownloadStatusListener, 
+    //                                                      DownloadStatusConfiguration downloadStatusConfiguration) {
+    //        getFileDownloadManager().registerDownloadStatusListener(onRetryableFileDownloadStatusListener);
+    //    }
 
     /**
      * unregister an OnFileDownloadStatusListener
@@ -256,11 +264,7 @@ public final class FileDownloader {
      * <br/>
      * {@link #registerDownloadStatusListener(OnFileDownloadStatusListener)}
      * <br>
-     * {@link #registerDownloadStatusListener(OnRetryableFileDownloadStatusListener)}
-     * <br>
      * {@link #registerDownloadStatusListener(OnFileDownloadStatusListener, DownloadStatusConfiguration)}
-     * <br>
-     * {@link #registerDownloadStatusListener(OnRetryableFileDownloadStatusListener, DownloadStatusConfiguration)}
      *
      * @param url      file url
      * @param saveDir  saveDir
@@ -277,11 +281,7 @@ public final class FileDownloader {
      * <br/>
      * {@link #registerDownloadStatusListener(OnFileDownloadStatusListener)}
      * <br>
-     * {@link #registerDownloadStatusListener(OnRetryableFileDownloadStatusListener)}
-     * <br>
      * {@link #registerDownloadStatusListener(OnFileDownloadStatusListener, DownloadStatusConfiguration)}
-     * <br>
-     * {@link #registerDownloadStatusListener(OnRetryableFileDownloadStatusListener, DownloadStatusConfiguration)}
      *
      * @param url file url
      */
@@ -296,11 +296,7 @@ public final class FileDownloader {
      * <br/>
      * {@link #registerDownloadStatusListener(OnFileDownloadStatusListener)}
      * <br>
-     * {@link #registerDownloadStatusListener(OnRetryableFileDownloadStatusListener)}
-     * <br>
      * {@link #registerDownloadStatusListener(OnFileDownloadStatusListener, DownloadStatusConfiguration)}
-     * <br>
-     * {@link #registerDownloadStatusListener(OnRetryableFileDownloadStatusListener, DownloadStatusConfiguration)}
      *
      * @param urls file urls
      */
@@ -344,11 +340,7 @@ public final class FileDownloader {
      * <br/>
      * {@link #registerDownloadStatusListener(OnFileDownloadStatusListener)}
      * <br>
-     * {@link #registerDownloadStatusListener(OnRetryableFileDownloadStatusListener)}
-     * <br>
      * {@link #registerDownloadStatusListener(OnFileDownloadStatusListener, DownloadStatusConfiguration)}
-     * <br>
-     * {@link #registerDownloadStatusListener(OnRetryableFileDownloadStatusListener, DownloadStatusConfiguration)}
      *
      * @param url file url
      */
@@ -363,11 +355,7 @@ public final class FileDownloader {
      * <br/>
      * {@link #registerDownloadStatusListener(OnFileDownloadStatusListener)}
      * <br>
-     * {@link #registerDownloadStatusListener(OnRetryableFileDownloadStatusListener)}
-     * <br>
      * {@link #registerDownloadStatusListener(OnFileDownloadStatusListener, DownloadStatusConfiguration)}
-     * <br>
-     * {@link #registerDownloadStatusListener(OnRetryableFileDownloadStatusListener, DownloadStatusConfiguration)}
      *
      * @param urls file urls
      */

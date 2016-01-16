@@ -415,7 +415,7 @@ public class FileSaver implements Save, Stoppable {
                 return;
             }
             if (throwable instanceof IOException) {
-                setType(TYPE_FILE_CAN_NOT_STORAGE);
+                // setType(TYPE_FILE_CAN_NOT_STORAGE);
             }
         }
     }

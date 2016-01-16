@@ -9,7 +9,6 @@ import org.wlf.filedownloader.util.CollectionUtil;
 import org.wlf.filedownloader.util.DownloadFileUtil;
 import org.wlf.filedownloader.util.UrlUtil;
 
-import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 
@@ -90,73 +89,74 @@ class DownloadStatusObserver implements OnRetryableFileDownloadStatusListener {
         }
     }
 
-    /**
-     * remove all added OnFileDownloadStatusListeners of the url
-     *
-     * @param url         the url
-     * @param forceRemove true means force remove, which will remove those the DownloadStatusConfiguration of matched
-     *                    OnFileDownloadStatusListener has listen other urls, otherwise will remove those
-     *                    OnFileDownloadStatusListener listen given url only
-     */
-    public void removeOnFileDownloadStatusListener(String url, boolean forceRemove) {
-        if (!UrlUtil.isUrl(url)) {
-            return;
-        }
-        Set<DownloadStatusListenerInfo> listenerNeedToRemove = new HashSet<DownloadStatusListenerInfo>();
-        // find needed remove
-        for (DownloadStatusListenerInfo listenerInfo : mDownloadStatusListenerInfos) {
-            if (listenerInfo == null || listenerInfo.mDownloadStatusConfiguration == null) {
-                // not match
-                continue;
-            }
-
-            Set<String> listenUrls = listenerInfo.mDownloadStatusConfiguration.getListenUrls();
-            if (CollectionUtil.isEmpty(listenUrls)) {
-                continue;
-            }
-
-            for (String listenUrl : listenUrls) {
-
-                if (!UrlUtil.isUrl(listenUrl)) {
-                    continue;
-                }
-
-                if (!url.equals(listenUrl)) {
-                    continue;
-                }
-
-                // find one
-                if (forceRemove) {
-                    // need to move
-                    listenerNeedToRemove.add(listenerInfo);
-                    continue;
-                }
-
-                boolean isFindNotMatch = false;
-
-                for (String lu : listenUrls) {
-                    if (!UrlUtil.isUrl(lu)) {
-                        continue;
-                    }
-                    if (!lu.equals(listenUrl)) {
-                        // find one not match
-                        isFindNotMatch = true;
-                        break;
-                    }
-                }
-
-                if (!isFindNotMatch) {
-                    // no match, need to move
-                    listenerNeedToRemove.add(listenerInfo);
-                }
-            }
-        }
-
-        // remove those needed to remove
-        if (!CollectionUtil.isEmpty(listenerNeedToRemove)) {
-            mDownloadStatusListenerInfos.removeAll(listenerNeedToRemove);
-        }
-    }
+    //    /**
+    //     * remove all added OnFileDownloadStatusListeners of the url
+    //     *
+    //     * @param url         the url
+    //     * @param forceRemove true means force remove, which will remove those the DownloadStatusConfiguration of 
+    // matched
+    //     *                    OnFileDownloadStatusListener has listen other urls, otherwise will remove those
+    //     *                    OnFileDownloadStatusListener listen given url only
+    //     */
+    //    public void removeOnFileDownloadStatusListener(String url, boolean forceRemove) {
+    //        if (!UrlUtil.isUrl(url)) {
+    //            return;
+    //        }
+    //        Set<DownloadStatusListenerInfo> listenerNeedToRemove = new HashSet<DownloadStatusListenerInfo>();
+    //        // find needed remove
+    //        for (DownloadStatusListenerInfo listenerInfo : mDownloadStatusListenerInfos) {
+    //            if (listenerInfo == null || listenerInfo.mDownloadStatusConfiguration == null) {
+    //                // not match
+    //                continue;
+    //            }
+    //
+    //            Set<String> listenUrls = listenerInfo.mDownloadStatusConfiguration.getListenUrls();
+    //            if (CollectionUtil.isEmpty(listenUrls)) {
+    //                continue;
+    //            }
+    //
+    //            for (String listenUrl : listenUrls) {
+    //
+    //                if (!UrlUtil.isUrl(listenUrl)) {
+    //                    continue;
+    //                }
+    //
+    //                if (!url.equals(listenUrl)) {
+    //                    continue;
+    //                }
+    //
+    //                // find one
+    //                if (forceRemove) {
+    //                    // need to move
+    //                    listenerNeedToRemove.add(listenerInfo);
+    //                    continue;
+    //                }
+    //
+    //                boolean isFindNotMatch = false;
+    //
+    //                for (String lu : listenUrls) {
+    //                    if (!UrlUtil.isUrl(lu)) {
+    //                        continue;
+    //                    }
+    //                    if (!lu.equals(listenUrl)) {
+    //                        // find one not match
+    //                        isFindNotMatch = true;
+    //                        break;
+    //                    }
+    //                }
+    //
+    //                if (!isFindNotMatch) {
+    //                    // no match, need to move
+    //                    listenerNeedToRemove.add(listenerInfo);
+    //                }
+    //            }
+    //        }
+    //
+    //        // remove those needed to remove
+    //        if (!CollectionUtil.isEmpty(listenerNeedToRemove)) {
+    //            mDownloadStatusListenerInfos.removeAll(listenerNeedToRemove);
+    //        }
+    //    }
 
     // --------------------------------------notify caller--------------------------------------
 
@@ -288,7 +288,7 @@ class DownloadStatusObserver implements OnRetryableFileDownloadStatusListener {
                     if (!UrlUtil.isUrl(listenUrl)) {
                         continue;
                     }
-                    if (url.equals(listenUrl)) {
+                    if (url.equals(listenUrl) || url.trim().equals(listenUrl.trim())) {
                         // find match url, notify caller
                         notifyStatusWaiting(downloadFileInfo, listenerInfo.mListener);
                     }
@@ -325,7 +325,7 @@ class DownloadStatusObserver implements OnRetryableFileDownloadStatusListener {
                     if (!UrlUtil.isUrl(listenUrl)) {
                         continue;
                     }
-                    if (url.equals(listenUrl)) {
+                    if (url.equals(listenUrl) || url.trim().equals(listenUrl.trim())) {
                         // find match url, notify caller
                         notifyStatusRetrying(downloadFileInfo, retryTimes, listenerInfo.mListener);
                     }
@@ -362,7 +362,7 @@ class DownloadStatusObserver implements OnRetryableFileDownloadStatusListener {
                     if (!UrlUtil.isUrl(listenUrl)) {
                         continue;
                     }
-                    if (url.equals(listenUrl)) {
+                    if (url.equals(listenUrl) || url.trim().equals(listenUrl.trim())) {
                         // find match url, notify caller
                         notifyStatusPreparing(downloadFileInfo, listenerInfo.mListener);
                     }
@@ -398,7 +398,7 @@ class DownloadStatusObserver implements OnRetryableFileDownloadStatusListener {
                     if (!UrlUtil.isUrl(listenUrl)) {
                         continue;
                     }
-                    if (url.equals(listenUrl)) {
+                    if (url.equals(listenUrl) || url.trim().equals(listenUrl.trim())) {
                         // find match url, notify caller
                         notifyStatusPrepared(downloadFileInfo, listenerInfo.mListener);
                     }
@@ -435,7 +435,8 @@ class DownloadStatusObserver implements OnRetryableFileDownloadStatusListener {
                     if (!UrlUtil.isUrl(listenUrl)) {
                         continue;
                     }
-                    if (url.equals(listenUrl)) {
+
+                    if (url.equals(listenUrl) || url.trim().equals(listenUrl.trim())) {
                         // find match url, notify caller
                         notifyStatusDownloading(downloadFileInfo, downloadSpeed, remainingTime, listenerInfo.mListener);
                     }
@@ -471,7 +472,7 @@ class DownloadStatusObserver implements OnRetryableFileDownloadStatusListener {
                     if (!UrlUtil.isUrl(listenUrl)) {
                         continue;
                     }
-                    if (url.equals(listenUrl)) {
+                    if (url.equals(listenUrl) || url.trim().equals(listenUrl.trim())) {
                         // find match url, notify caller
                         notifyStatusPaused(downloadFileInfo, listenerInfo.mListener);
                         // remove the listener
@@ -511,7 +512,7 @@ class DownloadStatusObserver implements OnRetryableFileDownloadStatusListener {
                     if (!UrlUtil.isUrl(listenUrl)) {
                         continue;
                     }
-                    if (url.equals(listenUrl)) {
+                    if (url.equals(listenUrl) || url.trim().equals(listenUrl.trim())) {
                         // find match url, notify caller
                         notifyStatusCompleted(downloadFileInfo, listenerInfo.mListener);
                         // remove the listener
@@ -550,7 +551,7 @@ class DownloadStatusObserver implements OnRetryableFileDownloadStatusListener {
                     if (!UrlUtil.isUrl(listenUrl)) {
                         continue;
                     }
-                    if (url.equals(listenUrl)) {
+                    if (url.equals(listenUrl) || url.trim().equals(listenUrl.trim())) {
                         // find match url, notify caller
                         notifyStatusFailed(url, downloadFileInfo, failReason, listenerInfo.mListener);
                         // remove the listener
