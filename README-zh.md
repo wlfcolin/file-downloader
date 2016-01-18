@@ -207,7 +207,7 @@ FileDownloader.unregisterDownloadFileChangeListener(mOnDownloadFileChangeListene
 -建议使用类FileDownloader替换掉类FileDownloadManager，同时对应的方法也替换掉。
 
 
-**[Design](https://github.com/wlfcolin/file-downloader/blob/master/DESIGN.md)**
+**[设计](https://github.com/wlfcolin/file-downloader/blob/master/DESIGN.md)**
 
 
 **LICENSE**
