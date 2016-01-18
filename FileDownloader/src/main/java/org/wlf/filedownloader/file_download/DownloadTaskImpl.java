@@ -57,6 +57,7 @@ class DownloadTaskImpl implements DownloadTask, OnHttpDownloadListener, OnFileSa
     private FinishState mFinishState;
 
     private boolean mIsTaskStop = false;
+    private boolean mIsRunning = false;
 
     // for calculate download speed
     private long mLastDownloadingTime = -1;
@@ -66,6 +67,8 @@ class DownloadTaskImpl implements DownloadTask, OnHttpDownloadListener, OnFileSa
     private Thread mCurrentTaskThread;
 
     private ExecutorService mCloseConnectionEngine;// engine use for closing the download connection
+
+    private int mConnectTimeout = 15 * 1000;// 15s default
 
     /**
      * constructor of DownloadTaskImpl
@@ -134,6 +137,7 @@ class DownloadTaskImpl implements DownloadTask, OnHttpDownloadListener, OnFileSa
                 .eTag);
         mDownloader.setOnHttpDownloadListener(this);
         mDownloader.setCloseConnectionEngine(mCloseConnectionEngine);
+        mDownloader.setConnectTimeout(mConnectTimeout);
 
         // init Saver
         mSaver = new FileSaver(mTaskParamInfo.url, mTaskParamInfo.tempFilePath, mTaskParamInfo.filePath, 
@@ -154,7 +158,8 @@ class DownloadTaskImpl implements DownloadTask, OnHttpDownloadListener, OnFileSa
 
         if (mTaskParamInfo == null) {
             // error, param is null pointer
-            failReason = new OnFileDownloadStatusFailReason("init param is null pointer !", OnFileDownloadStatusFailReason.TYPE_NULL_POINTER);
+            failReason = new OnFileDownloadStatusFailReason("init param is null pointer !", 
+                    OnFileDownloadStatusFailReason.TYPE_NULL_POINTER);
         }
         if (failReason == null && !UrlUtil.isUrl(mTaskParamInfo.url)) {
             // error, url illegal
@@ -248,6 +253,18 @@ class DownloadTaskImpl implements DownloadTask, OnHttpDownloadListener, OnFileSa
         }
     }
 
+    /**
+     * set connect timeout
+     *
+     * @param connectTimeout connect timeout
+     */
+    public void setConnectTimeout(int connectTimeout) {
+        mConnectTimeout = connectTimeout;
+        if (mDownloader != null) {
+            mDownloader.setConnectTimeout(mConnectTimeout);
+        }
+    }
+
     // --------------------------------------getters--------------------------------------
 
     /**
@@ -279,6 +296,7 @@ class DownloadTaskImpl implements DownloadTask, OnHttpDownloadListener, OnFileSa
     public void run() {
 
         try {
+            mIsRunning = true;
             mCurrentTaskThread = Thread.currentThread();
 
             // ------------start checking conditions------------
@@ -388,6 +406,7 @@ class DownloadTaskImpl implements DownloadTask, OnHttpDownloadListener, OnFileSa
 
             // identify cur task stopped
             mIsTaskStop = true;
+            mIsRunning = false;
             // stop internal impl
             stopInternalImpl();
 
@@ -790,6 +809,7 @@ class DownloadTaskImpl implements DownloadTask, OnHttpDownloadListener, OnFileSa
                     Log.d(TAG, TAG + ".stop 结束任务执行(主线程发起)，url：" + mTaskParamInfo.url + ",是否已经暂停：" + mIsTaskStop);
 
                     stopInternalImpl();
+
                 }
             });
         } else {
@@ -811,11 +831,21 @@ class DownloadTaskImpl implements DownloadTask, OnHttpDownloadListener, OnFileSa
                     if (!mSaver.isStopped()) {
                         mSaver.stop();// will cause the task run method end
                     }
+                    if (!mIsRunning) {
+                        // notify stopped
+                        notifyTaskFinish();
+                        notifyStopTaskSucceedIfNecessary();
+                    }
                 }
             });
         } else {
             if (!mSaver.isStopped()) {
                 mSaver.stop();// will cause the task run method end
+            }
+            if (!mIsRunning) {
+                // notify stopped
+                notifyTaskFinish();
+                notifyStopTaskSucceedIfNecessary();
             }
         }
     }

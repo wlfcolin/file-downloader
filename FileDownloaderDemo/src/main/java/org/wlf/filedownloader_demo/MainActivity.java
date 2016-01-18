@@ -24,7 +24,6 @@ import org.wlf.filedownloader.FileDownloader;
 import org.wlf.filedownloader.listener.OnDeleteDownloadFileListener;
 import org.wlf.filedownloader.listener.OnDeleteDownloadFilesListener;
 import org.wlf.filedownloader.listener.OnDetectBigUrlFileListener;
-import org.wlf.filedownloader.listener.OnDetectUrlFileListener;
 import org.wlf.filedownloader.listener.OnMoveDownloadFileListener;
 import org.wlf.filedownloader.listener.OnMoveDownloadFilesListener;
 import org.wlf.filedownloader.listener.OnRenameDownloadFileListener;
@@ -233,10 +232,10 @@ public class MainActivity extends Activity implements OnItemSelectListener {
             public void onClick(DialogInterface dialog, int which) {
                 // file url
                 String url = etUrlCustom.getText().toString().trim();
-                FileDownloader.detect(url, new OnDetectUrlFileListener() {
+                FileDownloader.detect(url, new OnDetectBigUrlFileListener() {
                     // ----------------------detect url file callback----------------------
                     @Override
-                    public void onDetectNewDownloadFile(final String url, String fileName, final String saveDir, int 
+                    public void onDetectNewDownloadFile(final String url, String fileName, final String saveDir, long
                             fileSize) {
                         final TextView tvFileDir = new TextView(MainActivity.this);
                         tvFileDir.setText(getString(R.string.main__save_path));
@@ -295,7 +294,7 @@ public class MainActivity extends Activity implements OnItemSelectListener {
                     }
 
                     @Override
-                    public void onDetectUrlFileFailed(String url, DetectUrlFileFailReason failReason) {
+                    public void onDetectUrlFileFailed(String url, DetectBigUrlFileFailReason failReason) {
                         String msg = null;
                         if (failReason != null) {
                             msg = failReason.getMessage();
@@ -478,7 +477,9 @@ public class MainActivity extends Activity implements OnItemSelectListener {
 
                         @Override
                         public void onDeleteDownloadFilePrepared(DownloadFileInfo downloadFileNeedDelete) {
-                            showToast(getString(R.string.main__deleting) + downloadFileNeedDelete.getFileName());
+                            if (downloadFileNeedDelete != null) {
+                                showToast(getString(R.string.main__deleting) + downloadFileNeedDelete.getFileName());
+                            }
                         }
 
                         @Override
@@ -500,11 +501,14 @@ public class MainActivity extends Activity implements OnItemSelectListener {
                                                             List<DownloadFileInfo> downloadFilesDeleted, 
                                                             List<DownloadFileInfo> downloadFilesSkip, 
                                                             DownloadFileInfo downloadFileDeleting) {
-                            showToast(getString(R.string.main__deleting) + downloadFileDeleting.getFileName() +
-                                    getString(R.string.main__progress) + (downloadFilesDeleted.size() + 
-                                    downloadFilesSkip.size()) + getString(R.string.main__failed2) + downloadFilesSkip
-                                    .size() + getString(R.string.main__skip_and_total_delete_division) +
-                                    downloadFilesNeedDelete.size());
+                            if (downloadFileDeleting != null) {
+                                showToast(getString(R.string.main__deleting) + downloadFileDeleting.getFileName() +
+                                        getString(R.string.main__progress) + (downloadFilesDeleted.size() + 
+                                        downloadFilesSkip.size()) + getString(R.string.main__failed2) +
+                                        downloadFilesSkip.size() + getString(R.string
+                                        .main__skip_and_total_delete_division) +
+                                        downloadFilesNeedDelete.size());
+                            }
                             updateAdapter();
                         }
 
@@ -573,7 +577,10 @@ public class MainActivity extends Activity implements OnItemSelectListener {
 
                                 @Override
                                 public void onMoveDownloadFilePrepared(DownloadFileInfo downloadFileNeedToMove) {
-                                    showToast(getString(R.string.main__moving) + downloadFileNeedToMove.getFileName());
+                                    if (downloadFileNeedToMove != null) {
+                                        showToast(getString(R.string.main__moving) + downloadFileNeedToMove
+                                                .getFileName());
+                                    }
                                 }
 
                                 @Override
@@ -599,11 +606,14 @@ public class MainActivity extends Activity implements OnItemSelectListener {
                                                                   List<DownloadFileInfo> downloadFilesMoved, 
                                                                   List<DownloadFileInfo> downloadFilesSkip, 
                                                                   DownloadFileInfo downloadFileMoving) {
-                                    showToast(getString(R.string.main__moving) + downloadFileMoving.getFileName() +
-                                            getString(R.string.main__progress) + (downloadFilesMoved.size() + 
-                                            downloadFilesSkip.size()) + getString(R.string.main__failed2) +
-                                            downloadFilesSkip.size() + getString(R.string
-                                            .main__skip_and_total_delete_division) + downloadFilesNeedMove.size());
+                                    if (downloadFileMoving != null) {
+                                        showToast(getString(R.string.main__moving) + downloadFileMoving.getFileName() +
+                                                getString(R.string.main__progress) + (downloadFilesMoved.size() + 
+                                                downloadFilesSkip.size()) + getString(R.string.main__failed2) +
+
+                                                downloadFilesSkip.size() + getString(R.string
+                                                .main__skip_and_total_delete_division) + downloadFilesNeedMove.size());
+                                    }
                                     updateAdapter();
 
                                 }

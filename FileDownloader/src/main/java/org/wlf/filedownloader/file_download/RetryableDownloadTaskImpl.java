@@ -43,7 +43,9 @@ class RetryableDownloadTaskImpl implements RetryableDownloadTask, OnFileDownload
     private int mRetryDownloadTimes = 0;// retry times
     private Range mRecordedRange;// recordedRange by the task
     private int mHasRetriedTimes = 0;// has been retry times
+
     private boolean mIsTaskStop = false;
+    private boolean mIsRunning = false;
 
     private boolean mIsNotifyTaskFinish;// whether notify task finish
 
@@ -55,6 +57,8 @@ class RetryableDownloadTaskImpl implements RetryableDownloadTask, OnFileDownload
     private Thread mCurrentTaskThread;
 
     private ExecutorService mCloseConnectionEngine;// engine use for closing the download connection
+
+    private int mConnectTimeout = 15 * 1000;// 15s default
 
     /**
      * FileDownloadTask
@@ -105,6 +109,7 @@ class RetryableDownloadTaskImpl implements RetryableDownloadTask, OnFileDownload
                 acceptRangeType, mOriginalTaskParamInfo.tempFilePath, mOriginalTaskParamInfo.filePath);
         mFileDownloadTaskImpl = new DownloadTaskImpl(mTaskParamInfo, mDownloadRecorder, this);
         mFileDownloadTaskImpl.setCloseConnectionEngine(mCloseConnectionEngine);
+        mFileDownloadTaskImpl.setConnectTimeout(mConnectTimeout);
     }
 
     // --------------------------------------setters--------------------------------------
@@ -123,6 +128,18 @@ class RetryableDownloadTaskImpl implements RetryableDownloadTask, OnFileDownload
         mCloseConnectionEngine = closeConnectionEngine;
         if (mFileDownloadTaskImpl != null) {
             mFileDownloadTaskImpl.setCloseConnectionEngine(mCloseConnectionEngine);
+        }
+    }
+
+    /**
+     * set connect timeout
+     *
+     * @param connectTimeout connect timeout
+     */
+    public void setConnectTimeout(int connectTimeout) {
+        mConnectTimeout = connectTimeout;
+        if (mFileDownloadTaskImpl != null) {
+            mFileDownloadTaskImpl.setConnectTimeout(mConnectTimeout);
         }
     }
 
@@ -343,6 +360,7 @@ class RetryableDownloadTaskImpl implements RetryableDownloadTask, OnFileDownload
     public void run() {
 
         try {
+            mIsRunning = true;
             mCurrentTaskThread = Thread.currentThread();
 
             if (mIsTaskStop) {
@@ -446,6 +464,7 @@ class RetryableDownloadTaskImpl implements RetryableDownloadTask, OnFileDownload
         } finally {
             // identify cur task stop
             mIsTaskStop = true;
+            mIsRunning = false;
             // stop internal impl
             stopInternalImpl();
 
@@ -520,11 +539,21 @@ class RetryableDownloadTaskImpl implements RetryableDownloadTask, OnFileDownload
                     if (!mFileDownloadTaskImpl.isStopped()) {
                         mFileDownloadTaskImpl.stop();// will cause the task run method end
                     }
+                    if (!mIsRunning) {
+                        // notify stopped
+                        notifyTaskFinish();
+                        notifyStopTaskSucceedIfNecessary();
+                    }
                 }
             });
         } else {
             if (!mFileDownloadTaskImpl.isStopped()) {
                 mFileDownloadTaskImpl.stop();// will cause the task run method end
+            }
+            if (!mIsRunning) {
+                // notify stopped
+                notifyTaskFinish();
+                notifyStopTaskSucceedIfNecessary();
             }
         }
     }
@@ -572,8 +601,10 @@ class RetryableDownloadTaskImpl implements RetryableDownloadTask, OnFileDownload
             mOnFileDownloadStatusListener.onFileDownloadStatusPrepared(downloadFileInfo);
         }
 
-        // record download range
-        mRecordedRange = new Range(downloadFileInfo.getDownloadedSizeLong(), mRecordedRange.endPos);
+        if (DownloadFileUtil.isLegal(downloadFileInfo)) {
+            // record download range
+            mRecordedRange = new Range(downloadFileInfo.getDownloadedSizeLong(), mRecordedRange.endPos);
+        }
     }
 
     @Override
@@ -597,8 +628,10 @@ class RetryableDownloadTaskImpl implements RetryableDownloadTask, OnFileDownload
         // record the state and not notify caller, wait notifyTaskFinish()
         mFinishState = new FinishState(Status.DOWNLOAD_STATUS_PAUSED);
 
-        // record download range
-        mRecordedRange = new Range(mRecordedRange.startPos, downloadFileInfo.getDownloadedSizeLong());
+        if (DownloadFileUtil.isLegal(downloadFileInfo)) {
+            // record download range
+            mRecordedRange = new Range(mRecordedRange.startPos, downloadFileInfo.getDownloadedSizeLong());
+        }
     }
 
     @Override
@@ -606,8 +639,10 @@ class RetryableDownloadTaskImpl implements RetryableDownloadTask, OnFileDownload
         // record the state and not notify caller, wait notifyTaskFinish()
         mFinishState = new FinishState(Status.DOWNLOAD_STATUS_COMPLETED);
 
-        // record download range
-        mRecordedRange = new Range(mRecordedRange.startPos, downloadFileInfo.getDownloadedSizeLong());
+        if (DownloadFileUtil.isLegal(downloadFileInfo)) {
+            // record download range
+            mRecordedRange = new Range(mRecordedRange.startPos, downloadFileInfo.getDownloadedSizeLong());
+        }
     }
 
     @Override
@@ -621,8 +656,10 @@ class RetryableDownloadTaskImpl implements RetryableDownloadTask, OnFileDownload
             mFinishState = new FinishState(Status.DOWNLOAD_STATUS_ERROR, failReason);
         }
 
-        // record download range
-        mRecordedRange = new Range(mRecordedRange.startPos, downloadFileInfo.getDownloadedSizeLong());
+        if (DownloadFileUtil.isLegal(downloadFileInfo)) {
+            // record download range
+            mRecordedRange = new Range(mRecordedRange.startPos, downloadFileInfo.getDownloadedSizeLong());
+        }
     }
 
 }

@@ -62,7 +62,7 @@
     <string name="main__no_install">Not install</string>
     <string name="main__not_install_apk2">Not install,please install apk:</string>
     <string name="main__check_network">(Check network)</string>
-    <string name="main__url_illegal">Url illegal</string>
+    <string name="main__url_illegal">(Url illegal)</string>
     <string name="main__network_timeout">(Network timeout)</string>
     <string name="main__storage_space_is_full">(Storage space is full)</string>
     <string name="main__storage_space_can_not_write">(Storage space can not write)</string>

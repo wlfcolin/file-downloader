@@ -61,15 +61,19 @@ class MoveDownloadFileTask implements Runnable {
         MoveDownloadFileFailReason failReason = null;
 
         try {
+
             downloadFileInfo = mDownloadFileMover.getDownloadFile(mUrl);
 
             // ------------start checking conditions------------
             // check null
-            if (downloadFileInfo == null) {
+            if (!DownloadFileUtil.isLegal(downloadFileInfo)) {
                 failReason = new OnMoveDownloadFileFailReason("the DownloadFile is empty !", OnMoveDownloadFileFailReason.TYPE_NULL_POINTER);
                 // goto finally, notifyFailed()
                 return;
             }
+
+            // 1.prepared
+            notifyPrepared(downloadFileInfo);
 
             // check status
             if (!DownloadFileUtil.canMove(downloadFileInfo)) {
@@ -112,9 +116,6 @@ class MoveDownloadFileTask implements Runnable {
                 FileUtil.createFileParentDir(newFile.getAbsolutePath());
             }
             // ------------end checking conditions------------
-
-            // 1.prepared
-            notifyPrepared(downloadFileInfo);
 
             // backup oldDirPath
             String oldDirPath = downloadFileInfo.getFileDir();

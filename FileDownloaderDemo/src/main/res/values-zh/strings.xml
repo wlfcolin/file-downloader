@@ -61,7 +61,7 @@
     <string name="main__no_install">未安装</string>
     <string name="main__not_install_apk2">（无法启动）请安装Apk：</string>
     <string name="main__check_network">(请检查网络)</string>
-    <string name="main__url_illegal">Url不合法</string>
+    <string name="main__url_illegal">(Url不合法)</string>
     <string name="main__network_timeout">(网络超时)</string>
     <string name="main__storage_space_is_full">(存储空间已满)</string>
     <string name="main__storage_space_can_not_write">(存储空间不可写)</string>

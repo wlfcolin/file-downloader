@@ -596,6 +596,20 @@ public class DownloadCacher implements DownloadRecorder, DownloadFileMover, Down
     @Override
     public DownloadFileInfo getDownloadFile(String url) {
 
+        DownloadFileInfo downloadFileInfo = getDownloadFileInternal(url);
+
+        if (downloadFileInfo == null && UrlUtil.isUrl(url)) {
+            downloadFileInfo = getDownloadFileInternal(url.trim());
+        }
+
+        return downloadFileInfo;
+    }
+
+    /**
+     * get a DownloadFile
+     */
+    private DownloadFileInfo getDownloadFileInternal(String url) {
+
         DownloadFileInfo downloadFileInfo = null;
 
         if (mDownloadFileInfoMap.get(url) != null) {

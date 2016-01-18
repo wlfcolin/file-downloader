@@ -61,17 +61,21 @@ class DeleteDownloadFileTask implements Runnable {
         DeleteDownloadFileFailReason failReason = null;
 
         try {
+
             downloadFileInfo = mDownloadFileDeleter.getDownloadFile(mUrl);
 
             // ------------start checking conditions------------
             {
-                if (downloadFileInfo == null) {
+                if (!DownloadFileUtil.isLegal(downloadFileInfo)) {
                     failReason = new OnDeleteDownloadFileFailReason("the download file not exist !", 
                             OnDeleteDownloadFileFailReason.TYPE_FILE_RECORD_IS_NOT_EXIST);
 
                     // goto finally, notifyFailed()
                     return;
                 }
+
+                // 1.prepared
+                notifyPrepared(downloadFileInfo);
 
                 // check status
                 if (!DownloadFileUtil.canDelete(downloadFileInfo)) {
@@ -82,9 +86,6 @@ class DeleteDownloadFileTask implements Runnable {
                 }
             }
             // ------------end checking conditions------------
-
-            // 1.prepared
-            notifyPrepared(downloadFileInfo);
 
             // delete in database record
             boolean deleteResult = false;

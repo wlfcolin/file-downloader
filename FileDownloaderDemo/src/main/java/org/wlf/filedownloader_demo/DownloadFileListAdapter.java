@@ -634,26 +634,26 @@ public class DownloadFileListAdapter extends BaseAdapter implements OnRetryableF
             if (FileDownloadStatusFailReason.TYPE_NETWORK_DENIED.equals(failReason.getType())) {
                 msg += mActivity.getString(R.string.main__check_network);
             } else if (FileDownloadStatusFailReason.TYPE_URL_ILLEGAL.equals(failReason.getType())) {
-                msg = mActivity.getString(R.string.main__url_illegal);
+                msg += mActivity.getString(R.string.main__url_illegal);
             } else if (FileDownloadStatusFailReason.TYPE_NETWORK_TIMEOUT.equals(failReason.getType())) {
-                msg = mActivity.getString(R.string.main__network_timeout);
+                msg += mActivity.getString(R.string.main__network_timeout);
             } else if (FileDownloadStatusFailReason.TYPE_STORAGE_SPACE_IS_FULL.equals(failReason.getType())) {
-                msg = mActivity.getString(R.string.main__storage_space_is_full);
+                msg += mActivity.getString(R.string.main__storage_space_is_full);
             } else if (FileDownloadStatusFailReason.TYPE_STORAGE_SPACE_CAN_NOT_WRITE.equals(failReason.getType())) {
-                msg = mActivity.getString(R.string.main__storage_space_can_not_write);
+                msg += mActivity.getString(R.string.main__storage_space_can_not_write);
             } else if (FileDownloadStatusFailReason.TYPE_FILE_NOT_DETECT.equals(failReason.getType())) {
-                msg = mActivity.getString(R.string.main__file_not_detect);
+                msg += mActivity.getString(R.string.main__file_not_detect);
             } else if (FileDownloadStatusFailReason.TYPE_BAD_HTTP_RESPONSE_CODE.equals(failReason.getType())) {
-                msg = mActivity.getString(R.string.main__http_bad_response_code);
+                msg += mActivity.getString(R.string.main__http_bad_response_code);
             } else if (FileDownloadStatusFailReason.TYPE_HTTP_FILE_NOT_EXIST.equals(failReason.getType())) {
-                msg = mActivity.getString(R.string.main__http_file_not_exist);
+                msg += mActivity.getString(R.string.main__http_file_not_exist);
             } else if (FileDownloadStatusFailReason.TYPE_SAVE_FILE_NOT_EXIST.equals(failReason.getType())) {
-                msg = mActivity.getString(R.string.main__save_file_not_exist);
+                msg += mActivity.getString(R.string.main__save_file_not_exist);
             }
         }
 
         if (downloadFileInfo == null) {
-            showToast(msg);
+            showToast(msg + "，url：" + url);
             return;
         }
 

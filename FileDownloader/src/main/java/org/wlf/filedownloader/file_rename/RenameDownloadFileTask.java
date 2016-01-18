@@ -71,15 +71,19 @@ class RenameDownloadFileTask implements Runnable {
         RenameDownloadFileFailReason failReason = null;
 
         try {
+
             downloadFileInfo = mDownloadFileRenamer.getDownloadFile(mUrl);
 
             // ------------start checking conditions------------
 
-            if (downloadFileInfo == null) {
+            if (!DownloadFileUtil.isLegal(downloadFileInfo)) {
                 failReason = new OnRenameDownloadFileFailReason("the download file is not exist !", OnRenameDownloadFileFailReason.TYPE_FILE_RECORD_IS_NOT_EXIST);
                 // goto finally, notifyFailed()
                 return;
             }
+
+            // 1.prepared
+            notifyPrepared(downloadFileInfo);
 
             // check status
             if (!DownloadFileUtil.canRename(downloadFileInfo)) {
@@ -121,9 +125,6 @@ class RenameDownloadFileTask implements Runnable {
                 return;
             }
             // ------------end checking conditions------------
-
-            // 1.prepared
-            notifyPrepared(downloadFileInfo);
 
             boolean renameResult = false;
 

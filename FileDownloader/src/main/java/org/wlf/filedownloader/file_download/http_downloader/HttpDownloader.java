@@ -97,6 +97,15 @@ public class HttpDownloader implements Download {
     }
 
     /**
+     * set connect timeout
+     *
+     * @param connectTimeout connect timeout
+     */
+    public void setConnectTimeout(int connectTimeout) {
+        mConnectTimeout = connectTimeout;
+    }
+
+    /**
      * if it throw HttpDownloadException,that means download data failed(error occur)
      */
     @Override

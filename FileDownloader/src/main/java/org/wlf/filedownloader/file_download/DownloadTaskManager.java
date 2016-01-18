@@ -247,6 +247,7 @@ public class DownloadTaskManager implements Pauseable {
         detectUrlFileTask.setOnDetectBigUrlFileListener(onDetectBigUrlFileListener);
         // set the CloseConnectionEngine
         detectUrlFileTask.setCloseConnectionEngine(mConfiguration.getFileOperationEngine());
+        detectUrlFileTask.setConnectTimeout(mConfiguration.getConnectTimeout());
         if (forceDetect) {
             // enableForceDetectMode
             detectUrlFileTask.enableForceDetect();
@@ -313,6 +314,7 @@ public class DownloadTaskManager implements Pauseable {
         // set RetryDownloadTimes
         downloadTask.setRetryDownloadTimes(mConfiguration.getRetryDownloadTimes());
         downloadTask.setCloseConnectionEngine(mConfiguration.getFileOperationEngine());
+        downloadTask.setConnectTimeout(mConfiguration.getConnectTimeout());
 
         // record in the task map
         mRunningDownloadTaskMap.put(downloadTask.getUrl(), downloadTask);

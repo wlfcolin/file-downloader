@@ -42,23 +42,20 @@ public class FileDownloadApplication extends Application {
         Builder builder = new FileDownloadConfiguration.Builder(this);
 
         // 2.config FileDownloadConfiguration.Builder
-        // config the download path
         builder.configFileDownloadDir(Environment.getExternalStorageDirectory().getAbsolutePath() + File.separator +
-                "FileDownloader");
+                "FileDownloader"); // config the download path
         // builder.configFileDownloadDir("/storage/sdcard1/FileDownloader");
-
         // allow 3 download tasks at the same time
         builder.configDownloadTaskSize(3);
-
         // config retry download times when failed
         builder.configRetryDownloadTimes(5);
-
         // enable debug mode
         builder.configDebugMode(true);
+        // config connect timeout
+        builder.configConnectTimeout(25000); // 25s
 
         // 3.init FileDownloader with the configuration
-        // build FileDownloadConfiguration with the builder
-        FileDownloadConfiguration configuration = builder.build();
+        FileDownloadConfiguration configuration = builder.build(); // build FileDownloadConfiguration with the builder
         FileDownloader.init(configuration);
     }
 

@@ -510,21 +510,21 @@ public class CourseDownloadAdapter extends RecyclerView.Adapter<CourseDownloadVi
                 if (FileDownloadStatusFailReason.TYPE_NETWORK_DENIED.equals(failReason.getType())) {
                     msg += mContext.getString(R.string.advanced_use__check_network);
                 } else if (FileDownloadStatusFailReason.TYPE_URL_ILLEGAL.equals(failReason.getType())) {
-                    msg = mContext.getString(R.string.advanced_use__url_illegal);
+                    msg += mContext.getString(R.string.advanced_use__url_illegal);
                 } else if (FileDownloadStatusFailReason.TYPE_NETWORK_TIMEOUT.equals(failReason.getType())) {
-                    msg = mContext.getString(R.string.advanced_use__network_timeout);
+                    msg += mContext.getString(R.string.advanced_use__network_timeout);
                 } else if (FileDownloadStatusFailReason.TYPE_STORAGE_SPACE_IS_FULL.equals(failReason.getType())) {
-                    msg = mContext.getString(R.string.advanced_use__storage_space_is_full);
+                    msg += mContext.getString(R.string.advanced_use__storage_space_is_full);
                 } else if (FileDownloadStatusFailReason.TYPE_STORAGE_SPACE_CAN_NOT_WRITE.equals(failReason.getType())) {
-                    msg = mContext.getString(R.string.advanced_use__storage_space_can_not_write);
+                    msg += mContext.getString(R.string.advanced_use__storage_space_can_not_write);
                 } else if (FileDownloadStatusFailReason.TYPE_FILE_NOT_DETECT.equals(failReason.getType())) {
-                    msg = mContext.getString(R.string.advanced_use__file_not_detect);
+                    msg += mContext.getString(R.string.advanced_use__file_not_detect);
                 } else if (FileDownloadStatusFailReason.TYPE_BAD_HTTP_RESPONSE_CODE.equals(failReason.getType())) {
-                    msg = mContext.getString(R.string.advanced_use__http_bad_response_code);
+                    msg += mContext.getString(R.string.advanced_use__http_bad_response_code);
                 } else if (FileDownloadStatusFailReason.TYPE_HTTP_FILE_NOT_EXIST.equals(failReason.getType())) {
-                    msg = mContext.getString(R.string.advanced_use__http_file_not_exist);
+                    msg += mContext.getString(R.string.advanced_use__http_file_not_exist);
                 } else if (FileDownloadStatusFailReason.TYPE_SAVE_FILE_NOT_EXIST.equals(failReason.getType())) {
-                    msg = mContext.getString(R.string.advanced_use__save_file_not_exist);
+                    msg += mContext.getString(R.string.advanced_use__save_file_not_exist);
                 }
             }
 

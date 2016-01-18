@@ -72,6 +72,15 @@ class DetectUrlFileTask implements Runnable {
     }
 
     /**
+     * set connect timeout
+     *
+     * @param connectTimeout connect timeout
+     */
+    public void setConnectTimeout(int connectTimeout) {
+        mConnectTimeout = connectTimeout;
+    }
+
+    /**
      * enable force detect
      */
     public void enableForceDetect() {
