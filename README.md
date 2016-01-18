@@ -189,7 +189,7 @@ FileDownloader.unregisterDownloadFileChangeListener(mOnDownloadFileChangeListene
 ```
 
 
-**[API docs](http://htmlpreview.github.io/?https://github.com/wlfcolin/file-downloader/raw/master/download/release/FileDownloader-0.3.0-javadoc/index.html)**
+**[API docs](http://htmlpreview.github.io/?https://raw.githubusercontent.com/wlfcolin/file-downloader/master/download/release/FileDownloader-0.3.0-javadoc/index.html)**
 
 
 **[Version change log](https://github.com/wlfcolin/file-downloader/blob/master/CHANGELOG.md)**
