@@ -175,7 +175,7 @@ FileDownloader.unregisterDownloadFileChangeListener(mOnDownloadFileChangeListene
 ```
 
 
-**[详细API文档](https://github.com/wlfcolin/file-downloader/raw/master/download/release/FileDownloader-0.3.0-javadoc/index.html)**
+**[详细API文档](http://htmlpreview.github.io/?https://github.com/wlfcolin/file-downloader/raw/master/download/release/FileDownloader-0.3.0-javadoc/index.html)**
 
 
 **[版本更新日志](https://github.com/wlfcolin/file-downloader/blob/master/CHANGELOG.md)**
@@ -192,7 +192,7 @@ FileDownloader.unregisterDownloadFileChangeListener(mOnDownloadFileChangeListene
 -建议使用类FileDownloader替换掉类FileDownloadManager，同时对应的方法也替换掉。
 
 
-**[Design](https://github.com/wlfcolin/file-downloader/blob/master/DESIGN
+**[Design](https://github.com/wlfcolin/file-downloader/blob/master/DESIGN.md**
 
 
 **LICENSE**
