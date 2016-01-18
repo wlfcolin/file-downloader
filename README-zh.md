@@ -44,6 +44,7 @@ FileDownloader.init(configuration);
 ```
 
 * 第三步、注册监听器（如果不需要监听，可以忽略）
+
 -注册下载状态监听器(一搬在fragment或activity的onCreate方法中注册)
 ``` java
 private OnFileDownloadStatusListener mOnFileDownloadStatusListener = new OnRetryableFileDownloadStatusListener() {
@@ -95,6 +96,7 @@ private OnFileDownloadStatusListener mOnFileDownloadStatusListener = new OnRetry
 };
 FileDownloader.registerDownloadStatusListener(mOnFileDownloadStatusListener);
 ```
+
 -注册文件数据变化监听器，监听比如删除，移动重命名，特殊状态改变等任何与文件数据变化相关都会收到通知
 ``` java
 private OnDownloadFileChangeListener mOnDownloadFileChangeListener = new OnDownloadFileChangeListener() {
@@ -116,10 +118,12 @@ FileDownloader.registerDownloadFileChangeListener(mOnDownloadFileChangeListener)
 下载状态监听器和文件数据变化监听器的主要区别在于，前者关心下载进度和错误（前端UI），后者关心文件数据变化（数据存储）
 
 * 第四步、下载文件和管理文件
+
 -创建一个新下载
 ``` java
 FileDownloader.start(url);// 如果文件没被下载过，将创建并开启下载，否则继续下载，自动会断点续传
 ```
+
 -创建一个自定义保存路径和文件名称的下载
 ``` java
 FileDownloader.detect(url, new OnDetectBigUrlFileListener() {
@@ -139,36 +143,43 @@ FileDownloader.detect(url, new OnDetectBigUrlFileListener() {
     }
 });
 ```
+
 -暂停下载
 ``` java
 FileDownloader.pause(url);// 暂停单个下载任务
 FileDownloader.pause(urls);// 暂停多个下载任务
 FileDownloader.pauseAll();// 暂停所有下载任务
 ```
+
 -继续下载
 ``` java
 FileDownloader.start(url);// 继续下载，自动会断点续传
 ```
+
 -移动下载文件
 ``` java
 FileDownloader.move(url, newDirPath, mOnMoveDownloadFileListener);// 移动单个下载文件到新文件夹中
 FileDownloader.move(urls, newDirPath, mOnMoveDownloadFilesListener);// 移动多个下载文件到新文件夹中
 ```
+
 -删除下载文件
 ``` java
 FileDownloader.delete(url, true, mOnDeleteDownloadFileListener);// 删除单个下载文件
 FileDownloader.delete(urls, true, mOnDeleteDownloadFilesListener);// 删除多个下载文件
 ```
+
 -重命名下载文件
 ``` java
 FileDownloader.rename(url, newName, true, mOnRenameDownloadFileListener);// 重命名一个下载文件
 ```
 
 * 第五步、取消注册的监听器
+
 -取消注册下载状态监听器(一搬在fragment或activity的onDestroy方法中取消注册)
 ``` java
 FileDownloader.unregisterDownloadStatusListener(mOnFileDownloadStatusListener);
 ```
+
 -注册文件数据变化监听器
 ``` java
 FileDownloader.unregisterDownloadFileChangeListener(mOnDownloadFileChangeListener);
@@ -184,11 +195,15 @@ FileDownloader.unregisterDownloadFileChangeListener(mOnDownloadFileChangeListene
 **升级最新说明**
 
 * 0.2.X --> 0.3.0
+
 -建议替换用FileDownloader.detect(String, OnDetectBigUrlFileListener)替换掉FileDownloader.detect(String, OnDetectUrlFileListener)。
+
 -建议使用FileDownloader.registerDownloadStatusListener(OnRetryableFileDownloadStatusListener)替换调用FileDownloader.registerDownloadStatusListener(OnFileDownloadStatusListener)以获得更好的体验。
+
 -如果你注册了监听器，务必不要忘记在新版的合适时机取消注册unregisterDownloadStatusListener(OnFileDownloadStatusListener)和unregisterDownloadFileChangeListener(OnDownloadFileChangeListener)，以防止引起不必须得内存泄露。
 
 * 0.1.X --> 0.3.0
+
 -建议使用类FileDownloader替换掉类FileDownloadManager，同时对应的方法也替换掉。
 
 
