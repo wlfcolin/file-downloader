@@ -3,12 +3,12 @@
 这是文件安卓上轻量级Http文件下载框架，我的目标是让文件下载越简单越好，尽可能以最简洁明了的方式完成复杂需求。
 
 **特点**
-多任务下载、断线续传、自动重试、快速管理下载文件的生命周期（下载文件的增删改查）等。
+* 多任务下载、断线续传、自动重试、快速管理下载文件的生命周期（下载文件的增删改查）等。
 
 
 **截图**
-![image](https://github.com/wlfcolin/file-downloader/blob/master/capture/simple_download_zh.gif)
-![image](https://github.com/wlfcolin/file-downloader/blob/master/capture/manager_download_zh.gif)
+* ![image](https://github.com/wlfcolin/file-downloader/blob/master/capture/simple_download_zh.gif)
+* ![image](https://github.com/wlfcolin/file-downloader/blob/master/capture/manager_download_zh.gif)
 
 
 **快速上手使用**
