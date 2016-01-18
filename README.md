@@ -9,8 +9,8 @@ this is a powerful http-file download tool, my goal is to make downloading http-
 
 
 **Captures**
-                     ![image](https://github.com/wlfcolin/file-downloader/blob/master/capture/simple_download.gif)
-![image](https://github.com/wlfcolin/file-downloader/blob/master/capture/manager_download.gif)
+* ![image](https://github.com/wlfcolin/file-downloader/blob/master/capture/simple_download.gif)
+* ![image](https://github.com/wlfcolin/file-downloader/blob/master/capture/manager_download.gif)
 
 
 **Quick start**
