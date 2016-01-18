@@ -45,6 +45,7 @@ FileDownloader.init(configuration);
 ```
 
 * step 3.register listeners
+
 -register a DownloadStatusListener(may be at the time the fragment or activity's onCreate called, 
 you can ignore this if your app do not care the download progress such as your are using a service in background)
 ``` java
@@ -97,6 +98,7 @@ private OnFileDownloadStatusListener mOnFileDownloadStatusListener = new OnRetry
 };
 FileDownloader.registerDownloadStatusListener(mOnFileDownloadStatusListener);
 ```
+
 -register a DownloadFileChangeListener if you care any change of the download file in db
 ``` java
 private OnDownloadFileChangeListener mOnDownloadFileChangeListener = new OnDownloadFileChangeListener() {
@@ -119,10 +121,12 @@ the difference between DownloadStatusListener and DownloadFileChangeListener is,
 DownloadStatusListener concerns the download progress, and DownloadFileChangeListener concerns the data change 
 
 * step 4.start to download and operate the url files
+
 -create a new download
 ``` java
 FileDownloader.start(url);
 ```
+
 -or create a custom new download
 ``` java
 FileDownloader.detect(url, new OnDetectBigUrlFileListener() {
@@ -142,36 +146,43 @@ FileDownloader.detect(url, new OnDetectBigUrlFileListener() {
     }
 });
 ```
+
 -pause downloads
 ``` java
 FileDownloader.pause(url);// pause single
 FileDownloader.pause(urls);// pause multi
 FileDownloader.pauseAll();// pause all
 ```
+
 -continue a paused download
 ``` java
 FileDownloader.start(url);
 ```
+
 -move download files to new dir path
 ``` java
 FileDownloader.move(url, newDirPath, mOnMoveDownloadFileListener);// move single file
 FileDownloader.move(urls, newDirPath, mOnMoveDownloadFilesListener);// move multi files
 ```
+
 -delete download files
 ``` java
 FileDownloader.delete(url, true, mOnDeleteDownloadFileListener);// delete single file
 FileDownloader.delete(urls, true, mOnDeleteDownloadFilesListener);// delete multi files
 ```
+
 -rename a download file
 ``` java
 FileDownloader.rename(url, newName, true, mOnRenameDownloadFileListener);
 ```
 
 * step 5.unregister listeners
+
 -unregister the DownloadStatusListener(may be at the time the fragment or activity's onDestroy called)
 ``` java
 FileDownloader.unregisterDownloadStatusListener(mOnFileDownloadStatusListener);
 ```
+
 -unregister the DownloadFileChangeListener
 ``` java
 FileDownloader.unregisterDownloadFileChangeListener(mOnDownloadFileChangeListener);
@@ -187,13 +198,17 @@ FileDownloader.unregisterDownloadFileChangeListener(mOnDownloadFileChangeListene
 **Upgrade help**
 
 * 0.2.X --> 0.3.0
+
 -replace FileDownloader.detect(String, OnDetectUrlFileListener) with FileDownloader.detect(String, OnDetectBigUrlFileListener) recommended.
+
 -replace FileDownloader.registerDownloadStatusListener(OnFileDownloadStatusListener) with FileDownloader.registerDownloadStatusListener(OnRetryableFileDownloadStatusListener) 
  for better experience.
+
 -do not forget to do unregisterDownloadStatusListener(OnFileDownloadStatusListener) and unregisterDownloadFileChangeListener(OnDownloadFileChangeListener) if your registered then, 
  because the listeners may case memory overflow if you never unregister then.
 
 * 0.1.X --> 0.3.0
+
 -replace class FileDownloadManager with new class FileDownloader, also replace all methods in the FileDownloadManager with new ones recommended.
 
 
