@@ -5,11 +5,11 @@ this is a powerful http-file download tool, my goal is to make downloading http-
 [中文说明文档](https://github.com/wlfcolin/file-downloader/blob/master/README-zh.md)
 
 **Features**
-Multi task at same time, Broken-point download, Auto retry, download files CRUD and so on.
+* Multi task at same time, Broken-point download, Auto retry, download files CRUD and so on.
 
 
 **Captures**
-![image](https://github.com/wlfcolin/file-downloader/blob/master/capture/simple_download.gif)
+                     ![image](https://github.com/wlfcolin/file-downloader/blob/master/capture/simple_download.gif)
 ![image](https://github.com/wlfcolin/file-downloader/blob/master/capture/manager_download.gif)
 
 
