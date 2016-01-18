@@ -2,16 +2,16 @@
 
 这是文件安卓上轻量级Http文件下载框架，我的目标是让文件下载越简单越好，尽可能以最简洁明了的方式完成复杂需求。
 
-**特点**
+**一、特点**
 * 多任务下载、断线续传、自动重试、快速管理下载文件的生命周期（下载文件的增删改查）等。
 
 
-**截图**
+**二、截图**
 * ![image](https://github.com/wlfcolin/file-downloader/blob/master/capture/simple_download_zh.gif)
 * ![image](https://github.com/wlfcolin/file-downloader/blob/master/capture/manager_download_zh.gif)
 
 
-**快速上手使用**
+**三、快速上手使用**
 * 第一步、在项目模块的build.gradle配置gradle
 ``` java
 compile 'org.wlf:FileDownloader:0.3.0'
@@ -186,13 +186,13 @@ FileDownloader.unregisterDownloadFileChangeListener(mOnDownloadFileChangeListene
 ```
 
 
-**[详细API文档](http://htmlpreview.github.io/?https://raw.githubusercontent.com/wlfcolin/file-downloader/master/download/release/FileDownloader-0.3.0-javadoc/index.html)**
+**[四、详细API文档](http://htmlpreview.github.io/?https://raw.githubusercontent.com/wlfcolin/file-downloader/master/download/release/FileDownloader-0.3.0-javadoc/index.html)**
 
 
-**[版本更新日志](https://github.com/wlfcolin/file-downloader/blob/master/CHANGELOG.md)**
+**[五、版本更新日志](https://github.com/wlfcolin/file-downloader/blob/master/CHANGELOG.md)**
 
 
-**升级最新说明**
+**六、升级最新说明**
 
 * 0.2.X --> 0.3.0
 
@@ -207,10 +207,10 @@ FileDownloader.unregisterDownloadFileChangeListener(mOnDownloadFileChangeListene
 -建议使用类FileDownloader替换掉类FileDownloadManager，同时对应的方法也替换掉。
 
 
-**[设计](https://github.com/wlfcolin/file-downloader/blob/master/DESIGN.md)**
+**[七、设计](https://github.com/wlfcolin/file-downloader/blob/master/DESIGN.md)**
 
 
-**LICENSE**
+**八、LICENSE**
 ```
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
