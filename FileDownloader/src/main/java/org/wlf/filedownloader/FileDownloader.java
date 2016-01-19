@@ -214,7 +214,7 @@ public final class FileDownloader {
      * @param downloadFileChangeConfiguration Configuration for the OnDownloadFileChangeListener impl
      * @since 0.3.0
      */
-    public void registerDownloadFileChangeListener(OnDownloadFileChangeListener onDownloadFileChangeListener, 
+    public static void registerDownloadFileChangeListener(OnDownloadFileChangeListener onDownloadFileChangeListener, 
                                                    DownloadFileChangeConfiguration downloadFileChangeConfiguration) {
         getFileDownloadManager().registerDownloadFileChangeListener(onDownloadFileChangeListener, 
                 downloadFileChangeConfiguration);

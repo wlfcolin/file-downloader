@@ -3,14 +3,14 @@
 这是文件安卓上轻量级Http文件下载框架，我的目标是让文件下载越简单越好，尽可能以最简洁明了的方式完成复杂需求。
 
 **一、特点**
-* 多任务下载、断线续传、自动重试、快速管理下载文件的生命周期（下载文件的增删改查）等。
+* 多任务下载、断线续传、自动重试、支持大文件（超过2G）下载、轻松管理下载文件的生命周期（下载文件的增删改查）等。
 
-
+----------------------------------------------------------------------
 **二、截图**
 * ![image](https://github.com/wlfcolin/file-downloader/blob/master/capture/simple_download_zh.gif)
 * ![image](https://github.com/wlfcolin/file-downloader/blob/master/capture/manager_download_zh.gif)
 
-
+----------------------------------------------------------------------
 **三、快速上手使用**
 * 第一步、在项目模块的build.gradle配置gradle
 ``` java
@@ -29,23 +29,23 @@ Builder builder = new FileDownloadConfiguration.Builder(this);
 // 配置下载文件保存的文件夹
 builder.configFileDownloadDir(Environment.getExternalStorageDirectory().getAbsolutePath() + File.separator +
         "FileDownloader");
-// 配置同时下载任务数量，默认为2
+// 配置同时下载任务数量，如果不配置默认为2
 builder.configDownloadTaskSize(3);
-// 配置失败时尝试重试的次数，默认为0不尝试
+// 配置失败时尝试重试的次数，如果不配置默认为0不尝试
 builder.configRetryDownloadTimes(5);
-// 开启调试模式，方便查看日志，默认不开启
+// 开启调试模式，方便查看日志等调试相关，如果不配置默认不开启
 builder.configDebugMode(true);
-// 配置连接网络超时时间，如果不配做默认15秒
-builder.configConnectTimeout(25000);
+// 配置连接网络超时时间，如果不配置默认为15秒
+builder.configConnectTimeout(25000);// 25秒
 
 // 3、使用配置文件初始化FileDownloader
-FileDownloadConfiguration configuration = builder.build(); // build FileDownloadConfiguration with the builder
+FileDownloadConfiguration configuration = builder.build();
 FileDownloader.init(configuration);
 ```
 
 * 第三步、注册监听器（如果不需要监听，可以忽略）
 
--注册下载状态监听器(一搬在fragment或activity的onCreate方法中注册)
+-注册下载状态监听器(一搬在fragment或activity的onCreate方法中注册，亦可能在service中统一处理)
 ``` java
 private OnFileDownloadStatusListener mOnFileDownloadStatusListener = new OnRetryableFileDownloadStatusListener() {
     @Override
@@ -97,7 +97,7 @@ private OnFileDownloadStatusListener mOnFileDownloadStatusListener = new OnRetry
 FileDownloader.registerDownloadStatusListener(mOnFileDownloadStatusListener);
 ```
 
--注册文件数据变化监听器，监听比如删除，移动重命名，特殊状态改变等任何与文件数据变化相关都会收到通知
+-注册文件数据变化监听器，监听比如文件不存在了，被删除了，状态变化了等任何与文件数据变化相关都会收到通知
 ``` java
 private OnDownloadFileChangeListener mOnDownloadFileChangeListener = new OnDownloadFileChangeListener() {
     @Override
@@ -185,31 +185,37 @@ FileDownloader.unregisterDownloadStatusListener(mOnFileDownloadStatusListener);
 FileDownloader.unregisterDownloadFileChangeListener(mOnDownloadFileChangeListener);
 ```
 
-
+----------------------------------------------------------------------
 **[四、详细API文档](http://htmlpreview.github.io/?https://raw.githubusercontent.com/wlfcolin/file-downloader/master/download/release/FileDownloader-0.3.0-javadoc/index.html)**
 
-
+----------------------------------------------------------------------
 **[五、版本更新日志](https://github.com/wlfcolin/file-downloader/blob/master/CHANGELOG.md)**
 
-
-**六、升级最新说明**
+----------------------------------------------------------------------
+**六、旧版升级到最新版帮助说明**
 
 * 0.2.X --> 0.3.0
 
--建议替换用FileDownloader.detect(String, OnDetectBigUrlFileListener)替换掉FileDownloader.detect(String, OnDetectUrlFileListener)。
+-建议替换用FileDownloader.detect(String, OnDetectBigUrlFileListener)替换掉FileDownloader.detect(String, OnDetectUrlFileListener)，以支持超过2G的大文件下载。
 
--建议使用FileDownloader.registerDownloadStatusListener(OnRetryableFileDownloadStatusListener)替换调用FileDownloader.registerDownloadStatusListener(OnFileDownloadStatusListener)以获得更好的体验。
+-建议用DownloadFileInfo.getFileSizeLong()替换掉DownloadFileInfo.getFileSize()，用DownloadFileInfo.getDownloadedSizeLong()替换掉DownloadFileInfo.getDownloadedSize()，以便能正常显示超过2G文件的大小。
 
--如果你注册了监听器，务必不要忘记在新版的合适时机取消注册unregisterDownloadStatusListener(OnFileDownloadStatusListener)和unregisterDownloadFileChangeListener(OnDownloadFileChangeListener)，以防止引起不必须得内存泄露。
+-建议用FileDownloader.registerDownloadStatusListener(OnRetryableFileDownloadStatusListener)替换掉FileDownloader.registerDownloadStatusListener(OnFileDownloadStatusListener)，以获得更好的体验。
+
+-如果你注册了监听器，务必不要忘记在新版的合适时机取消注册unregisterDownloadStatusListener(OnFileDownloadStatusListener)和unregisterDownloadFileChangeListener(OnDownloadFileChangeListener)，以防止不必要的内存泄露麻烦。
+
+-所有以On开头的失败原因类（如：OnFileDownloadStatusFailReason）都替换成没有On开头的失败原因类（如：FileDownloadStatusFailReason）
 
 * 0.1.X --> 0.3.0
 
 -建议使用类FileDownloader替换掉类FileDownloadManager，同时对应的方法也替换掉。
 
+-执行0.2.X --> 0.3.0中的说明。
 
-**[七、设计](https://github.com/wlfcolin/file-downloader/blob/master/DESIGN.md)**
+----------------------------------------------------------------------
+**[七、框架设计](https://github.com/wlfcolin/file-downloader/blob/master/DESIGN.md)**
 
-
+----------------------------------------------------------------------
 **八、LICENSE**
 ```
 Licensed under the Apache License, Version 2.0 (the "License");

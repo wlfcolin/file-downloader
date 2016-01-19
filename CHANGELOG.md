@@ -20,19 +20,25 @@
  * registerDownloadStatusListener(OnFileDownloadStatusListener,DownloadStatusConfiguration)
 
 * Deprecated in DownloadFileInfo:
- * getFileSize()-->getFileSizeLong()
- * getDownloadedSize()-->getDownloadedSizeLong()
+ * getFileSize()-->getFileSizeLong() instead
+ * getDownloadedSize()-->getDownloadedSizeLong() instead
 
 * Deprecated in FileDownloader:
  * detect(String,OnDetectUrlFileListener)-->detect(String,OnDetectBigUrlFileListener) instead
 
+* Deleted in DownloadFileInfo
+ * getFilePath(boolean)
+
+
 **0.2.2**
 * Fix the url bug which includes params
-* Fix crash when some listen callbacks are null 
+* Fix crash when some callback listeners are null 
+
 
 **0.2.1**
 * Fix can not multi operation in detect url file, delete file, move file and rename file
 * Fix the callback not correct when network error
+
 
 **0.2.0**
 
@@ -64,6 +70,7 @@
 * Update in FileDownloadManager(also in FileDownloader):
  * Add return Control in move(List<String>, String, OnMoveDownloadFilesListener)
  * Add return Control in delete(List<String>, boolean, OnDeleteDownloadFilesListener)
+
 
 **0.1.0**
 * Initial version

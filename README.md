@@ -5,14 +5,14 @@ this is a powerful http-file download tool, my goal is to make downloading http-
 [中文说明文档](https://github.com/wlfcolin/file-downloader/blob/master/README-zh.md)
 
 **Features**
-* Multi task at same time, Broken-point download, Auto retry, download files CRUD and so on.
+* Multi task at same time, Broken-point download, Auto retry, Support download large file bigger than 2G, download files CRUD and so on.
 
-
+----------------------------------------------------------------------
 **Captures**
 * ![image](https://github.com/wlfcolin/file-downloader/blob/master/capture/simple_download.gif)
 * ![image](https://github.com/wlfcolin/file-downloader/blob/master/capture/manager_download.gif)
 
-
+----------------------------------------------------------------------
 **Quick start**
 * step 1.add in dependencies in your module's build.gradle
 ``` java
@@ -30,13 +30,13 @@ Builder builder = new FileDownloadConfiguration.Builder(this);
 // 2.config FileDownloadConfiguration.Builder
 builder.configFileDownloadDir(Environment.getExternalStorageDirectory().getAbsolutePath() + File.separator +
         "FileDownloader"); // config the download path
-// allow 3 download tasks at the same time
+// allow 3 download tasks at the same time, if not config, default is 2
 builder.configDownloadTaskSize(3);
-// config retry download times when failed
+// config retry download times when failed, if not config, default is 0
 builder.configRetryDownloadTimes(5);
-// enable debug mode
+// enable debug mode, if not config, default is false
 builder.configDebugMode(true);
-// config connect timeout
+// config connect timeout, if not config, default is 15s
 builder.configConnectTimeout(25000); // 25s
 
 // 3.init FileDownloader with the configuration
@@ -47,7 +47,7 @@ FileDownloader.init(configuration);
 * step 3.register listeners
 
 -register a DownloadStatusListener(may be at the time the fragment or activity's onCreate called, 
-you can ignore this if your app do not care the download progress such as your are using a service in background)
+you can ignore this if your app do not care the download progress such as you are using a service in background)
 ``` java
 private OnFileDownloadStatusListener mOnFileDownloadStatusListener = new OnRetryableFileDownloadStatusListener() {
     @Override
@@ -188,33 +188,37 @@ FileDownloader.unregisterDownloadStatusListener(mOnFileDownloadStatusListener);
 FileDownloader.unregisterDownloadFileChangeListener(mOnDownloadFileChangeListener);
 ```
 
-
+----------------------------------------------------------------------
 **[API docs](http://htmlpreview.github.io/?https://raw.githubusercontent.com/wlfcolin/file-downloader/master/download/release/FileDownloader-0.3.0-javadoc/index.html)**
 
-
+----------------------------------------------------------------------
 **[Version change log](https://github.com/wlfcolin/file-downloader/blob/master/CHANGELOG.md)**
 
-
-**Upgrade help**
+----------------------------------------------------------------------
+**Upgrade latest version help**
 
 * 0.2.X --> 0.3.0
 
--replace FileDownloader.detect(String, OnDetectUrlFileListener) with FileDownloader.detect(String, OnDetectBigUrlFileListener) recommended.
+-replace FileDownloader.detect(String, OnDetectUrlFileListener) with FileDownloader.detect(String, OnDetectBigUrlFileListener) for supporting large file bigger than 2G to detect recommended.
 
--replace FileDownloader.registerDownloadStatusListener(OnFileDownloadStatusListener) with FileDownloader.registerDownloadStatusListener(OnRetryableFileDownloadStatusListener) 
- for better experience.
+-replace DownloadFileInfo.getFileSize() with DownloadFileInfo.getFileSizeLong(), and also replace DownloadFileInfo.getDownloadedSize() with DownloadFileInfo.getDownloadedSizeLong() for supporting large file bigger than 2G to detect recommended.
 
--do not forget to do unregisterDownloadStatusListener(OnFileDownloadStatusListener) and unregisterDownloadFileChangeListener(OnDownloadFileChangeListener) if your registered then, 
- because the listeners may case memory overflow if you never unregister then.
+-replace FileDownloader.registerDownloadStatusListener(OnFileDownloadStatusListener) with FileDownloader.registerDownloadStatusListener(OnRetryableFileDownloadStatusListener) for better experience.
+
+-do not forget to do unregisterDownloadStatusListener(OnFileDownloadStatusListener) and unregisterDownloadFileChangeListener(OnDownloadFileChangeListener) if your registered then, because the listeners may case memory overflow if you never unregister then.
+
+-replace all FailReason classes started with On by those classes started with non-On, eg. OnFileDownloadStatusFailReason -->FileDownloadStatusFailReason.
 
 * 0.1.X --> 0.3.0
 
 -replace class FileDownloadManager with new class FileDownloader, also replace all methods in the FileDownloadManager with new ones recommended.
 
+-do steps in 0.2.X --> 0.3.0
 
+----------------------------------------------------------------------
 **[Design](https://github.com/wlfcolin/file-downloader/blob/master/DESIGN.md)**
 
-
+----------------------------------------------------------------------
 **LICENSE**
 ```
 Licensed under the Apache License, Version 2.0 (the "License");
