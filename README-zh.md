@@ -5,12 +5,12 @@
 **一、特点**
 * 多任务下载、断线续传、自动重试、支持大文件（超过2G）下载、轻松管理下载文件的生命周期（下载文件的增删改查）等。
 
-----------------------------------------------------------------------
+
 **二、截图**
 * ![image](https://github.com/wlfcolin/file-downloader/blob/master/capture/simple_download_zh.gif)
 * ![image](https://github.com/wlfcolin/file-downloader/blob/master/capture/manager_download_zh.gif)
 
-----------------------------------------------------------------------
+
 **三、快速上手使用**
 * 第一步、在项目模块的build.gradle配置gradle
 ``` java
@@ -185,13 +185,13 @@ FileDownloader.unregisterDownloadStatusListener(mOnFileDownloadStatusListener);
 FileDownloader.unregisterDownloadFileChangeListener(mOnDownloadFileChangeListener);
 ```
 
-----------------------------------------------------------------------
+
 **[四、详细API文档](http://htmlpreview.github.io/?https://raw.githubusercontent.com/wlfcolin/file-downloader/master/download/release/FileDownloader-0.3.0-javadoc/index.html)**
 
-----------------------------------------------------------------------
+
 **[五、版本更新日志](https://github.com/wlfcolin/file-downloader/blob/master/CHANGELOG.md)**
 
-----------------------------------------------------------------------
+
 **六、旧版升级到最新版帮助说明**
 
 * 0.2.X --> 0.3.0
@@ -212,10 +212,10 @@ FileDownloader.unregisterDownloadFileChangeListener(mOnDownloadFileChangeListene
 
 -执行0.2.X --> 0.3.0中的说明。
 
-----------------------------------------------------------------------
+
 **[七、框架设计](https://github.com/wlfcolin/file-downloader/blob/master/DESIGN.md)**
 
-----------------------------------------------------------------------
+
 **八、LICENSE**
 ```
 Licensed under the Apache License, Version 2.0 (the "License");
