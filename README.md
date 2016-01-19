@@ -195,7 +195,7 @@ FileDownloader.unregisterDownloadFileChangeListener(mOnDownloadFileChangeListene
 **[Version change log](https://github.com/wlfcolin/file-downloader/blob/master/CHANGELOG.md)**
 
 ----------------------------------------------------------------------
-**Upgrade latest version help**
+**Upgrade to latest version help**
 
 * 0.2.X --> 0.3.0
 
