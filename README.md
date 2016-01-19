@@ -216,7 +216,7 @@ FileDownloader.unregisterDownloadFileChangeListener(mOnDownloadFileChangeListene
 -do steps in 0.2.X --> 0.3.0
 
 ----------------------------------------------------------------------
-**[Design](https://github.com/wlfcolin/file-downloader/blob/master/DESIGN.md)**
+**[Design of the file-downloader](https://github.com/wlfcolin/file-downloader/blob/master/DESIGN.md)**
 
 ----------------------------------------------------------------------
 **LICENSE**
