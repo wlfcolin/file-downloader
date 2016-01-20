@@ -44,7 +44,7 @@ class DetectUrlFileTask implements Runnable {
 
     private ExecutorService mCloseConnectionEngine;// engine use for closing the http connection
 
-    public DetectUrlFileTask(String url, String downloadSaveDir, DetectUrlFileCacher detectUrlFileCacher, 
+    public DetectUrlFileTask(String url, String downloadSaveDir, DetectUrlFileCacher detectUrlFileCacher,
                              DownloadRecorder downloadRecorder) {
         super();
         this.mUrl = url;
@@ -143,7 +143,7 @@ class DetectUrlFileTask implements Runnable {
 
             if (redirectCount > MAX_REDIRECT_TIMES) {
                 // error over max redirect
-                failReason = new DetectUrlFileFailReason("over max redirect:" + MAX_REDIRECT_TIMES + "!", 
+                failReason = new DetectUrlFileFailReason("over max redirect:" + MAX_REDIRECT_TIMES + "!",
                         DetectUrlFileFailReason.TYPE_URL_OVER_REDIRECT_COUNT);
                 // goto finally, over redirect limit error
                 return;
@@ -184,29 +184,34 @@ class DetectUrlFileTask implements Runnable {
             //                    }
             //                }
             //            }
-            //            
+            //
             //            Log.e("wlf","headBuffer:"+headBuffer.toString());
-            
+
             switch (conn.getResponseCode()) {
                 // http ok
                 case HttpURLConnection.HTTP_OK:
-                    // get file size
-                    String fileName = UrlUtil.getFileNameByUrl(mUrl);
+
                     // get file name
-                    long fileSize = conn.getContentLength();
-                    // get etag
+                    String fileName = HttpConnectionHelper.getFileNameFromResponseHeader(conn.getHeaderFields());
+                    if (TextUtils.isEmpty(fileName)) {
+                        // get from url
+                        fileName = UrlUtil.getFileNameByUrl(mUrl);
+                    }
+
+                    // get eTag
                     String eTag = conn.getHeaderField("ETag");
+
                     // get acceptRangeType,bytes usually if supported range transmission
                     String acceptRangeType = conn.getHeaderField("Accept-Ranges");
+
+                    // get file size
+                    long fileSize = conn.getContentLength();
                     if (fileSize <= 0) {
-                        String contentLengthStr = conn.getHeaderField("Content-Length");
-                        if (!TextUtils.isEmpty(contentLengthStr)) {
-                            fileSize = Long.parseLong(contentLengthStr);
-                        }
+                        fileSize = HttpConnectionHelper.getFileSizeFromResponseHeader(conn.getHeaderFields());
                     }
 
                     if (fileSize > 0) {
-                        detectUrlFileInfo = new DetectUrlFileInfo(mUrl, fileSize, eTag, acceptRangeType, 
+                        detectUrlFileInfo = new DetectUrlFileInfo(mUrl, fileSize, eTag, acceptRangeType,
                                 mDownloadSaveDir, fileName);
                         // add or update to memory cache
                         mDetectUrlFileCacher.addOrUpdateDetectUrlFile(detectUrlFileInfo);
@@ -265,7 +270,7 @@ class DetectUrlFileTask implements Runnable {
 
                 if (!isNotify) {
                     if (failReason == null) {
-                        failReason = new DetectUrlFileFailReason("the file need to download may not access !", 
+                        failReason = new DetectUrlFileFailReason("the file need to download may not access !",
                                 DetectUrlFileFailReason.TYPE_UNKNOWN);
                     }
                     // error occur
@@ -281,35 +286,8 @@ class DetectUrlFileTask implements Runnable {
         }
     }
 
-    // TODO
-    private long getFileSize(HttpURLConnection connection) {
-        return 0;
-    }
-
-    private long getPhpFileSize(HttpURLConnection connection) {
-        return 0;
-    }
-
-    private long getJavaFileSize(HttpURLConnection connection) {
-        return 0;
-    }
-    
-    // TODO
-    private String getFileName(HttpURLConnection connection) {
-        return "";
-    }
-
-    private String getPhpFileName(HttpURLConnection connection) {
-        return "";
-    }
-
-    private String getJavaFileName(HttpURLConnection connection) {
-        return "";
-    }
-
-
     // --------------------------------------notify caller--------------------------------------
-    
+
     /**
      * notifyDetectUrlFileExist
      */
@@ -334,7 +312,7 @@ class DetectUrlFileTask implements Runnable {
 
         if (mOnDetectBigUrlFileListener != null) {
             // main thread notify caller
-            OnDetectBigUrlFileListener.MainThreadHelper.onDetectNewDownloadFile(mUrl, fileName, saveDir, fileSize, 
+            OnDetectBigUrlFileListener.MainThreadHelper.onDetectNewDownloadFile(mUrl, fileName, saveDir, fileSize,
                     mOnDetectBigUrlFileListener);
             return true;
         }
@@ -350,7 +328,7 @@ class DetectUrlFileTask implements Runnable {
 
         if (mOnDetectBigUrlFileListener != null) {
             // main thread notify caller
-            OnDetectBigUrlFileListener.MainThreadHelper.onDetectUrlFileFailed(mUrl, failReason, 
+            OnDetectBigUrlFileListener.MainThreadHelper.onDetectUrlFileFailed(mUrl, failReason,
                     mOnDetectBigUrlFileListener);
             return true;
         }

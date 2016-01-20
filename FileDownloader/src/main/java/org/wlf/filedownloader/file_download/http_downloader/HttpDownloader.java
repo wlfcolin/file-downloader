@@ -8,9 +8,16 @@ import org.wlf.filedownloader.file_download.CloseConnectionTask;
 import org.wlf.filedownloader.file_download.HttpConnectionHelper;
 import org.wlf.filedownloader.file_download.base.HttpFailReason;
 import org.wlf.filedownloader.file_download.file_saver.FileSaver.FileSaveException;
+import org.wlf.filedownloader.util.CollectionUtil;
+import org.wlf.filedownloader.util.MapUtil;
 
 import java.io.InputStream;
 import java.net.HttpURLConnection;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 
 /**
@@ -123,7 +130,7 @@ public class HttpDownloader implements Download {
 
             int redirectTimes = 0;
             while (conn != null && conn.getResponseCode() / 100 == 3 && redirectTimes < MAX_REDIRECT_TIMES) {// redirect
-                conn = HttpConnectionHelper.createDownloadFileConnection(conn.getHeaderField("Location"), 
+                conn = HttpConnectionHelper.createDownloadFileConnection(conn.getHeaderField("Location"),
                         mConnectTimeout, mCharset, mRange);
                 redirectTimes++;
             }
@@ -133,17 +140,55 @@ public class HttpDownloader implements Download {
 
             if (redirectTimes > MAX_REDIRECT_TIMES) {
                 // error over max redirect times
-                throw new HttpDownloadException("over max redirect:" + MAX_REDIRECT_TIMES + "!", 
+                throw new HttpDownloadException("over max redirect:" + MAX_REDIRECT_TIMES + "!",
                         HttpDownloadException.TYPE_REDIRECT_COUNT_OVER_LIMITS);
             }
 
             if (conn == null) {
-                throw new HttpDownloadException("the connection is null:" + MAX_REDIRECT_TIMES + "!", 
+                throw new HttpDownloadException("the connection is null:" + MAX_REDIRECT_TIMES + "!",
                         HttpDownloadException.TYPE_NULL_POINTER);
             }
 
             // 1.check ResponseCode
             int responseCode = conn.getResponseCode();
+
+            StringBuffer headBuffer = new StringBuffer();
+            Map<String, List<String>> headers = conn.getHeaderFields();
+            if (!MapUtil.isEmpty(headers)) {
+                Set<Entry<String, List<String>>> set = headers.entrySet();
+                if (!CollectionUtil.isEmpty(set)) {
+                    Iterator<Entry<String, List<String>>> iterator = set.iterator();
+                    if (iterator != null) {
+                        while (iterator.hasNext()) {
+                            Entry<String, List<String>> entry = iterator.next();
+                            if (entry == null) {
+                                continue;
+                            }
+
+                            String key = entry.getKey();
+                            List<String> value = entry.getValue();
+                            if (CollectionUtil.isEmpty(value)) {
+                                continue;
+                            }
+
+                            headBuffer.append("------key:" + key);
+                            StringBuffer valueBuffer = new StringBuffer();
+
+                            valueBuffer.append("------value:");
+                            for (String v : value) {
+                                if (TextUtils.isEmpty(v)) {
+                                    continue;
+                                }
+                                valueBuffer.append(v + ",");
+                            }
+
+                            headBuffer.append(valueBuffer);
+                        }
+                    }
+                }
+            }
+
+            Log.e("wlf", "headBuffer:" + headBuffer.toString());
 
             if (responseCode == HttpURLConnection.HTTP_OK || responseCode == HttpURLConnection.HTTP_PARTIAL) {
 
@@ -152,10 +197,7 @@ public class HttpDownloader implements Download {
 
                 if (contentLength <= 0) {
                     // get contentLength by header
-                    String contentLengthStr = conn.getHeaderField("Content-Length");
-                    if (!TextUtils.isEmpty(contentLengthStr)) {
-                        contentLength = Long.parseLong(contentLengthStr);
-                    }
+                    contentLength = HttpConnectionHelper.getFileSizeFromResponseHeader(conn.getHeaderFields());
                 }
 
                 Log.d(TAG, TAG + ".download 2、得到服务器返回的资源contentLength：" + contentLength + "，传入的range：" + mRange
@@ -164,7 +206,7 @@ public class HttpDownloader implements Download {
 
                 if (contentLength <= 0) {
                     // error content length illegal
-                    throw new HttpDownloadException("content length illegal,get url file failed!", 
+                    throw new HttpDownloadException("content length illegal,get url file failed!",
                             HttpDownloadException.TYPE_RESOURCES_SIZE_ILLEGAL);
                 }
 
@@ -176,7 +218,7 @@ public class HttpDownloader implements Download {
 
                     if (TextUtils.isEmpty(eTag) || !mETag.equals(eTag)) {
                         // error eTag is not equal
-                        throw new HttpDownloadException("eTag is not equal,please delete the old one then " + 
+                        throw new HttpDownloadException("eTag is not equal,please delete the old one then " +
                                 "re-download!", HttpDownloadException.TYPE_ETAG_CHANGED);
                     }
                 }
@@ -224,7 +266,7 @@ public class HttpDownloader implements Download {
             // ResponseCode error
             else {
                 // error ResponseCode error
-                throw new HttpDownloadException("ResponseCode:" + responseCode + " error,can not read server data!", 
+                throw new HttpDownloadException("ResponseCode:" + responseCode + " error,can not read server data!",
                         HttpDownloadException.TYPE_RESPONSE_CODE_ERROR);
             }
             hasException = false;
@@ -266,12 +308,12 @@ public class HttpDownloader implements Download {
         /**
          * http redirect times over limits
          */
-        public static final String TYPE_REDIRECT_COUNT_OVER_LIMITS = HttpDownloadException.class.getName() + 
+        public static final String TYPE_REDIRECT_COUNT_OVER_LIMITS = HttpDownloadException.class.getName() +
                 "_TYPE_REDIRECT_COUNT_OVER_LIMITS";
         /**
          * resources size illegal
          */
-        public static final String TYPE_RESOURCES_SIZE_ILLEGAL = HttpDownloadException.class.getName() + 
+        public static final String TYPE_RESOURCES_SIZE_ILLEGAL = HttpDownloadException.class.getName() +
                 "_TYPE_RESOURCES_SIZE_ILLEGAL";
         /**
          * eTag changed
@@ -280,12 +322,12 @@ public class HttpDownloader implements Download {
         /**
          * contentRange validate fail
          */
-        public static final String TYPE_CONTENT_RANGE_VALIDATE_FAIL = HttpDownloadException.class.getName() + 
+        public static final String TYPE_CONTENT_RANGE_VALIDATE_FAIL = HttpDownloadException.class.getName() +
                 "_TYPE_CONTENT_RANGE_VALIDATE_FAIL";
         /**
          * ResponseCode error,can not read server data
          */
-        public static final String TYPE_RESPONSE_CODE_ERROR = HttpDownloadException.class.getName() + 
+        public static final String TYPE_RESPONSE_CODE_ERROR = HttpDownloadException.class.getName() +
                 "_TYPE_RESPONSE_CODE_ERROR";
 
         public HttpDownloadException(String detailMessage, String type) {
