@@ -1,9 +1,9 @@
 # file-downloader
 
-这是文件安卓上轻量级Http文件下载框架，我的目标是让文件下载越简单越好，尽可能以最简洁明了的方式完成复杂需求。
+FileDownloader是安卓上轻量级Http文件下载框架，我的目标是让文件下载越简单越好，尽可能以最简洁明了的方式完成复杂需求。
 
 **一、特点**
-* 多任务下载、断线续传、自动重试、支持大文件（超过2G）下载、轻松管理下载文件的生命周期（下载文件的增删改查）等。
+* 多任务下载、断线续传、失败自动重试机制、支持大文件（超过2G）下载、轻松管理下载文件的生命周期（下载文件的增删改查）等。
 
 
 **二、截图**
@@ -20,7 +20,7 @@ eclipse用户，可以在这里下载jar包：
 **[FileDownloader-0.3.0.jar](https://github.com/wlfcolin/file-downloader/raw/master/download/release/FileDownloader-0.3.0.jar)**, 
 **[FileDownloader-0.3.0-sources.jar](https://dl.bintray.com/wlfcolin/maven/org/wlf/FileDownloader/0.3.0/FileDownloader-0.3.0-sources.jar)**
 
-* 第二步、在你的应用的onCreate()中初始化FileDownloader
+* 第二步、在你的应用application的onCreate()中初始化FileDownloader
 ``` java
 // 1、创建Builder
 Builder builder = new FileDownloadConfiguration.Builder(this);
@@ -79,7 +79,7 @@ private OnFileDownloadStatusListener mOnFileDownloadStatusListener = new OnRetry
     }
     @Override
     public void onFileDownloadStatusFailed(String url, DownloadFileInfo downloadFileInfo, FileDownloadStatusFailReason failReason) {
-        // 下载失败了，详细查看失败原因failReason
+        // 下载失败了，详细查看失败原因failReason，有些失败原因你可能必须关心
         String failType = failReason.getType();
         if(FileDownloadStatusFailReason.TYPE_URL_ILLEGAL.equals(failType)){
             // url有错误
@@ -180,7 +180,7 @@ FileDownloader.rename(url, newName, true, mOnRenameDownloadFileListener);// 重�
 FileDownloader.unregisterDownloadStatusListener(mOnFileDownloadStatusListener);
 ```
 
--注册文件数据变化监听器
+-取消注册文件数据变化监听器
 ``` java
 FileDownloader.unregisterDownloadFileChangeListener(mOnDownloadFileChangeListener);
 ```
@@ -216,7 +216,9 @@ FileDownloader.unregisterDownloadFileChangeListener(mOnDownloadFileChangeListene
 **[七、框架设计](https://github.com/wlfcolin/file-downloader/blob/master/DESIGN.md)**
 
 
-**八、LICENSE**
+**八、编码规范，遵循[谷歌安卓官方编码规范](http://source.android.com/source/code-style.html)**
+
+**九、LICENSE**
 ```
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.

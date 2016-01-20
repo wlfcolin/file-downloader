@@ -1,6 +1,6 @@
 # file-downloader
 
-this is a powerful http-file download tool, my goal is to make downloading http-file easily.
+FileDownloader, is a powerful http-file download tool, my goal is to make downloading http-file easily.
 
 [中文说明文档](https://github.com/wlfcolin/file-downloader/blob/master/README-zh.md)
 
@@ -81,7 +81,7 @@ private OnFileDownloadStatusListener mOnFileDownloadStatusListener = new OnRetry
     }
     @Override
     public void onFileDownloadStatusFailed(String url, DownloadFileInfo downloadFileInfo, FileDownloadStatusFailReason failReason) {
-        // error occur, see failReason for details
+        // error occur, see failReason for details, some of the failReason you must concern
         String failType = failReason.getType();
         if(FileDownloadStatusFailReason.TYPE_URL_ILLEGAL.equals(failType)){
             // url error
@@ -217,6 +217,9 @@ FileDownloader.unregisterDownloadFileChangeListener(mOnDownloadFileChangeListene
 
 ----------------------------------------------------------------------
 **[Design of the file-downloader](https://github.com/wlfcolin/file-downloader/blob/master/DESIGN.md)**
+
+----------------------------------------------------------------------
+**Code Style, follow [Google Android Code Style for Contributors](http://source.android.com/source/code-style.html)**
 
 ----------------------------------------------------------------------
 **LICENSE**
