@@ -222,6 +222,12 @@ FileDownloader.unregisterDownloadFileChangeListener(mOnDownloadFileChangeListene
 **Code Style, follow [Google Android Code Style for Contributors](http://source.android.com/source/code-style.html)**
 
 ----------------------------------------------------------------------
+**Supported system version: API 8 and above(Android 2.2+)**
+
+----------------------------------------------------------------------
+**[Q & A](https://github.com/wlfcolin/file-downloader/blob/master/Q&A.md)**
+
+----------------------------------------------------------------------
 **LICENSE**
 ```
 Licensed under the Apache License, Version 2.0 (the "License");

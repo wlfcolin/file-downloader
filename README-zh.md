@@ -218,7 +218,13 @@ FileDownloader.unregisterDownloadFileChangeListener(mOnDownloadFileChangeListene
 
 **八、编码规范，遵循[谷歌安卓官方编码规范](http://source.android.com/source/code-style.html)**
 
-**九、LICENSE**
+
+**九、支持的系统版本：API 8及以上（安卓2.2及以上）**
+
+
+**十、[疑问解答](https://github.com/wlfcolin/file-downloader/blob/master/Q&A-zh.md)**
+
+**十一、LICENSE**
 ```
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.

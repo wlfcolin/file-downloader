@@ -139,7 +139,8 @@ public class MainActivity extends Activity implements OnItemSelectListener {
 
         final EditText etUrl = new EditText(this);
         // apk file, the url with special character
-        etUrl.setText("  http://182.254.149.157/ftp/image/shop/product/Kids Addition & Subtraction 1.0.apk ");
+        // etUrl.setText("  http://182.254.149.157/ftp/image/shop/product/Kids Addition & Subtraction 1.0.apk ");
+        etUrl.setText("http://yjh.t4s.cn/Uploads/Download/2016-01-13/56962102baf32.apk");
         etUrl.setFocusable(true);
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);

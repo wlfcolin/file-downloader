@@ -317,6 +317,13 @@ public interface OnFileDownloadStatusListener {
          */
         public static final String TYPE_DOWNLOAD_FILE_ERROR = FileDownloadStatusFailReason.class.getName() + 
                 "_TYPE_DOWNLOAD_FILE_ERROR";
+
+        /**
+         * the url file has been changed, need to re-download
+         */
+        public static final String TYPE_URL_FILE_CHANGED = FileDownloadStatusFailReason.class.getName() + 
+                "_TYPE_DOWNLOAD_FILE_ERROR";
+        
         /**
          * file is downloading
          *
@@ -365,7 +372,7 @@ public interface OnFileDownloadStatusListener {
                     if (HttpDownloadException.TYPE_CONTENT_RANGE_VALIDATE_FAIL.equals(type)) {
                         // ignore
                     } else if (HttpDownloadException.TYPE_ETAG_CHANGED.equals(type)) {
-                        setType(TYPE_DOWNLOAD_FILE_ERROR);
+                        setType(TYPE_URL_FILE_CHANGED);
                     } else if (HttpDownloadException.TYPE_REDIRECT_COUNT_OVER_LIMITS.equals(type)) {
                         setType(TYPE_URL_OVER_REDIRECT_COUNT);
                     } else if (HttpDownloadException.TYPE_RESOURCES_SIZE_ILLEGAL.equals(type)) {
