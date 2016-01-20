@@ -216,7 +216,7 @@ FileDownloader.unregisterDownloadFileChangeListener(mOnDownloadFileChangeListene
 -do steps in 0.2.X --> 0.3.0
 
 ----------------------------------------------------------------------
-**[Design of the FileDownloader](https://github.com/wlfcolin/file-downloader/blob/master/DESIGN.md)**
+**[Design of FileDownloader](https://github.com/wlfcolin/file-downloader/blob/master/DESIGN.md)**
 
 ----------------------------------------------------------------------
 **Code Style, follow [Google Android Code Style for Contributors](http://source.android.com/source/code-style.html)**

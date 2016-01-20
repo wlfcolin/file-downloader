@@ -43,7 +43,7 @@ FileDownloadConfiguration configuration = builder.build();
 FileDownloader.init(configuration);
 ```
 
-* 第三步、注册监听器（如果不需要监听，可以忽略）
+* 第三步、注册监听器（如果不需要监听，可以忽略），监听器是基于观察者模式设计的全局监听器，可以设置多个，记得在不需要的时候取消注册
 
 -注册下载状态监听器(一搬在fragment或activity的onCreate方法中注册，亦可能在service中统一处理)
 ``` java
