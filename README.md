@@ -205,9 +205,9 @@ FileDownloader.unregisterDownloadFileChangeListener(mOnDownloadFileChangeListene
 
 -replace FileDownloader.registerDownloadStatusListener(OnFileDownloadStatusListener) with FileDownloader.registerDownloadStatusListener(OnRetryableFileDownloadStatusListener) for better experience.
 
--do not forget to do unregisterDownloadStatusListener(OnFileDownloadStatusListener) and unregisterDownloadFileChangeListener(OnDownloadFileChangeListener) if your registered then, because the listeners may case memory overflow if you never unregister then.
+-do not forget to do unregisterDownloadStatusListener(OnFileDownloadStatusListener) and unregisterDownloadFileChangeListener(OnDownloadFileChangeListener) if your registered then, because the listeners may cause memory overflow if you never unregister then.
 
--replace all FailReason classes started with On by those classes started with non-On, eg. OnFileDownloadStatusFailReason -->FileDownloadStatusFailReason.
+-replace all FailReason classes started with On by those ones started with non-On, eg. OnFileDownloadStatusFailReason -->FileDownloadStatusFailReason.
 
 * 0.1.X --> 0.3.0
 
@@ -216,7 +216,7 @@ FileDownloader.unregisterDownloadFileChangeListener(mOnDownloadFileChangeListene
 -do steps in 0.2.X --> 0.3.0
 
 ----------------------------------------------------------------------
-**[Design of the file-downloader](https://github.com/wlfcolin/file-downloader/blob/master/DESIGN.md)**
+**[Design of the FileDownloader](https://github.com/wlfcolin/file-downloader/blob/master/DESIGN.md)**
 
 ----------------------------------------------------------------------
 **Code Style, follow [Google Android Code Style for Contributors](http://source.android.com/source/code-style.html)**
