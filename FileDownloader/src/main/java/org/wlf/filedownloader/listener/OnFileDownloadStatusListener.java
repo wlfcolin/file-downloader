@@ -321,8 +321,7 @@ public interface OnFileDownloadStatusListener {
         /**
          * the url file has been changed, need to re-download
          */
-        public static final String TYPE_URL_FILE_CHANGED = FileDownloadStatusFailReason.class.getName() + 
-                "_TYPE_DOWNLOAD_FILE_ERROR";
+        public static final String TYPE_URL_FILE_CHANGED = FileDownloadStatusFailReason.class.getName() + "_TYPE_URL_FILE_CHANGED";
         
         /**
          * file is downloading
