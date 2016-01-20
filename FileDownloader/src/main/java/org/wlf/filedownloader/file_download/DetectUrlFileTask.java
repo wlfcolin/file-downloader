@@ -149,6 +149,44 @@ class DetectUrlFileTask implements Runnable {
                 return;
             }
 
+            //            StringBuffer headBuffer = new StringBuffer();
+            //            Map<String, List<String>> headers = conn.getHeaderFields();
+            //            if(!MapUtil.isEmpty(headers)){
+            //                Set<Entry<String, List<String>>> set = headers.entrySet();
+            //                if(!CollectionUtil.isEmpty(set)){
+            //                    Iterator<Entry<String, List<String>>>  iterator= set.iterator();
+            //                    if(iterator != null){
+            //                        while (iterator.hasNext()){
+            //                            Entry<String, List<String>> entry = iterator.next();
+            //                            if(entry == null){
+            //                                continue;
+            //                            }
+            //
+            //                           String key = entry.getKey();
+            //                            List<String> value = entry.getValue();
+            //                            if(CollectionUtil.isEmpty(value)){
+            //                                continue;
+            //                            }
+            //
+            //                            headBuffer.append("------key:" + key);
+            //                            StringBuffer valueBuffer = new StringBuffer();
+            //
+            //                            valueBuffer.append("------value:");
+            //                            for (String v :value){
+            //                                if(TextUtils.isEmpty(v)){
+            //                                    continue;
+            //                                }
+            //                                valueBuffer.append(v+",");
+            //                            }
+            //
+            //                            headBuffer.append(valueBuffer);
+            //                        }
+            //                    }
+            //                }
+            //            }
+            //            
+            //            Log.e("wlf","headBuffer:"+headBuffer.toString());
+            
             switch (conn.getResponseCode()) {
                 // http ok
                 case HttpURLConnection.HTTP_OK:
@@ -243,6 +281,35 @@ class DetectUrlFileTask implements Runnable {
         }
     }
 
+    // TODO
+    private long getFileSize(HttpURLConnection connection) {
+        return 0;
+    }
+
+    private long getPhpFileSize(HttpURLConnection connection) {
+        return 0;
+    }
+
+    private long getJavaFileSize(HttpURLConnection connection) {
+        return 0;
+    }
+    
+    // TODO
+    private String getFileName(HttpURLConnection connection) {
+        return "";
+    }
+
+    private String getPhpFileName(HttpURLConnection connection) {
+        return "";
+    }
+
+    private String getJavaFileName(HttpURLConnection connection) {
+        return "";
+    }
+
+
+    // --------------------------------------notify caller--------------------------------------
+    
     /**
      * notifyDetectUrlFileExist
      */
