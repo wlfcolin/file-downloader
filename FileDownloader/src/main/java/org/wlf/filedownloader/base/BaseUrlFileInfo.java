@@ -29,6 +29,10 @@ public abstract class BaseUrlFileInfo {
      */
     protected String mETag;
     /**
+     * file last modified datetime(in server)
+     */
+    protected String mLastModified;
+    /**
      * accept range type
      */
     protected String mAcceptRangeType;
@@ -83,6 +87,15 @@ public abstract class BaseUrlFileInfo {
      */
     public String getETag() {
         return mETag;
+    }
+
+    /**
+     * get file last modified datetime(in server)
+     *
+     * @return file last modified datetime(in server)
+     */
+    public String getLastModified() {
+        return mLastModified;
     }
 
     /**

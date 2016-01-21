@@ -30,7 +30,7 @@ public class Range {
      * @return true means legal
      */
     public static boolean isLegal(Range range) {
-        if (range != null && range.startPos > 0 && range.endPos > 0 && range.endPos > range.startPos) {
+        if (range != null && range.startPos >= 0 && range.endPos > 0 && range.endPos > range.startPos) {
             return true;
         }
         return false;

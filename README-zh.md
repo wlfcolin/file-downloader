@@ -121,7 +121,7 @@ FileDownloader.registerDownloadFileChangeListener(mOnDownloadFileChangeListener)
 
 -创建一个新下载
 ``` java
-FileDownloader.start(url);// 如果文件没被下载过，将创建并开启下载，否则继续下载，自动会断点续传
+FileDownloader.start(url);// 如果文件没被下载过，将创建并开启下载，否则继续下载，自动会断点续传（如果服务器无法支持断点续传将从头开始下载）
 ```
 
 -创建一个自定义保存路径和文件名称的下载
@@ -134,7 +134,7 @@ FileDownloader.detect(url, new OnDetectBigUrlFileListener() {
     }
     @Override
     public void onDetectUrlFileExist(String url) {
-        // 继续下载，自动会断点续传
+        // 继续下载，自动会断点续传（如果服务器无法支持断点续传将从头开始下载）
         FileDownloader.start(url);
     }
     @Override
@@ -153,7 +153,7 @@ FileDownloader.pauseAll();// 暂停所有下载任务
 
 -继续下载
 ``` java
-FileDownloader.start(url);// 继续下载，自动会断点续传
+FileDownloader.start(url);// 继续下载，自动会断点续传（如果服务器无法支持断点续传将从头开始下载）
 ```
 
 -移动下载文件

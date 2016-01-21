@@ -44,8 +44,7 @@ class DetectUrlFileTask implements Runnable {
 
     private ExecutorService mCloseConnectionEngine;// engine use for closing the http connection
 
-    public DetectUrlFileTask(String url, String downloadSaveDir, DetectUrlFileCacher detectUrlFileCacher,
-                             DownloadRecorder downloadRecorder) {
+    public DetectUrlFileTask(String url, String downloadSaveDir, DetectUrlFileCacher detectUrlFileCacher, DownloadRecorder downloadRecorder) {
         super();
         this.mUrl = url;
         this.mDownloadSaveDir = downloadSaveDir;
@@ -143,49 +142,13 @@ class DetectUrlFileTask implements Runnable {
 
             if (redirectCount > MAX_REDIRECT_TIMES) {
                 // error over max redirect
-                failReason = new DetectUrlFileFailReason("over max redirect:" + MAX_REDIRECT_TIMES + "!",
+                failReason = new DetectUrlFileFailReason("over max redirect:" + MAX_REDIRECT_TIMES + "!", 
                         DetectUrlFileFailReason.TYPE_URL_OVER_REDIRECT_COUNT);
                 // goto finally, over redirect limit error
                 return;
             }
 
-            //            StringBuffer headBuffer = new StringBuffer();
-            //            Map<String, List<String>> headers = conn.getHeaderFields();
-            //            if(!MapUtil.isEmpty(headers)){
-            //                Set<Entry<String, List<String>>> set = headers.entrySet();
-            //                if(!CollectionUtil.isEmpty(set)){
-            //                    Iterator<Entry<String, List<String>>>  iterator= set.iterator();
-            //                    if(iterator != null){
-            //                        while (iterator.hasNext()){
-            //                            Entry<String, List<String>> entry = iterator.next();
-            //                            if(entry == null){
-            //                                continue;
-            //                            }
-            //
-            //                           String key = entry.getKey();
-            //                            List<String> value = entry.getValue();
-            //                            if(CollectionUtil.isEmpty(value)){
-            //                                continue;
-            //                            }
-            //
-            //                            headBuffer.append("------key:" + key);
-            //                            StringBuffer valueBuffer = new StringBuffer();
-            //
-            //                            valueBuffer.append("------value:");
-            //                            for (String v :value){
-            //                                if(TextUtils.isEmpty(v)){
-            //                                    continue;
-            //                                }
-            //                                valueBuffer.append(v+",");
-            //                            }
-            //
-            //                            headBuffer.append(valueBuffer);
-            //                        }
-            //                    }
-            //                }
-            //            }
-            //
-            //            Log.e("wlf","headBuffer:"+headBuffer.toString());
+            Log.i(TAG, TAG + ".run Response Headers:" + HttpConnectionHelper.getStringHeaders(conn.getHeaderFields()));
 
             switch (conn.getResponseCode()) {
                 // http ok
@@ -204,6 +167,10 @@ class DetectUrlFileTask implements Runnable {
                     // get acceptRangeType,bytes usually if supported range transmission
                     String acceptRangeType = conn.getHeaderField("Accept-Ranges");
 
+                    // String lastModified = conn.getLastModified() + "";
+                    String lastModified = HttpConnectionHelper.getLastModifiedFromResponseHeader(conn.getHeaderFields
+                            ());
+
                     // get file size
                     long fileSize = conn.getContentLength();
                     if (fileSize <= 0) {
@@ -211,8 +178,8 @@ class DetectUrlFileTask implements Runnable {
                     }
 
                     if (fileSize > 0) {
-                        detectUrlFileInfo = new DetectUrlFileInfo(mUrl, fileSize, eTag, acceptRangeType,
-                                mDownloadSaveDir, fileName);
+                        detectUrlFileInfo = new DetectUrlFileInfo(mUrl, fileSize, eTag, lastModified, 
+                                acceptRangeType, mDownloadSaveDir, fileName);
                         // add or update to memory cache
                         mDetectUrlFileCacher.addOrUpdateDetectUrlFile(detectUrlFileInfo);
                         // goto finally, the detectUrlFileInfo created
@@ -270,7 +237,7 @@ class DetectUrlFileTask implements Runnable {
 
                 if (!isNotify) {
                     if (failReason == null) {
-                        failReason = new DetectUrlFileFailReason("the file need to download may not access !",
+                        failReason = new DetectUrlFileFailReason("the file need to download may not access !", 
                                 DetectUrlFileFailReason.TYPE_UNKNOWN);
                     }
                     // error occur
@@ -312,7 +279,7 @@ class DetectUrlFileTask implements Runnable {
 
         if (mOnDetectBigUrlFileListener != null) {
             // main thread notify caller
-            OnDetectBigUrlFileListener.MainThreadHelper.onDetectNewDownloadFile(mUrl, fileName, saveDir, fileSize,
+            OnDetectBigUrlFileListener.MainThreadHelper.onDetectNewDownloadFile(mUrl, fileName, saveDir, fileSize, 
                     mOnDetectBigUrlFileListener);
             return true;
         }
@@ -328,7 +295,7 @@ class DetectUrlFileTask implements Runnable {
 
         if (mOnDetectBigUrlFileListener != null) {
             // main thread notify caller
-            OnDetectBigUrlFileListener.MainThreadHelper.onDetectUrlFileFailed(mUrl, failReason,
+            OnDetectBigUrlFileListener.MainThreadHelper.onDetectUrlFileFailed(mUrl, failReason, 
                     mOnDetectBigUrlFileListener);
             return true;
         }

@@ -291,6 +291,12 @@ public class DownloadTaskManager implements Pauseable {
             }
         }
 
+        // 4.check download size
+        if (failReason == null && downloadFileInfo.getDownloadedSizeLong() > downloadFileInfo.getFileSizeLong()) {
+            failReason = new OnFileDownloadStatusFailReason("download size illegal, please delete or re-download !", 
+                    OnFileDownloadStatusFailReason.TYPE_DOWNLOAD_FILE_ERROR);
+        }
+
         // error occur
         if (failReason != null) {
             // notify caller

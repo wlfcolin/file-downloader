@@ -33,6 +33,16 @@ public class DownloadFileDao extends BaseContentDbDao {
         if (oldVersion == 1 && newVersion == 2) {
             db.execSQL(DownloadFileInfo.Table.getUpdateTableVersion1To2Sql());
         }
+        // version 2 to 3
+        if (oldVersion == 2 && newVersion == 3) {
+            db.execSQL(DownloadFileInfo.Table.getUpdateTableVersion2To3Sql());
+        }
+        // version 1 to 3
+        if (oldVersion == 2 && newVersion == 3) {
+            db.execSQL(DownloadFileInfo.Table.getUpdateTableVersion1To2Sql());
+            db.execSQL(DownloadFileInfo.Table.getUpdateTableVersion2To3Sql());
+        }
+
     }
 
 }

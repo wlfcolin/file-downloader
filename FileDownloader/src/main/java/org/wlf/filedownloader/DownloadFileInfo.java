@@ -55,6 +55,10 @@ public class DownloadFileInfo extends BaseUrlFileInfo {
          */
         public static final String COLUMN_NAME_OF_FIELD_E_TAG = "e_tag";
         /**
+         * last modified datetime(in server) field name
+         */
+        public static final String COLUMN_NAME_OF_FIELD_LAST_MODIFIED = "last_modified";
+        /**
          * acceptRangeType field name
          */
         public static final String COLUMN_NAME_OF_FIELD_ACCEPT_RANGE_TYPE = "accept_range_type";
@@ -92,6 +96,7 @@ public class DownloadFileInfo extends BaseUrlFileInfo {
                     + COLUMN_NAME_OF_FIELD_DOWNLOADED_SIZE + " INTEGER,"//
                     + COLUMN_NAME_OF_FIELD_FILE_SIZE + " INTEGER,"//
                     + COLUMN_NAME_OF_FIELD_E_TAG + " TEXT,"//
+                    + COLUMN_NAME_OF_FIELD_LAST_MODIFIED + " TEXT,"//
                     + COLUMN_NAME_OF_FIELD_ACCEPT_RANGE_TYPE + " TEXT,"//
                     + COLUMN_NAME_OF_FIELD_FILE_DIR + " TEXT,"//
                     + COLUMN_NAME_OF_FIELD_TEMP_FILE_NAME + " TEXT,"//
@@ -107,12 +112,25 @@ public class DownloadFileInfo extends BaseUrlFileInfo {
          */
         public static final String getUpdateTableVersion1To2Sql() {
 
-            String updateTableVersion1To2Sql = "ALTER TABLE " //
+            String updateSql = "ALTER TABLE " //
                     + TABLE_NAME_OF_DOWNLOAD_FILE //
                     + " ADD " //
                     + COLUMN_NAME_OF_FIELD_CREATE_DATETIME + " TEXT"; //
 
-            return updateTableVersion1To2Sql;
+            return updateSql;
+        }
+
+        /**
+         * the sql to update table when db version is 2 to 3
+         */
+        public static final String getUpdateTableVersion2To3Sql() {
+
+            String updateSql = "ALTER TABLE " //
+                    + TABLE_NAME_OF_DOWNLOAD_FILE //
+                    + " ADD " //
+                    + COLUMN_NAME_OF_FIELD_LAST_MODIFIED + " TEXT"; //
+
+            return updateSql;
         }
     }
 
@@ -151,6 +169,8 @@ public class DownloadFileInfo extends BaseUrlFileInfo {
         this.mUrl = detectUrlFileInfo.getUrl();
         this.mFileName = detectUrlFileInfo.getFileName();
         this.mFileSize = detectUrlFileInfo.getFileSizeLong();
+        this.mETag = detectUrlFileInfo.getETag();
+        this.mLastModified = detectUrlFileInfo.getLastModified();
         this.mAcceptRangeType = detectUrlFileInfo.getAcceptRangeType();
         this.mFileDir = detectUrlFileInfo.getFileDir();
         this.mTempFileName = mFileName + "." + TEMP_FILE_SUFFIX;
@@ -170,6 +190,7 @@ public class DownloadFileInfo extends BaseUrlFileInfo {
             long downloadedSize = 0;
             long fileSize = 0;
             String eTag = null;
+            String lastModified = null;
             String acceptRangeType = null;
             String fileDir = null;
             String tempFileName = null;
@@ -197,6 +218,10 @@ public class DownloadFileInfo extends BaseUrlFileInfo {
             columnIndex = cursor.getColumnIndex(Table.COLUMN_NAME_OF_FIELD_E_TAG);
             if (columnIndex != -1) {
                 eTag = cursor.getString(columnIndex);
+            }
+            columnIndex = cursor.getColumnIndex(Table.COLUMN_NAME_OF_FIELD_LAST_MODIFIED);
+            if (columnIndex != -1) {
+                lastModified = cursor.getString(columnIndex);
             }
             columnIndex = cursor.getColumnIndex(Table.COLUMN_NAME_OF_FIELD_ACCEPT_RANGE_TYPE);
             if (columnIndex != -1) {
@@ -229,6 +254,7 @@ public class DownloadFileInfo extends BaseUrlFileInfo {
                 this.mDownloadedSize = downloadedSize;
                 this.mFileSize = fileSize;
                 this.mETag = eTag;
+                this.mLastModified = lastModified;
                 this.mAcceptRangeType = acceptRangeType;
                 this.mFileDir = fileDir;
                 this.mTempFileName = tempFileName;
@@ -264,6 +290,9 @@ public class DownloadFileInfo extends BaseUrlFileInfo {
         if (!TextUtils.isEmpty(downloadFileInfo.mETag)) {
             this.mETag = downloadFileInfo.mETag;
         }
+        if (!TextUtils.isEmpty(downloadFileInfo.mLastModified)) {
+            this.mLastModified = downloadFileInfo.mLastModified;
+        }
         if (!TextUtils.isEmpty(downloadFileInfo.mAcceptRangeType)) {
             this.mAcceptRangeType = downloadFileInfo.mAcceptRangeType;
         }
@@ -293,6 +322,7 @@ public class DownloadFileInfo extends BaseUrlFileInfo {
         values.put(Table.COLUMN_NAME_OF_FIELD_DOWNLOADED_SIZE, mDownloadedSize);
         values.put(Table.COLUMN_NAME_OF_FIELD_FILE_SIZE, mFileSize);
         values.put(Table.COLUMN_NAME_OF_FIELD_E_TAG, mETag);
+        values.put(Table.COLUMN_NAME_OF_FIELD_LAST_MODIFIED, mLastModified);
         values.put(Table.COLUMN_NAME_OF_FIELD_ACCEPT_RANGE_TYPE, mAcceptRangeType);
         values.put(Table.COLUMN_NAME_OF_FIELD_FILE_DIR, mFileDir);
         values.put(Table.COLUMN_NAME_OF_FIELD_TEMP_FILE_NAME, mTempFileName);

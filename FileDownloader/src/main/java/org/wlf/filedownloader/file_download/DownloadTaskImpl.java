@@ -16,6 +16,7 @@ import org.wlf.filedownloader.file_download.file_saver.FileSaver.OnFileSaveListe
 import org.wlf.filedownloader.file_download.http_downloader.ContentLengthInputStream;
 import org.wlf.filedownloader.file_download.http_downloader.HttpDownloader;
 import org.wlf.filedownloader.file_download.http_downloader.HttpDownloader.OnHttpDownloadListener;
+import org.wlf.filedownloader.file_download.http_downloader.HttpDownloader.OnRangeChangeListener;
 import org.wlf.filedownloader.file_download.http_downloader.Range;
 import org.wlf.filedownloader.listener.OnFileDownloadStatusListener;
 import org.wlf.filedownloader.listener.OnFileDownloadStatusListener.FileDownloadStatusFailReason;
@@ -35,7 +36,7 @@ import java.util.concurrent.ExecutorService;
  * @author wlf(Andy)
  * @email 411086563@qq.com
  */
-class DownloadTaskImpl implements DownloadTask, OnHttpDownloadListener, OnFileSaveListener {
+class DownloadTaskImpl implements DownloadTask, OnHttpDownloadListener, OnFileSaveListener, OnRangeChangeListener {
 
     /**
      * LOG TAG
@@ -133,11 +134,11 @@ class DownloadTaskImpl implements DownloadTask, OnHttpDownloadListener, OnFileSa
 
         // init Downloader
         Range range = new Range(mTaskParamInfo.startPosInTotal, mTaskParamInfo.fileTotalSize);
-        mDownloader = new HttpDownloader(mTaskParamInfo.url, range, mTaskParamInfo.acceptRangeType, mTaskParamInfo
-                .eTag);
+        mDownloader = new HttpDownloader(mTaskParamInfo.url, range, mTaskParamInfo.acceptRangeType, mTaskParamInfo.eTag, mTaskParamInfo.lastModified);
         mDownloader.setOnHttpDownloadListener(this);
         mDownloader.setCloseConnectionEngine(mCloseConnectionEngine);
         mDownloader.setConnectTimeout(mConnectTimeout);
+        mDownloader.setOnRangeChangeListener(this);
 
         // init Saver
         mSaver = new FileSaver(mTaskParamInfo.url, mTaskParamInfo.tempFilePath, mTaskParamInfo.filePath, 
@@ -426,6 +427,35 @@ class DownloadTaskImpl implements DownloadTask, OnHttpDownloadListener, OnFileSa
     }
 
     // ----------------------all callback methods below are sync in cur task run method----------------------
+
+    // if range changed, whether need to do something
+    @Override
+    public boolean onRangeChanged(Range oldRange, Range newRange) {
+
+        if (Range.isLegal(newRange)) {
+            /**
+             * illegal condition:
+             * <br/>
+             * --------|(oldRange.startPos)--------|(newRange.startPos)--------
+             */
+            // do the logic
+            if (newRange.startPos > oldRange.startPos && oldRange.startPos >= 0) {
+                // illegal
+                return false;
+            } else {
+                // legal, need update the start pos in record, the downloadedSize in DownloadFileInfo
+                try {
+                    mDownloadRecorder.resetDownloadSize(mTaskParamInfo.url, newRange.startPos);
+                    // update succeed
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    return false;
+                }
+                return true;
+            }
+        }
+        return true;
+    }
 
     // 3.download connected
     @Override

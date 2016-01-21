@@ -6,18 +6,12 @@ import org.wlf.filedownloader.base.FailReason;
 import org.wlf.filedownloader.base.Log;
 import org.wlf.filedownloader.file_download.CloseConnectionTask;
 import org.wlf.filedownloader.file_download.HttpConnectionHelper;
+import org.wlf.filedownloader.file_download.HttpConnectionHelper.RequestParam;
 import org.wlf.filedownloader.file_download.base.HttpFailReason;
 import org.wlf.filedownloader.file_download.file_saver.FileSaver.FileSaveException;
-import org.wlf.filedownloader.util.CollectionUtil;
-import org.wlf.filedownloader.util.MapUtil;
 
 import java.io.InputStream;
 import java.net.HttpURLConnection;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
 import java.util.concurrent.ExecutorService;
 
 /**
@@ -43,12 +37,14 @@ public class HttpDownloader implements Download {
     private Range mRange;// download data range
     private String mAcceptRangeType;// accept range type
     private String mETag;// http file eTag
+    private String mLastModified;// file last modified time
     private int mConnectTimeout = CONNECT_TIMEOUT;// connect time out, millisecond
     private String mCharset = DEFAULT_CHARSET;// FIXME now UTF-8 only
 
     private ExecutorService mCloseConnectionEngine;// engine use for closing the http connection
 
     private OnHttpDownloadListener mOnHttpDownloadListener;
+    private OnRangeChangeListener mOnRangeChangeListener;
 
     //    /**
     //     * constructor of HttpDownloader,the range is from the beginning to the end of the url file
@@ -77,12 +73,14 @@ public class HttpDownloader implements Download {
      * @param range           data range
      * @param acceptRangeType accept range type
      * @param eTag            file eTag
+     * @param lastModified    last modified datetime(in server)
      */
-    public HttpDownloader(String url, Range range, String acceptRangeType, String eTag) {
+    public HttpDownloader(String url, Range range, String acceptRangeType, String eTag, String lastModified) {
         this.mUrl = url;
         this.mRange = range;
         this.mAcceptRangeType = acceptRangeType;
         this.mETag = eTag;
+        this.mLastModified = lastModified;
     }
 
     /**
@@ -92,6 +90,15 @@ public class HttpDownloader implements Download {
      */
     public void setOnHttpDownloadListener(OnHttpDownloadListener onHttpDownloadListener) {
         this.mOnHttpDownloadListener = onHttpDownloadListener;
+    }
+
+    /**
+     * set OnRangeChangeListener
+     *
+     * @param onRangeChangeListener OnRangeChangeListener
+     */
+    public void setOnRangeChangeListener(OnRangeChangeListener onRangeChangeListener) {
+        mOnRangeChangeListener = onRangeChangeListener;
     }
 
     /**
@@ -126,12 +133,15 @@ public class HttpDownloader implements Download {
         ContentLengthInputStream inputStream = null;
 
         try {
-            conn = HttpConnectionHelper.createDownloadFileConnection(url, mConnectTimeout, mCharset, mRange);
+            RequestParam requestParam = new RequestParam(url, mConnectTimeout, mCharset, mRange.startPos, mRange
+                    .endPos, mETag, mLastModified);
+
+            conn = HttpConnectionHelper.createDownloadFileConnection(requestParam);
 
             int redirectTimes = 0;
             while (conn != null && conn.getResponseCode() / 100 == 3 && redirectTimes < MAX_REDIRECT_TIMES) {// redirect
-                conn = HttpConnectionHelper.createDownloadFileConnection(conn.getHeaderField("Location"),
-                        mConnectTimeout, mCharset, mRange);
+                requestParam.setUrl(conn.getHeaderField("Location"));
+                conn = HttpConnectionHelper.createDownloadFileConnection(requestParam);
                 redirectTimes++;
             }
 
@@ -140,55 +150,19 @@ public class HttpDownloader implements Download {
 
             if (redirectTimes > MAX_REDIRECT_TIMES) {
                 // error over max redirect times
-                throw new HttpDownloadException("over max redirect:" + MAX_REDIRECT_TIMES + "!",
-                        HttpDownloadException.TYPE_REDIRECT_COUNT_OVER_LIMITS);
+                throw new HttpDownloadException("over max redirect:" + MAX_REDIRECT_TIMES + "!", HttpDownloadException.TYPE_REDIRECT_COUNT_OVER_LIMITS);
             }
 
             if (conn == null) {
-                throw new HttpDownloadException("the connection is null:" + MAX_REDIRECT_TIMES + "!",
+                throw new HttpDownloadException("the connection is null:" + MAX_REDIRECT_TIMES + "!", 
                         HttpDownloadException.TYPE_NULL_POINTER);
             }
 
+            Log.i(TAG, TAG + ".download Response Headers:" + HttpConnectionHelper.getStringHeaders(conn
+                    .getHeaderFields()));
+
             // 1.check ResponseCode
             int responseCode = conn.getResponseCode();
-
-            StringBuffer headBuffer = new StringBuffer();
-            Map<String, List<String>> headers = conn.getHeaderFields();
-            if (!MapUtil.isEmpty(headers)) {
-                Set<Entry<String, List<String>>> set = headers.entrySet();
-                if (!CollectionUtil.isEmpty(set)) {
-                    Iterator<Entry<String, List<String>>> iterator = set.iterator();
-                    if (iterator != null) {
-                        while (iterator.hasNext()) {
-                            Entry<String, List<String>> entry = iterator.next();
-                            if (entry == null) {
-                                continue;
-                            }
-
-                            String key = entry.getKey();
-                            List<String> value = entry.getValue();
-                            if (CollectionUtil.isEmpty(value)) {
-                                continue;
-                            }
-
-                            headBuffer.append("------key:" + key);
-                            StringBuffer valueBuffer = new StringBuffer();
-
-                            valueBuffer.append("------value:");
-                            for (String v : value) {
-                                if (TextUtils.isEmpty(v)) {
-                                    continue;
-                                }
-                                valueBuffer.append(v + ",");
-                            }
-
-                            headBuffer.append(valueBuffer);
-                        }
-                    }
-                }
-            }
-
-            Log.e("wlf", "headBuffer:" + headBuffer.toString());
 
             if (responseCode == HttpURLConnection.HTTP_OK || responseCode == HttpURLConnection.HTTP_PARTIAL) {
 
@@ -200,35 +174,58 @@ public class HttpDownloader implements Download {
                     contentLength = HttpConnectionHelper.getFileSizeFromResponseHeader(conn.getHeaderFields());
                 }
 
-                Log.d(TAG, TAG + ".download 2、得到服务器返回的资源contentLength：" + contentLength + "，传入的range：" + mRange
-                        .toString() +
-                        "，url：" + url);
+                Log.d(TAG, TAG + ".download 2、得到服务器返回的资源contentLength：" + contentLength + "，传入的range：" + mRange.toString() + "，url：" + url);
 
                 if (contentLength <= 0) {
                     // error content length illegal
-                    throw new HttpDownloadException("content length illegal,get url file failed!",
+                    throw new HttpDownloadException("content length illegal,get url file failed!", 
                             HttpDownloadException.TYPE_RESOURCES_SIZE_ILLEGAL);
                 }
 
-                // 3.check eTag(whether file is changed)
-                if (!TextUtils.isEmpty(mETag)) {
-                    String eTag = conn.getHeaderField("ETag");
-
-                    Log.d(TAG, TAG + ".download 3、得到服务器返回的资源eTag：" + eTag + "，传入的eTag：" + mETag + "，url：" + url);
-
-                    if (TextUtils.isEmpty(eTag) || !mETag.equals(eTag)) {
-                        // error eTag is not equal
-                        throw new HttpDownloadException("eTag is not equal,please delete the old one then " +
-                                "re-download!", HttpDownloadException.TYPE_ETAG_CHANGED);
+                // not partial range, that means the whole data
+                if (responseCode == HttpURLConnection.HTTP_OK) {
+                    // handle whole data
+                    if (!Range.isLegal(mRange) || (mRange != null && (mRange.startPos != 0 || mRange.getLength() != 
+                            contentLength))) {
+                        Range newRange = new Range(0, contentLength);
+                        // need notify caller
+                        boolean continueDownload = notifyRangeChanged(mRange, newRange);
+                        if (continueDownload) {
+                            mRange = new Range(newRange.startPos, newRange.endPos);
+                        } else {
+                            throw new HttpDownloadException("contentRange validate failed!", HttpDownloadException
+                                    .TYPE_CONTENT_RANGE_VALIDATE_FAIL);
+                        }
+                    } else {
+                        // do not need notify caller
+                        mRange = new Range(0, contentLength);
                     }
                 }
+                // partial range, that means range of the data
+                else if (responseCode == HttpURLConnection.HTTP_PARTIAL) {
+                    // 3.check eTag(whether file is changed)
+                    if (!TextUtils.isEmpty(mETag)) {
+                        String eTag = conn.getHeaderField("ETag");
 
-                // range is illegal,that means it need download whole file from range 0 to file size
-                if (!Range.isLegal(mRange) || (mRange != null && mRange.getLength() > contentLength)) {
-                    mRange = new Range(0, contentLength);// FIXME whether need to notify caller the range change?
-                }
-                // use custom range to continue download
-                else {
+                        Log.d(TAG, TAG + ".download 3、得到服务器返回的资源eTag：" + eTag + "，传入的eTag：" + mETag + "，url：" + url);
+
+                        if (TextUtils.isEmpty(eTag) || !mETag.equals(eTag)) {
+                            // error eTag is not equal
+                            throw new HttpDownloadException("eTag is not equal,please delete the old one then " + 
+                                    "re-download!", HttpDownloadException.TYPE_ETAG_CHANGED);
+                        }
+                    }
+                    if (!Range.isLegal(mRange) || (mRange != null && mRange.getLength() > contentLength)) {
+                        Range newRange = new Range(0, contentLength);
+                        // need notify caller
+                        boolean continueDownload = notifyRangeChanged(mRange, newRange);
+                        if (continueDownload) {
+                            mRange = new Range(newRange.startPos, newRange.endPos);
+                        } else {
+                            throw new HttpDownloadException("contentRange validate failed!", HttpDownloadException
+                                    .TYPE_CONTENT_RANGE_VALIDATE_FAIL);
+                        }
+                    }
                     // 4.check contentRange and acceptRangeType
                     if (mRange != null && !TextUtils.isEmpty(mAcceptRangeType)) {
                         boolean isRangeValidateSucceed = false;
@@ -252,6 +249,19 @@ public class HttpDownloader implements Download {
                     }
                 }
 
+                // 3.check eTag(whether file is changed)
+                if (!TextUtils.isEmpty(mETag)) {
+                    String eTag = conn.getHeaderField("ETag");
+
+                    Log.d(TAG, TAG + ".download 3、得到服务器返回的资源eTag：" + eTag + "，传入的eTag：" + mETag + "，url：" + url);
+
+                    if (TextUtils.isEmpty(eTag) || !mETag.equals(eTag)) {
+                        // error eTag is not equal
+                        throw new HttpDownloadException("eTag is not equal,please delete the old one then " + 
+                                "re-download!", HttpDownloadException.TYPE_ETAG_CHANGED);
+                    }
+                }
+
                 // get server InputStream
                 InputStream serverInputStream = conn.getInputStream();
                 // wrap serverInputStream by ContentLengthInputStream
@@ -266,7 +276,7 @@ public class HttpDownloader implements Download {
             // ResponseCode error
             else {
                 // error ResponseCode error
-                throw new HttpDownloadException("ResponseCode:" + responseCode + " error,can not read server data!",
+                throw new HttpDownloadException("ResponseCode:" + responseCode + " error,can not read server data!", 
                         HttpDownloadException.TYPE_RESPONSE_CODE_ERROR);
             }
             hasException = false;
@@ -294,6 +304,16 @@ public class HttpDownloader implements Download {
 
     }
 
+    // --------------------------------------notify caller--------------------------------------
+
+    // notifyRangeChanged
+    private boolean notifyRangeChanged(Range oldRange, Range newRange) {
+        if (mOnRangeChangeListener != null) {
+            return mOnRangeChangeListener.onRangeChanged(oldRange, newRange);
+        }
+        return true;
+    }
+
     // notifyDownloadConnected
     private void notifyDownloadConnected(ContentLengthInputStream inputStream, long startPosInTotal) {
         if (mOnHttpDownloadListener != null) {
@@ -308,12 +328,12 @@ public class HttpDownloader implements Download {
         /**
          * http redirect times over limits
          */
-        public static final String TYPE_REDIRECT_COUNT_OVER_LIMITS = HttpDownloadException.class.getName() +
+        public static final String TYPE_REDIRECT_COUNT_OVER_LIMITS = HttpDownloadException.class.getName() + 
                 "_TYPE_REDIRECT_COUNT_OVER_LIMITS";
         /**
          * resources size illegal
          */
-        public static final String TYPE_RESOURCES_SIZE_ILLEGAL = HttpDownloadException.class.getName() +
+        public static final String TYPE_RESOURCES_SIZE_ILLEGAL = HttpDownloadException.class.getName() + 
                 "_TYPE_RESOURCES_SIZE_ILLEGAL";
         /**
          * eTag changed
@@ -322,12 +342,12 @@ public class HttpDownloader implements Download {
         /**
          * contentRange validate fail
          */
-        public static final String TYPE_CONTENT_RANGE_VALIDATE_FAIL = HttpDownloadException.class.getName() +
+        public static final String TYPE_CONTENT_RANGE_VALIDATE_FAIL = HttpDownloadException.class.getName() + 
                 "_TYPE_CONTENT_RANGE_VALIDATE_FAIL";
         /**
          * ResponseCode error,can not read server data
          */
-        public static final String TYPE_RESPONSE_CODE_ERROR = HttpDownloadException.class.getName() +
+        public static final String TYPE_RESPONSE_CODE_ERROR = HttpDownloadException.class.getName() + 
                 "_TYPE_RESPONSE_CODE_ERROR";
 
         public HttpDownloadException(String detailMessage, String type) {
@@ -382,5 +402,20 @@ public class HttpDownloader implements Download {
          *                        |(inputStream.length,inputStream end)----|(fileTotalSize,totalEnd)
          */
         void onDownloadConnected(ContentLengthInputStream inputStream, long startPosInTotal);
+    }
+
+    /**
+     * OnRangeChangeListener
+     */
+    public interface OnRangeChangeListener {
+
+        /**
+         * the range has been changed
+         *
+         * @param oldRange
+         * @param newRange
+         * @return true means continue download, otherwise stop download
+         */
+        boolean onRangeChanged(Range oldRange, Range newRange);
     }
 }

@@ -141,9 +141,9 @@ public class MainActivity extends Activity implements OnItemSelectListener {
         // apk file, the url with special character
         // etUrl.setText("  http://182.254.149.157/ftp/image/shop/product/Kids Addition & Subtraction 1.0.apk ");
         // etUrl.setText("http://yjh.t4s.cn/Uploads/Download/2016-01-13/56962102baf32.apk");
-        // etUrl.setText("http://siki.oranllc.com/passenger_nginx.mov");
-        etUrl.setText("http://yjh.t4s.cn/Home/new/downloadFile/id/31");
-        
+        etUrl.setText("http://siki.oranllc.com/passenger_nginx.mov");
+        // etUrl.setText("http://yjh.t4s.cn/Home/new/downloadFile/id/31");
+
         etUrl.setFocusable(true);
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);

@@ -24,5 +24,14 @@ public interface DownloadRecorder extends DownloadFileDbRecorder {
      */
     void resetDownloadFile(String url, boolean deleteMode) throws Exception;
 
+    /**
+     * reset download size
+     *
+     * @param url          download url
+     * @param downloadSize the downloadSize reset to
+     * @throws Exception any fail exception during recording status
+     */
+    void resetDownloadSize(String url, long downloadSize) throws Exception;
+
     DownloadFileInfo createDownloadFileInfo(DetectUrlFileInfo detectUrlFileInfo);
 }

@@ -104,8 +104,7 @@ class RetryableDownloadTaskImpl implements RetryableDownloadTask, OnFileDownload
         }
         // init
         mTaskParamInfo = new FileDownloadTaskParam(mOriginalTaskParamInfo.url, mOriginalTaskParamInfo.startPosInTotal
-                + mRecordedRange.getLength(), mOriginalTaskParamInfo.fileTotalSize, mOriginalTaskParamInfo.eTag, 
-                mOriginalTaskParamInfo.
+                + mRecordedRange.getLength(), mOriginalTaskParamInfo.fileTotalSize, mOriginalTaskParamInfo.eTag, mOriginalTaskParamInfo.lastModified, mOriginalTaskParamInfo.
                 acceptRangeType, mOriginalTaskParamInfo.tempFilePath, mOriginalTaskParamInfo.filePath);
         mFileDownloadTaskImpl = new DownloadTaskImpl(mTaskParamInfo, mDownloadRecorder, this);
         mFileDownloadTaskImpl.setCloseConnectionEngine(mCloseConnectionEngine);
@@ -648,15 +647,14 @@ class RetryableDownloadTaskImpl implements RetryableDownloadTask, OnFileDownload
     @Override
     public void onFileDownloadStatusFailed(String url, DownloadFileInfo downloadFileInfo, 
                                            FileDownloadStatusFailReason failReason) {
-        if (downloadFileInfo.getStatus() == Status.DOWNLOAD_STATUS_FILE_NOT_EXIST) {
-            // record the state and not notify caller, wait notifyTaskFinish()
-            mFinishState = new FinishState(Status.DOWNLOAD_STATUS_FILE_NOT_EXIST, failReason);
-        } else {
-            // record the state and not notify caller, wait notifyTaskFinish()
-            mFinishState = new FinishState(Status.DOWNLOAD_STATUS_ERROR, failReason);
-        }
-
         if (DownloadFileUtil.isLegal(downloadFileInfo)) {
+            if (downloadFileInfo.getStatus() == Status.DOWNLOAD_STATUS_FILE_NOT_EXIST) {
+                // record the state and not notify caller, wait notifyTaskFinish()
+                mFinishState = new FinishState(Status.DOWNLOAD_STATUS_FILE_NOT_EXIST, failReason);
+            } else {
+                // record the state and not notify caller, wait notifyTaskFinish()
+                mFinishState = new FinishState(Status.DOWNLOAD_STATUS_ERROR, failReason);
+            }
             // record download range
             mRecordedRange = new Range(mRecordedRange.startPos, downloadFileInfo.getDownloadedSizeLong());
         }

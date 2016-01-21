@@ -27,6 +27,10 @@ class FileDownloadTaskParam {
      */
     public final String eTag;
     /**
+     * file last modified datetime(in server)
+     */
+    public final String lastModified;
+    /**
      * AcceptRangeType
      */
     public final String acceptRangeType;
@@ -39,13 +43,13 @@ class FileDownloadTaskParam {
      */
     public final String filePath;
 
-    public FileDownloadTaskParam(String url, long startPosInTotal, long fileTotalSize, String eTag, String 
-            acceptRangeType, String tempFilePath, String filePath) {
+    public FileDownloadTaskParam(String url, long startPosInTotal, long fileTotalSize, String eTag, String lastModified, String acceptRangeType, String tempFilePath, String filePath) {
         super();
         this.url = url;
         this.startPosInTotal = startPosInTotal;
         this.fileTotalSize = fileTotalSize;
         this.eTag = eTag;
+        this.lastModified = lastModified;
         this.acceptRangeType = acceptRangeType;
         this.tempFilePath = tempFilePath;
         this.filePath = filePath;
@@ -55,8 +59,6 @@ class FileDownloadTaskParam {
         if (downloadFileInfo == null) {
             return null;
         }
-        return new FileDownloadTaskParam(downloadFileInfo.getUrl(), downloadFileInfo.getDownloadedSizeLong(), 
-                downloadFileInfo.getFileSizeLong(), downloadFileInfo.getETag(), downloadFileInfo.getAcceptRangeType()
-                , downloadFileInfo.getTempFilePath(), downloadFileInfo.getFilePath());
+        return new FileDownloadTaskParam(downloadFileInfo.getUrl(), downloadFileInfo.getDownloadedSizeLong(), downloadFileInfo.getFileSizeLong(), downloadFileInfo.getETag(), downloadFileInfo.getLastModified(), downloadFileInfo.getAcceptRangeType(), downloadFileInfo.getTempFilePath(), downloadFileInfo.getFilePath());
     }
 }

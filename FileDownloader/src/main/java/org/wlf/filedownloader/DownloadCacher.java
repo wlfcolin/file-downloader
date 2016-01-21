@@ -141,10 +141,11 @@ public class DownloadCacher implements DownloadRecorder, DownloadFileMover, Down
 
                 if (!handled) {
                     // try to recovery error status
-                    if (tempFile != null && tempFile.exists() && tempFile.length() > 0) {
+                    if ((tempFile != null && tempFile.exists() && tempFile.length() > 0) || (saveFile != null &&
+                            saveFile.exists() && saveFile.length() > 0)) {
                         // file error
-                        Log.d(TAG, "checkDownloadFileStatus，文件未下载完，但当前状态为文件不存在，需要更改状态为下载出错，url:" + downloadFileInfo
-                                .getUrl());
+                        Log.d(TAG, "checkDownloadFileStatus，文件未下载完/下载文件出现问题，但当前状态为文件不存在，需要更改状态为下载出错，url:" + 
+                                downloadFileInfo.getUrl());
 
                         handled = updateDownloadFileWithStatus(downloadFileInfo, Status.DOWNLOAD_STATUS_ERROR);
                     }
@@ -759,6 +760,29 @@ public class DownloadCacher implements DownloadRecorder, DownloadFileMover, Down
         } else {
             // delete the download file
             deleteDownloadFile(url);
+        }
+    }
+
+    @Override
+    public void resetDownloadSize(String url, long downloadSize) throws Exception {
+        DownloadFileInfo downloadFileInfo = getDownloadFile(url);
+        if (!DownloadFileUtil.isLegal(downloadFileInfo)) {
+            return;
+        }
+
+        if (downloadSize < 0 || downloadSize > downloadFileInfo.getFileSizeLong()) {
+            throw new Exception("the download size nee to set is illegal !");
+        }
+
+        synchronized (mModifyLock) {// lock
+            long oldDownloadedSize = downloadFileInfo.getDownloadedSizeLong();
+            downloadFileInfo.setDownloadedSize(downloadSize);// reset download size with the new download size
+            boolean isSucceed = updateDownloadFileInternal(downloadFileInfo, false, Type.DOWNLOADED_SIZE);
+            if (!isSucceed) {
+                // rollback
+                downloadFileInfo.setDownloadedSize(oldDownloadedSize);
+                throw new Exception("reset downloadSize failed !");
+            }
         }
     }
 
