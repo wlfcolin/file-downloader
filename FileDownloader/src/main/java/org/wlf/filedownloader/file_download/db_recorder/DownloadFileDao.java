@@ -4,6 +4,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
 import org.wlf.filedownloader.DownloadFileInfo;
+import org.wlf.filedownloader.base.Log;
 import org.wlf.filedownloader.db.BaseContentDbDao;
 
 /**
@@ -15,6 +16,11 @@ import org.wlf.filedownloader.db.BaseContentDbDao;
  * @email 411086563@qq.com
  */
 public class DownloadFileDao extends BaseContentDbDao {
+
+    /**
+     * LOG TAG
+     */
+    private static final String TAG = DownloadFileDao.class.getSimpleName();
 
     public DownloadFileDao(SQLiteOpenHelper dbHelper) {
         super(dbHelper, DownloadFileInfo.Table.TABLE_NAME_OF_DOWNLOAD_FILE, DownloadFileInfo.Table
@@ -29,6 +35,9 @@ public class DownloadFileDao extends BaseContentDbDao {
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+
+        Log.i(TAG, TAG + ".onUpgrade，oldVersion：" + oldVersion + "，oldVersion：" + newVersion);
+
         // version 1 to 2
         if (oldVersion == 1 && newVersion == 2) {
             db.execSQL(DownloadFileInfo.Table.getUpdateTableVersion1To2Sql());
@@ -38,7 +47,7 @@ public class DownloadFileDao extends BaseContentDbDao {
             db.execSQL(DownloadFileInfo.Table.getUpdateTableVersion2To3Sql());
         }
         // version 1 to 3
-        if (oldVersion == 2 && newVersion == 3) {
+        if (oldVersion == 1 && newVersion == 3) {
             db.execSQL(DownloadFileInfo.Table.getUpdateTableVersion1To2Sql());
             db.execSQL(DownloadFileInfo.Table.getUpdateTableVersion2To3Sql());
         }
