@@ -265,9 +265,10 @@ class DetectUrlFileTask implements Runnable {
         if (mOnDetectBigUrlFileListener != null) {
             // main thread notify caller
             OnDetectBigUrlFileListener.MainThreadHelper.onDetectUrlFileExist(mUrl, mOnDetectBigUrlFileListener);
-            return true;
+            // return true;
         }
-        return false;
+        // force return true
+        return true;
     }
 
     /**
@@ -281,9 +282,10 @@ class DetectUrlFileTask implements Runnable {
             // main thread notify caller
             OnDetectBigUrlFileListener.MainThreadHelper.onDetectNewDownloadFile(mUrl, fileName, saveDir, fileSize, 
                     mOnDetectBigUrlFileListener);
-            return true;
+            // return true;
         }
-        return false;
+        // force return true
+        return true;
     }
 
     /**
@@ -297,8 +299,9 @@ class DetectUrlFileTask implements Runnable {
             // main thread notify caller
             OnDetectBigUrlFileListener.MainThreadHelper.onDetectUrlFileFailed(mUrl, failReason, 
                     mOnDetectBigUrlFileListener);
-            return true;
+            // return true;
         }
-        return false;
+        // force return true
+        return true;
     }
 }
