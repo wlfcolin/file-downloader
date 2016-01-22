@@ -216,7 +216,7 @@ FileDownloader.unregisterDownloadFileChangeListener(mOnDownloadFileChangeListene
 **[七、框架设计](https://github.com/wlfcolin/file-downloader/blob/master/DESIGN.md)**
 
 
-**八、编码规范，遵循[谷歌安卓官方编码规范](http://source.android.com/source/code-style.html)**
+**八、编码规范，遵循[谷歌安卓官方编码规范](http://source.android.com/source/code-style.html)，同时要求参与的贡献者也遵循该规范**
 
 
 **九、支持的系统版本：API 8及以上（安卓2.2及以上）**
