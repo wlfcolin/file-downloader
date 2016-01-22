@@ -219,7 +219,7 @@ FileDownloader.unregisterDownloadFileChangeListener(mOnDownloadFileChangeListene
 **[Design of FileDownloader](https://github.com/wlfcolin/file-downloader/blob/master/DESIGN.md)**
 
 ----------------------------------------------------------------------
-**Code Style, follow [Google Android Code Style for Contributors](http://source.android.com/source/code-style.html)**
+**Code Style, follow [Google Android Code Style for Contributors](http://source.android.com/source/code-style.html), contributors are required to follow the rules**
 
 ----------------------------------------------------------------------
 **Supported system version: API 8 and above(Android 2.2+)**
