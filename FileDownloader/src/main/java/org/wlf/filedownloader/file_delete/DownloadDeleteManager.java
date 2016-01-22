@@ -129,8 +129,7 @@ public class DownloadDeleteManager {
                     Log.d(TAG, TAG + ".delete 暂停下载任务失败，无法删除，url:" + finalUrl);
 
                     // otherwise error occur, notify caller
-                    notifyDeleteDownloadFileFailed(getDownloadFile(finalUrl), new OnDeleteDownloadFileFailReason
-                            (failReason), onDeleteDownloadFileListener);
+                    notifyDeleteDownloadFileFailed(getDownloadFile(finalUrl), new OnDeleteDownloadFileFailReason(finalUrl, failReason), onDeleteDownloadFileListener);
                 }
             });
         }
@@ -153,7 +152,8 @@ public class DownloadDeleteManager {
         }
 
         // create a multi delete task
-        DeleteDownloadFilesTask deleteDownloadFilesTask = new DeleteDownloadFilesTask(urls, deleteDownloadedFile, mTaskEngine, mDownloadFileDeleter, mDownloadTaskPauseable);
+        DeleteDownloadFilesTask deleteDownloadFilesTask = new DeleteDownloadFilesTask(urls, deleteDownloadedFile, 
+                mTaskEngine, mDownloadFileDeleter, mDownloadTaskPauseable);
         deleteDownloadFilesTask.setOnDeleteDownloadFilesListener(onDeleteDownloadFilesListener);
 
         // start the task

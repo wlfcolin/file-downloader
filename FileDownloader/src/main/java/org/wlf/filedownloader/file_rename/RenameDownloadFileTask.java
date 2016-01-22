@@ -77,7 +77,8 @@ class RenameDownloadFileTask implements Runnable {
             // ------------start checking conditions------------
 
             if (!DownloadFileUtil.isLegal(downloadFileInfo)) {
-                failReason = new OnRenameDownloadFileFailReason("the download file is not exist !", OnRenameDownloadFileFailReason.TYPE_FILE_RECORD_IS_NOT_EXIST);
+                failReason = new OnRenameDownloadFileFailReason(mUrl, "the download file is not exist !", 
+                        OnRenameDownloadFileFailReason.TYPE_FILE_RECORD_IS_NOT_EXIST);
                 // goto finally, notifyFailed()
                 return;
             }
@@ -88,8 +89,7 @@ class RenameDownloadFileTask implements Runnable {
             // check status
             if (!DownloadFileUtil.canRename(downloadFileInfo)) {
 
-                failReason = new OnRenameDownloadFileFailReason("the download file status error !", 
-                        OnRenameDownloadFileFailReason.TYPE_FILE_STATUS_ERROR);
+                failReason = new OnRenameDownloadFileFailReason(mUrl, "the download file status error !", OnRenameDownloadFileFailReason.TYPE_FILE_STATUS_ERROR);
                 // goto finally, notifyFailed()
                 return;
             }
@@ -113,13 +113,14 @@ class RenameDownloadFileTask implements Runnable {
             File newFile = new File(dirPath, mNewFileName);
 
             if (TextUtils.isEmpty(mNewFileName)) {
-                failReason = new OnRenameDownloadFileFailReason("new file name is empty !", OnRenameDownloadFileFailReason.TYPE_NEW_FILE_NAME_IS_EMPTY);
+                failReason = new OnRenameDownloadFileFailReason(mUrl, "new file name is empty !", 
+                        OnRenameDownloadFileFailReason.TYPE_NEW_FILE_NAME_IS_EMPTY);
                 // goto finally, notifyFailed()
                 return;
             }
 
             if (checkNewFileExist(newFile)) {
-                failReason = new OnRenameDownloadFileFailReason("the new file has been exist !", 
+                failReason = new OnRenameDownloadFileFailReason(mUrl, "the new file has been exist !", 
                         OnRenameDownloadFileFailReason.TYPE_NEW_FILE_HAS_BEEN_EXIST);
                 // goto finally, notifyFailed()
                 return;
@@ -137,7 +138,7 @@ class RenameDownloadFileTask implements Runnable {
             }
 
             if (!renameResult) {
-                failReason = new OnRenameDownloadFileFailReason("rename file in db failed !", 
+                failReason = new OnRenameDownloadFileFailReason(mUrl, "rename file in db failed !", 
                         OnRenameDownloadFileFailReason.TYPE_UNKNOWN);
                 // goto finally, notifyFailed()
                 return;
@@ -154,7 +155,7 @@ class RenameDownloadFileTask implements Runnable {
                     renameResult = oldSaveFile.renameTo(newFile);
                 } else {
                     renameResult = false;
-                    failReason = new OnRenameDownloadFileFailReason("the original file not exist !", 
+                    failReason = new OnRenameDownloadFileFailReason(mUrl, "the original file not exist !", 
                             OnRenameDownloadFileFailReason.TYPE_ORIGINAL_FILE_NOT_EXIST);
                 }
 
@@ -174,7 +175,7 @@ class RenameDownloadFileTask implements Runnable {
                     }
 
                     if (failReason == null) {
-                        failReason = new OnRenameDownloadFileFailReason("rename file in file system failed !", 
+                        failReason = new OnRenameDownloadFileFailReason(mUrl, "rename file in file system failed !", 
                                 OnRenameDownloadFileFailReason.TYPE_UNKNOWN);
                     }
                     // goto finally, notifyFailed()
@@ -187,7 +188,7 @@ class RenameDownloadFileTask implements Runnable {
             // rename succeed
         } catch (Exception e) {
             e.printStackTrace();
-            failReason = new OnRenameDownloadFileFailReason(e);
+            failReason = new OnRenameDownloadFileFailReason(mUrl, e);
         } finally {
             // ------------start notifying caller------------
             {

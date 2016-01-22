@@ -121,12 +121,12 @@ public interface OnRenameDownloadFileListener {
     @Deprecated
     public static class OnRenameDownloadFileFailReason extends RenameDownloadFileFailReason {
 
-        public OnRenameDownloadFileFailReason(String detailMessage, String type) {
-            super(detailMessage, type);
+        public OnRenameDownloadFileFailReason(String url, String detailMessage, String type) {
+            super(url, detailMessage, type);
         }
 
-        public OnRenameDownloadFileFailReason(Throwable throwable) {
-            super(throwable);
+        public OnRenameDownloadFileFailReason(String url, Throwable throwable) {
+            super(url, throwable);
         }
     }
 
@@ -161,12 +161,12 @@ public interface OnRenameDownloadFileListener {
         public static final String TYPE_NEW_FILE_HAS_BEEN_EXIST = RenameDownloadFileFailReason.class.getName() + 
                 "_TYPE_NEW_FILE_HAS_BEEN_EXIST";
 
-        public RenameDownloadFileFailReason(String detailMessage, String type) {
+        public RenameDownloadFileFailReason(String url, String detailMessage, String type) {
             super(detailMessage, type);
         }
 
-        public RenameDownloadFileFailReason(Throwable throwable) {
-            super(throwable);
+        public RenameDownloadFileFailReason(String url, Throwable throwable) {
+            super(url, throwable);
         }
     }
 }

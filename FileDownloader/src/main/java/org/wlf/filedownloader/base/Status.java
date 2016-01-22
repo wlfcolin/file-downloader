@@ -8,7 +8,7 @@ package org.wlf.filedownloader.base;
  * @author wlf(Andy)
  * @email 411086563@qq.com
  */
-public class Status {
+public final class Status {
 
     /**
      * UNKNOWN

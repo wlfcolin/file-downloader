@@ -44,7 +44,8 @@ class DetectUrlFileTask implements Runnable {
 
     private ExecutorService mCloseConnectionEngine;// engine use for closing the http connection
 
-    public DetectUrlFileTask(String url, String downloadSaveDir, DetectUrlFileCacher detectUrlFileCacher, DownloadRecorder downloadRecorder) {
+    public DetectUrlFileTask(String url, String downloadSaveDir, DetectUrlFileCacher detectUrlFileCacher, 
+                             DownloadRecorder downloadRecorder) {
         super();
         this.mUrl = url;
         this.mDownloadSaveDir = downloadSaveDir;
@@ -114,7 +115,8 @@ class DetectUrlFileTask implements Runnable {
                 // check URL
                 if (!UrlUtil.isUrl(mUrl)) {
                     // error, url illegal
-                    failReason = new DetectUrlFileFailReason("url illegal !", DetectUrlFileFailReason.TYPE_URL_ILLEGAL);
+                    failReason = new DetectUrlFileFailReason(mUrl, "url illegal !", DetectUrlFileFailReason
+                            .TYPE_URL_ILLEGAL);
                     // goto finally, url error
                     return;
                 }
@@ -142,8 +144,7 @@ class DetectUrlFileTask implements Runnable {
 
             if (redirectCount > MAX_REDIRECT_TIMES) {
                 // error over max redirect
-                failReason = new DetectUrlFileFailReason("over max redirect:" + MAX_REDIRECT_TIMES + "!", 
-                        DetectUrlFileFailReason.TYPE_URL_OVER_REDIRECT_COUNT);
+                failReason = new DetectUrlFileFailReason(mUrl, "over max redirect:" + MAX_REDIRECT_TIMES + "!", DetectUrlFileFailReason.TYPE_URL_OVER_REDIRECT_COUNT);
                 // goto finally, over redirect limit error
                 return;
             }
@@ -189,20 +190,20 @@ class DetectUrlFileTask implements Runnable {
                 // 404 not found
                 case HttpURLConnection.HTTP_NOT_FOUND:
                     // error url file does not exist
-                    failReason = new DetectUrlFileFailReason("url file does not exist !", DetectUrlFileFailReason
-                            .TYPE_HTTP_FILE_NOT_EXIST);
+                    failReason = new DetectUrlFileFailReason(mUrl, "url file does not exist !", 
+                            DetectUrlFileFailReason.TYPE_HTTP_FILE_NOT_EXIST);
                     break;
                 // other, ResponseCode error
                 default:
                     // error ResponseCode error
-                    failReason = new DetectUrlFileFailReason("ResponseCode:" + conn.getResponseCode() + " " +
+                    failReason = new DetectUrlFileFailReason(mUrl, "ResponseCode:" + conn.getResponseCode() + " " +
                             "error, can not read data !", DetectUrlFileFailReason.TYPE_BAD_HTTP_RESPONSE_CODE);
                     break;
             }
         } catch (Exception e) {
             e.printStackTrace();
             // cast Exception to DetectUrlFileFailReason
-            failReason = new DetectUrlFileFailReason(e);
+            failReason = new DetectUrlFileFailReason(mUrl, e);
         } finally {
             // close inputStream & url connection
             CloseConnectionTask closeConnectionTask = new CloseConnectionTask(conn, inputStream);
@@ -231,13 +232,13 @@ class DetectUrlFileTask implements Runnable {
                                 .getFileDir(), detectUrlFileInfo.getFileSizeLong());
                     } catch (Exception e) {
                         e.printStackTrace();
-                        failReason = new DetectUrlFileFailReason(e);
+                        failReason = new DetectUrlFileFailReason(mUrl, e);
                     }
                 }
 
                 if (!isNotify) {
                     if (failReason == null) {
-                        failReason = new DetectUrlFileFailReason("the file need to download may not access !", 
+                        failReason = new DetectUrlFileFailReason(mUrl, "the file need to download may not access !", 
                                 DetectUrlFileFailReason.TYPE_UNKNOWN);
                     }
                     // error occur

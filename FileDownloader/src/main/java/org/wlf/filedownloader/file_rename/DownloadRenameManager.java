@@ -123,8 +123,7 @@ public class DownloadRenameManager {
                     Log.d(TAG, TAG + ".rename 暂停下载任务失败，无法重命名，url:" + finalUrl);
 
                     // otherwise error occur, notify caller
-                    notifyRenameDownloadFileFailed(getDownloadFile(finalUrl), new OnRenameDownloadFileFailReason
-                            (failReason), onRenameDownloadFileListener);
+                    notifyRenameDownloadFileFailed(getDownloadFile(finalUrl), new OnRenameDownloadFileFailReason(finalUrl, failReason), onRenameDownloadFileListener);
                 }
             });
         }

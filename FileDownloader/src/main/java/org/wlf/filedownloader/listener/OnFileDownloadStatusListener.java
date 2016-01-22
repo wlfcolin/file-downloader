@@ -249,12 +249,12 @@ public interface OnFileDownloadStatusListener {
     @Deprecated
     public static class OnFileDownloadStatusFailReason extends FileDownloadStatusFailReason {
 
-        public OnFileDownloadStatusFailReason(String detailMessage, String type) {
-            super(detailMessage, type);
+        public OnFileDownloadStatusFailReason(String url, String detailMessage, String type) {
+            super(url, detailMessage, type);
         }
 
-        public OnFileDownloadStatusFailReason(Throwable throwable) {
-            super(throwable);
+        public OnFileDownloadStatusFailReason(String url, Throwable throwable) {
+            super(url, throwable);
         }
     }
 
@@ -321,8 +321,9 @@ public interface OnFileDownloadStatusListener {
         /**
          * the url file has been changed, need to re-download
          */
-        public static final String TYPE_URL_FILE_CHANGED = FileDownloadStatusFailReason.class.getName() + "_TYPE_URL_FILE_CHANGED";
-        
+        public static final String TYPE_URL_FILE_CHANGED = FileDownloadStatusFailReason.class.getName() + 
+                "_TYPE_URL_FILE_CHANGED";
+
         /**
          * file is downloading
          *
@@ -332,12 +333,12 @@ public interface OnFileDownloadStatusListener {
         public static final String TYPE_FILE_IS_DOWNLOADING = FileDownloadStatusFailReason.class.getName() + 
                 "_TYPE_FILE_IS_DOWNLOADING";
 
-        public FileDownloadStatusFailReason(String detailMessage, String type) {
-            super(detailMessage, type);
+        public FileDownloadStatusFailReason(String url, String detailMessage, String type) {
+            super(url, detailMessage, type);
         }
 
-        public FileDownloadStatusFailReason(Throwable throwable) {
-            super(throwable);
+        public FileDownloadStatusFailReason(String url, Throwable throwable) {
+            super(url, throwable);
         }
 
         @Override

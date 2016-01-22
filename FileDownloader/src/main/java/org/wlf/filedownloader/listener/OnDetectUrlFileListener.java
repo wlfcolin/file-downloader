@@ -49,12 +49,12 @@ public interface OnDetectUrlFileListener {
     @Deprecated
     public static class DetectUrlFileFailReason extends OnDetectBigUrlFileListener.DetectBigUrlFileFailReason {
 
-        public DetectUrlFileFailReason(String detailMessage, String type) {
-            super(detailMessage, type);
+        public DetectUrlFileFailReason(String url, String detailMessage, String type) {
+            super(url, detailMessage, type);
         }
 
-        public DetectUrlFileFailReason(Throwable throwable) {
-            super(throwable);
+        public DetectUrlFileFailReason(String url, Throwable throwable) {
+            super(url, throwable);
         }
     }
 }

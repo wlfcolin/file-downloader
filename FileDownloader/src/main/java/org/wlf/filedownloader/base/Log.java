@@ -7,7 +7,7 @@ package org.wlf.filedownloader.base;
  * @datetime 2016-01-11 17:12 GMT+8
  * @email 411086563@qq.com
  */
-public class Log {
+public final class Log {
 
     /**
      * debug mode flag, default is true

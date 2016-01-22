@@ -127,8 +127,7 @@ public class DownloadMoveManager {
                     Log.d(TAG, TAG + ".move 暂停下载任务失败，无法移动，url:" + finalUrl);
 
                     // otherwise error occur, notify caller
-                    notifyMoveDownloadFileFailed(getDownloadFile(finalUrl), new OnMoveDownloadFileFailReason
-                            (failReason), onMoveDownloadFileListener);
+                    notifyMoveDownloadFileFailed(getDownloadFile(finalUrl), new OnMoveDownloadFileFailReason(finalUrl, failReason), onMoveDownloadFileListener);
                 }
             });
         }

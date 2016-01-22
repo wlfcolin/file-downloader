@@ -4,7 +4,7 @@ import android.os.Handler;
 import android.os.Looper;
 
 import org.wlf.filedownloader.DownloadFileInfo;
-import org.wlf.filedownloader.base.FailReason;
+import org.wlf.filedownloader.base.UrlFailReason;
 
 /**
  * listener for moving download file
@@ -119,19 +119,19 @@ public interface OnMoveDownloadFileListener {
     @Deprecated
     public static class OnMoveDownloadFileFailReason extends MoveDownloadFileFailReason {
 
-        public OnMoveDownloadFileFailReason(String detailMessage, String type) {
-            super(detailMessage, type);
+        public OnMoveDownloadFileFailReason(String url, String detailMessage, String type) {
+            super(url, detailMessage, type);
         }
 
-        public OnMoveDownloadFileFailReason(Throwable throwable) {
-            super(throwable);
+        public OnMoveDownloadFileFailReason(String url, Throwable throwable) {
+            super(url, throwable);
         }
     }
 
     /**
      * MoveDownloadFileFailReason
      */
-    public static class MoveDownloadFileFailReason extends FailReason {
+    public static class MoveDownloadFileFailReason extends UrlFailReason {
 
         /**
          * target file exist
@@ -155,12 +155,12 @@ public interface OnMoveDownloadFileListener {
                 "_TYPE_FILE_STATUS_ERROR";
 
 
-        public MoveDownloadFileFailReason(String detailMessage, String type) {
-            super(detailMessage, type);
+        public MoveDownloadFileFailReason(String url, String detailMessage, String type) {
+            super(url, detailMessage, type);
         }
 
-        public MoveDownloadFileFailReason(Throwable throwable) {
-            super(throwable);
+        public MoveDownloadFileFailReason(String url, Throwable throwable) {
+            super(url, throwable);
         }
 
     }

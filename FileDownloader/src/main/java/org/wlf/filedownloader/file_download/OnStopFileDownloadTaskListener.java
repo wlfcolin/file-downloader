@@ -36,8 +36,8 @@ public interface OnStopFileDownloadTaskListener {
         public static final String TYPE_TASK_HAS_BEEN_STOPPED = StopDownloadFileTaskFailReason.class.getName() + 
                 "_TYPE_TASK_HAS_BEEN_STOPPED";
 
-        public StopDownloadFileTaskFailReason(String detailMessage, String type) {
-            super(detailMessage, type);
+        public StopDownloadFileTaskFailReason(String url, String detailMessage, String type) {
+            super(url, detailMessage, type);
         }
 
         @Override

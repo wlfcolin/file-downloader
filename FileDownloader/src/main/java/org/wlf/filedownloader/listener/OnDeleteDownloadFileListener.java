@@ -4,7 +4,7 @@ import android.os.Handler;
 import android.os.Looper;
 
 import org.wlf.filedownloader.DownloadFileInfo;
-import org.wlf.filedownloader.base.FailReason;
+import org.wlf.filedownloader.base.UrlFailReason;
 
 /**
  * listener for deleting download file
@@ -119,19 +119,19 @@ public interface OnDeleteDownloadFileListener {
     @Deprecated
     public static class OnDeleteDownloadFileFailReason extends DeleteDownloadFileFailReason {
 
-        public OnDeleteDownloadFileFailReason(String detailMessage, String type) {
-            super(detailMessage, type);
+        public OnDeleteDownloadFileFailReason(String url, String detailMessage, String type) {
+            super(url, detailMessage, type);
         }
 
-        public OnDeleteDownloadFileFailReason(Throwable throwable) {
-            super(throwable);
+        public OnDeleteDownloadFileFailReason(String url, Throwable throwable) {
+            super(url, throwable);
         }
     }
 
     /**
      * DeleteDownloadFileFailReason
      */
-    public static class DeleteDownloadFileFailReason extends FailReason {
+    public static class DeleteDownloadFileFailReason extends UrlFailReason {
         /**
          * the download file record doest not exist
          */
@@ -141,17 +141,17 @@ public interface OnDeleteDownloadFileListener {
         /**
          * the download file status error
          */
-        public static final String TYPE_FILE_STATUS_ERROR = DeleteDownloadFileFailReason.class.getName() +
+        public static final String TYPE_FILE_STATUS_ERROR = DeleteDownloadFileFailReason.class.getName() + 
                 "_TYPE_RECORD_FILE_STATUS_ERROR";
 
-        public DeleteDownloadFileFailReason(String detailMessage, String type) {
-            super(detailMessage, type);
+        public DeleteDownloadFileFailReason(String url, String detailMessage, String type) {
+            super(url, detailMessage, type);
         }
 
-        public DeleteDownloadFileFailReason(Throwable throwable) {
-            super(throwable);
+        public DeleteDownloadFileFailReason(String url, Throwable throwable) {
+            super(url, throwable);
         }
-        
+
         // StopDownloadFileTaskFailReason
     }
 }

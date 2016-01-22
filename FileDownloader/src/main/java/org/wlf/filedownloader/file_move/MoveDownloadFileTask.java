@@ -67,7 +67,8 @@ class MoveDownloadFileTask implements Runnable {
             // ------------start checking conditions------------
             // check null
             if (!DownloadFileUtil.isLegal(downloadFileInfo)) {
-                failReason = new OnMoveDownloadFileFailReason("the DownloadFile is empty !", OnMoveDownloadFileFailReason.TYPE_NULL_POINTER);
+                failReason = new OnMoveDownloadFileFailReason(mUrl, "the DownloadFile is empty !", 
+                        OnMoveDownloadFileFailReason.TYPE_NULL_POINTER);
                 // goto finally, notifyFailed()
                 return;
             }
@@ -77,8 +78,7 @@ class MoveDownloadFileTask implements Runnable {
 
             // check status
             if (!DownloadFileUtil.canMove(downloadFileInfo)) {
-                failReason = new OnMoveDownloadFileFailReason("the download file status error !", 
-                        OnMoveDownloadFileFailReason.TYPE_FILE_STATUS_ERROR);
+                failReason = new OnMoveDownloadFileFailReason(mUrl, "the download file status error !", OnMoveDownloadFileFailReason.TYPE_FILE_STATUS_ERROR);
                 // goto finally, notifyFailed()
                 return;
             }
@@ -97,7 +97,7 @@ class MoveDownloadFileTask implements Runnable {
 
             // check original file
             if (oldFile == null || !oldFile.exists()) {
-                failReason = new OnMoveDownloadFileFailReason("the original file does not exist !", 
+                failReason = new OnMoveDownloadFileFailReason(mUrl, "the original file does not exist !", 
                         OnMoveDownloadFileFailReason.TYPE_ORIGINAL_FILE_NOT_EXIST);
                 // goto finally, notifyFailed()
                 return;
@@ -105,8 +105,8 @@ class MoveDownloadFileTask implements Runnable {
 
             // check new file
             if (newFile != null && newFile.exists()) {
-                failReason = new OnMoveDownloadFileFailReason("the target file exist !", OnMoveDownloadFileFailReason
-                        .TYPE_TARGET_FILE_EXIST);
+                failReason = new OnMoveDownloadFileFailReason(mUrl, "the target file exist !", 
+                        OnMoveDownloadFileFailReason.TYPE_TARGET_FILE_EXIST);
                 // goto finally, notifyFailed()
                 return;
             }
@@ -132,8 +132,8 @@ class MoveDownloadFileTask implements Runnable {
 
             if (!moveResult) {
                 // move in db failed
-                failReason = new OnMoveDownloadFileFailReason("update record error !", OnMoveDownloadFileFailReason
-                        .TYPE_UPDATE_RECORD_ERROR);
+                failReason = new OnMoveDownloadFileFailReason(mUrl, "update record error !", 
+                        OnMoveDownloadFileFailReason.TYPE_UPDATE_RECORD_ERROR);
                 // goto finally, notifyFailed()
                 return;
             }
@@ -155,8 +155,8 @@ class MoveDownloadFileTask implements Runnable {
                         // ignore   
                     }
                 }
-                failReason = new OnMoveDownloadFileFailReason("update record error !", OnMoveDownloadFileFailReason
-                        .TYPE_UPDATE_RECORD_ERROR);
+                failReason = new OnMoveDownloadFileFailReason(mUrl, "update record error !", 
+                        OnMoveDownloadFileFailReason.TYPE_UPDATE_RECORD_ERROR);
                 // goto finally, notifyFailed()
                 return;
             }
@@ -164,7 +164,7 @@ class MoveDownloadFileTask implements Runnable {
             // move success
         } catch (Exception e) {
             e.printStackTrace();
-            failReason = new OnMoveDownloadFileFailReason(e);
+            failReason = new OnMoveDownloadFileFailReason(mUrl, e);
         } finally {
             // ------------start notifying caller------------
             {

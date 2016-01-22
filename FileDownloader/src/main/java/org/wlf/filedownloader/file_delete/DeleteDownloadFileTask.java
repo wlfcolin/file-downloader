@@ -67,8 +67,7 @@ class DeleteDownloadFileTask implements Runnable {
             // ------------start checking conditions------------
             {
                 if (!DownloadFileUtil.isLegal(downloadFileInfo)) {
-                    failReason = new OnDeleteDownloadFileFailReason("the download file not exist !", 
-                            OnDeleteDownloadFileFailReason.TYPE_FILE_RECORD_IS_NOT_EXIST);
+                    failReason = new OnDeleteDownloadFileFailReason(mUrl, "the download file not exist !", OnDeleteDownloadFileFailReason.TYPE_FILE_RECORD_IS_NOT_EXIST);
 
                     // goto finally, notifyFailed()
                     return;
@@ -79,7 +78,7 @@ class DeleteDownloadFileTask implements Runnable {
 
                 // check status
                 if (!DownloadFileUtil.canDelete(downloadFileInfo)) {
-                    failReason = new OnDeleteDownloadFileFailReason("the download file status error !", 
+                    failReason = new OnDeleteDownloadFileFailReason(mUrl, "the download file status error !", 
                             OnDeleteDownloadFileFailReason.TYPE_FILE_STATUS_ERROR);
                     // goto finally, notifyFailed()
                     return;
@@ -97,7 +96,8 @@ class DeleteDownloadFileTask implements Runnable {
             }
 
             if (!deleteResult) {
-                failReason = new OnDeleteDownloadFileFailReason("delete file in record failed !", OnDeleteDownloadFileFailReason.TYPE_UNKNOWN);
+                failReason = new OnDeleteDownloadFileFailReason(mUrl, "delete file in record failed !", 
+                        OnDeleteDownloadFileFailReason.TYPE_UNKNOWN);
                 // goto finally, notifyFailed()
                 return;
             }
@@ -120,7 +120,7 @@ class DeleteDownloadFileTask implements Runnable {
             }
 
             if (!deleteResult) {
-                failReason = new OnDeleteDownloadFileFailReason("delete file in path failed !", 
+                failReason = new OnDeleteDownloadFileFailReason(mUrl, "delete file in path failed !", 
                         OnDeleteDownloadFileFailReason.TYPE_UNKNOWN);
                 // goto finally, notifyFailed()
                 return;
@@ -129,7 +129,7 @@ class DeleteDownloadFileTask implements Runnable {
             Log.d(TAG, TAG + ".run 文件删除成功url：" + mUrl);
         } catch (Exception e) {
             e.printStackTrace();
-            failReason = new OnDeleteDownloadFileFailReason(e);
+            failReason = new OnDeleteDownloadFileFailReason(mUrl, e);
         } finally {
             // ------------start notifying caller------------
             {

@@ -8,7 +8,7 @@ package org.wlf.filedownloader.base;
  * @author wlf(Andy)
  * @email 411086563@qq.com
  */
-public class FailException extends FailReason {
+public abstract class FailException extends FailReason {
 
     public FailException(String type) {
         super(type);

@@ -103,8 +103,7 @@ class RetryableDownloadTaskImpl implements RetryableDownloadTask, OnFileDownload
             mRecordedRange = new Range(mOriginalTaskParamInfo.startPosInTotal, mOriginalTaskParamInfo.startPosInTotal);
         }
         // init
-        mTaskParamInfo = new FileDownloadTaskParam(mOriginalTaskParamInfo.url, mOriginalTaskParamInfo.startPosInTotal
-                + mRecordedRange.getLength(), mOriginalTaskParamInfo.fileTotalSize, mOriginalTaskParamInfo.eTag, mOriginalTaskParamInfo.lastModified, mOriginalTaskParamInfo.
+        mTaskParamInfo = new FileDownloadTaskParam(mOriginalTaskParamInfo.url, mOriginalTaskParamInfo.startPosInTotal + mRecordedRange.getLength(), mOriginalTaskParamInfo.fileTotalSize, mOriginalTaskParamInfo.eTag, mOriginalTaskParamInfo.lastModified, mOriginalTaskParamInfo.
                 acceptRangeType, mOriginalTaskParamInfo.tempFilePath, mOriginalTaskParamInfo.filePath);
         mFileDownloadTaskImpl = new DownloadTaskImpl(mTaskParamInfo, mDownloadRecorder, this);
         mFileDownloadTaskImpl.setCloseConnectionEngine(mCloseConnectionEngine);
@@ -198,7 +197,8 @@ class RetryableDownloadTaskImpl implements RetryableDownloadTask, OnFileDownload
             }
         } catch (Exception e) {
             e.printStackTrace();
-            mFinishState = new FinishState(Status.DOWNLOAD_STATUS_ERROR, new OnFileDownloadStatusFailReason(e));
+            mFinishState = new FinishState(Status.DOWNLOAD_STATUS_ERROR, new OnFileDownloadStatusFailReason(getUrl(),
+                    e));
             return false;
         }
     }
@@ -220,7 +220,8 @@ class RetryableDownloadTaskImpl implements RetryableDownloadTask, OnFileDownload
             return true;
         } catch (Exception e) {
             e.printStackTrace();
-            mFinishState = new FinishState(Status.DOWNLOAD_STATUS_ERROR, new OnFileDownloadStatusFailReason(e));
+            mFinishState = new FinishState(Status.DOWNLOAD_STATUS_ERROR, new OnFileDownloadStatusFailReason(getUrl(),
+                    e));
             return false;
         }
     }
@@ -298,8 +299,7 @@ class RetryableDownloadTaskImpl implements RetryableDownloadTask, OnFileDownload
                         e1.printStackTrace();
                     }
                     if (mOnFileDownloadStatusListener != null) {
-                        mOnFileDownloadStatusListener.onFileDownloadStatusFailed(getUrl(), getDownloadFile(), new 
-                                OnFileDownloadStatusFailReason(e));
+                        mOnFileDownloadStatusListener.onFileDownloadStatusFailed(getUrl(), getDownloadFile(), new OnFileDownloadStatusFailReason(getUrl(), e));
                     }
 
                     Log.e(TAG, "file-downloader-status 记录【暂停/完成/出错状态】失败，url：" + mTaskParamInfo.url);
@@ -459,7 +459,8 @@ class RetryableDownloadTaskImpl implements RetryableDownloadTask, OnFileDownload
             // retry while case finished
         } catch (Exception e) {
             e.printStackTrace();
-            mFinishState = new FinishState(Status.DOWNLOAD_STATUS_ERROR, new OnFileDownloadStatusFailReason(e));
+            mFinishState = new FinishState(Status.DOWNLOAD_STATUS_ERROR, new OnFileDownloadStatusFailReason(getUrl(),
+                    e));
         } finally {
             // identify cur task stop
             mIsTaskStop = true;
@@ -502,8 +503,8 @@ class RetryableDownloadTaskImpl implements RetryableDownloadTask, OnFileDownload
 
         // if it is stopped,notify stop failed
         if (isStopped()) {
-            notifyStopTaskFailedIfNecessary(new StopDownloadFileTaskFailReason("the task has been stopped!", 
-                    StopDownloadFileTaskFailReason.TYPE_TASK_HAS_BEEN_STOPPED));
+            notifyStopTaskFailedIfNecessary(new StopDownloadFileTaskFailReason(mTaskParamInfo.url, "the task has " +
+                    "been" + " stopped!", StopDownloadFileTaskFailReason.TYPE_TASK_HAS_BEEN_STOPPED));
             return;
         }
         // stop must be async

@@ -141,12 +141,12 @@ public interface OnDetectBigUrlFileListener {
         public static final String TYPE_HTTP_FILE_NOT_EXIST = DetectBigUrlFileFailReason.class.getName() + 
                 "_TYPE_HTTP_FILE_NOT_EXIST";
 
-        public DetectBigUrlFileFailReason(String detailMessage, String type) {
-            super(detailMessage, type);
+        public DetectBigUrlFileFailReason(String url, String detailMessage, String type) {
+            super(url, detailMessage, type);
         }
 
-        public DetectBigUrlFileFailReason(Throwable throwable) {
-            super(throwable);
+        public DetectBigUrlFileFailReason(String url, Throwable throwable) {
+            super(url, throwable);
         }
     }
 

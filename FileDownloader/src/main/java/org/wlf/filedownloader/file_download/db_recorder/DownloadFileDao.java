@@ -38,20 +38,46 @@ public class DownloadFileDao extends BaseContentDbDao {
 
         Log.i(TAG, TAG + ".onUpgrade，oldVersion：" + oldVersion + "，oldVersion：" + newVersion);
 
-        // version 1 to 2
-        if (oldVersion == 1 && newVersion == 2) {
-            db.execSQL(DownloadFileInfo.Table.getUpdateTableVersion1To2Sql());
+        // upgrade to version 2
+        if (newVersion == 2) {
+            switch (oldVersion) {
+                case 1:
+                    // version 1 to 2
+                    updateVersion1To2(db);
+                    break;
+            }
         }
-        // version 2 to 3
-        if (oldVersion == 2 && newVersion == 3) {
-            db.execSQL(DownloadFileInfo.Table.getUpdateTableVersion2To3Sql());
+        // upgrade to version 3
+        else if (newVersion == 3) {
+            switch (oldVersion) {
+                case 1:
+                    // version 1 to 3
+                    updateVersion1To3(db);
+                    break;
+                case 2:
+                    // version 2 to 3
+                    updateVersion2To3(db);
+                    break;
+            }
         }
-        // version 1 to 3
-        if (oldVersion == 1 && newVersion == 3) {
-            db.execSQL(DownloadFileInfo.Table.getUpdateTableVersion1To2Sql());
-            db.execSQL(DownloadFileInfo.Table.getUpdateTableVersion2To3Sql());
-        }
+        // upgrade to version 4
 
+    }
+
+    // version 1 to 2
+    private void updateVersion1To2(SQLiteDatabase db) {
+        db.execSQL(DownloadFileInfo.Table.getUpdateTableVersion1To2Sql());
+    }
+
+    // version 2 to 3
+    private void updateVersion2To3(SQLiteDatabase db) {
+        db.execSQL(DownloadFileInfo.Table.getUpdateTableVersion2To3Sql());
+    }
+
+    // version 1 to 3
+    private void updateVersion1To3(SQLiteDatabase db) {
+        db.execSQL(DownloadFileInfo.Table.getUpdateTableVersion1To2Sql());
+        db.execSQL(DownloadFileInfo.Table.getUpdateTableVersion2To3Sql());
     }
 
 }

@@ -134,7 +134,8 @@ class DownloadTaskImpl implements DownloadTask, OnHttpDownloadListener, OnFileSa
 
         // init Downloader
         Range range = new Range(mTaskParamInfo.startPosInTotal, mTaskParamInfo.fileTotalSize);
-        mDownloader = new HttpDownloader(mTaskParamInfo.url, range, mTaskParamInfo.acceptRangeType, mTaskParamInfo.eTag, mTaskParamInfo.lastModified);
+        mDownloader = new HttpDownloader(mTaskParamInfo.url, range, mTaskParamInfo.acceptRangeType, mTaskParamInfo
+                .eTag, mTaskParamInfo.lastModified);
         mDownloader.setOnHttpDownloadListener(this);
         mDownloader.setCloseConnectionEngine(mCloseConnectionEngine);
         mDownloader.setConnectTimeout(mConnectTimeout);
@@ -159,23 +160,22 @@ class DownloadTaskImpl implements DownloadTask, OnHttpDownloadListener, OnFileSa
 
         if (mTaskParamInfo == null) {
             // error, param is null pointer
-            failReason = new OnFileDownloadStatusFailReason("init param is null pointer !", 
-                    OnFileDownloadStatusFailReason.TYPE_NULL_POINTER);
+            failReason = new OnFileDownloadStatusFailReason(mTaskParamInfo.url, "init param is null pointer !", OnFileDownloadStatusFailReason.TYPE_NULL_POINTER);
         }
         if (failReason == null && !UrlUtil.isUrl(mTaskParamInfo.url)) {
             // error, url illegal
-            failReason = new OnFileDownloadStatusFailReason("url illegal !", OnFileDownloadStatusFailReason
-                    .TYPE_URL_ILLEGAL);
+            failReason = new OnFileDownloadStatusFailReason(mTaskParamInfo.url, "url illegal !", 
+                    OnFileDownloadStatusFailReason.TYPE_URL_ILLEGAL);
         }
         if (failReason == null && !FileUtil.isFilePath(mTaskParamInfo.filePath)) {
             // error, saveDir illegal
-            failReason = new OnFileDownloadStatusFailReason("saveDir illegal !", OnFileDownloadStatusFailReason
-                    .TYPE_FILE_SAVE_PATH_ILLEGAL);
+            failReason = new OnFileDownloadStatusFailReason(mTaskParamInfo.url, "saveDir illegal !", 
+                    OnFileDownloadStatusFailReason.TYPE_FILE_SAVE_PATH_ILLEGAL);
         }
         if (failReason == null && (!FileUtil.canWrite(mTaskParamInfo.tempFilePath) || !FileUtil.canWrite
                 (mTaskParamInfo.filePath))) {
             // error, savePath can not write
-            failReason = new OnFileDownloadStatusFailReason("savePath can not write !", 
+            failReason = new OnFileDownloadStatusFailReason(mTaskParamInfo.url, "savePath can not write !", 
                     OnFileDownloadStatusFailReason.TYPE_STORAGE_SPACE_CAN_NOT_WRITE);
         }
 
@@ -209,21 +209,22 @@ class DownloadTaskImpl implements DownloadTask, OnHttpDownloadListener, OnFileSa
                     checkPath = file.getParentFile().getAbsolutePath();
                 }
                 if (!FileUtil.isFilePath(checkPath)) {
-                    failReason = new OnFileDownloadStatusFailReason("file save path illegal !", 
+                    failReason = new OnFileDownloadStatusFailReason(mTaskParamInfo.url, "file save path illegal !", 
                             OnFileDownloadStatusFailReason.TYPE_FILE_SAVE_PATH_ILLEGAL);
                 } else {
                     long freeSize = FileUtil.getAvailableSpace(checkPath);
                     long needDownloadSize = mTaskParamInfo.fileTotalSize - mTaskParamInfo.startPosInTotal;
                     if (freeSize == -1 || needDownloadSize > freeSize) {
                         // error storage space is full
-                        failReason = new OnFileDownloadStatusFailReason("storage space is full or storage can not " +
-                                "write !", OnFileDownloadStatusFailReason.TYPE_STORAGE_SPACE_IS_FULL);
+                        failReason = new OnFileDownloadStatusFailReason(mTaskParamInfo.url, "storage space is full or" +
+                                " storage can not " + "write !", OnFileDownloadStatusFailReason
+                                .TYPE_STORAGE_SPACE_IS_FULL);
                     }
                 }
             } catch (Exception e) {
                 e.printStackTrace();
                 // cast Exception to OnFileDownloadStatusFailReason
-                failReason = new OnFileDownloadStatusFailReason(e);
+                failReason = new OnFileDownloadStatusFailReason(mTaskParamInfo.url, e);
             }
         }
 
@@ -326,8 +327,8 @@ class DownloadTaskImpl implements DownloadTask, OnHttpDownloadListener, OnFileSa
                 // 1.check url
                 if (!UrlUtil.isUrl(mTaskParamInfo.url)) {
                     // error url illegal
-                    FileDownloadStatusFailReason failReason = new OnFileDownloadStatusFailReason("url illegal !", 
-                            OnFileDownloadStatusFailReason.TYPE_URL_ILLEGAL);
+                    FileDownloadStatusFailReason failReason = new OnFileDownloadStatusFailReason(mTaskParamInfo.url, 
+                            "url illegal !", OnFileDownloadStatusFailReason.TYPE_URL_ILLEGAL);
 
                     mFinishState = new FinishState(Status.DOWNLOAD_STATUS_ERROR, failReason);
                     // goto finally, url error
@@ -359,7 +360,7 @@ class DownloadTaskImpl implements DownloadTask, OnHttpDownloadListener, OnFileSa
                     status = Status.DOWNLOAD_STATUS_FILE_NOT_EXIST;
                 }
             }
-            mFinishState = new FinishState(status, new OnFileDownloadStatusFailReason(e));
+            mFinishState = new FinishState(status, new OnFileDownloadStatusFailReason(mTaskParamInfo.url, e));
         } finally {
             // finally, notify caller by the FinishState
 
@@ -367,7 +368,8 @@ class DownloadTaskImpl implements DownloadTask, OnHttpDownloadListener, OnFileSa
             {
                 DownloadFileInfo downloadFileInfo = getDownloadFile();
                 if (downloadFileInfo == null) {
-                    FileDownloadStatusFailReason failReason = new OnFileDownloadStatusFailReason("the DownloadFile " +
+                    FileDownloadStatusFailReason failReason = new OnFileDownloadStatusFailReason(mTaskParamInfo.url, 
+                            "the DownloadFile " +
                             "is" + " null, may be not deleted ?", OnFileDownloadStatusFailReason.TYPE_NULL_POINTER);
                     mFinishState = new FinishState(Status.DOWNLOAD_STATUS_ERROR, failReason);
                 } else {
@@ -397,8 +399,9 @@ class DownloadTaskImpl implements DownloadTask, OnHttpDownloadListener, OnFileSa
                         }
                     } else {
                         // error download
-                        FileDownloadStatusFailReason failReason = new OnFileDownloadStatusFailReason("the download " 
-                                + "file size error !", OnFileDownloadStatusFailReason.TYPE_DOWNLOAD_FILE_ERROR);
+                        FileDownloadStatusFailReason failReason = new OnFileDownloadStatusFailReason(mTaskParamInfo
+                                .url, "the download " + "file size error !", OnFileDownloadStatusFailReason
+                                .TYPE_DOWNLOAD_FILE_ERROR);
                         mFinishState = new FinishState(Status.DOWNLOAD_STATUS_ERROR, failReason);
                     }
                 }
@@ -483,7 +486,8 @@ class DownloadTaskImpl implements DownloadTask, OnHttpDownloadListener, OnFileSa
         } catch (FileSaveException e) {
             e.printStackTrace();
             // error download
-            mFinishState = new FinishState(Status.DOWNLOAD_STATUS_ERROR, new OnFileDownloadStatusFailReason(e));
+            mFinishState = new FinishState(Status.DOWNLOAD_STATUS_ERROR, new OnFileDownloadStatusFailReason
+                    (mTaskParamInfo.url, e));
         }
     }
 
@@ -565,7 +569,8 @@ class DownloadTaskImpl implements DownloadTask, OnHttpDownloadListener, OnFileSa
             return true;
         } catch (Exception e) {
             e.printStackTrace();
-            mFinishState = new FinishState(Status.DOWNLOAD_STATUS_ERROR, new OnFileDownloadStatusFailReason(e));
+            mFinishState = new FinishState(Status.DOWNLOAD_STATUS_ERROR, new OnFileDownloadStatusFailReason
+                    (mTaskParamInfo.url, e));
             return false;
         }
     }
@@ -587,7 +592,8 @@ class DownloadTaskImpl implements DownloadTask, OnHttpDownloadListener, OnFileSa
             return true;
         } catch (Exception e) {
             e.printStackTrace();
-            mFinishState = new FinishState(Status.DOWNLOAD_STATUS_ERROR, new OnFileDownloadStatusFailReason(e));
+            mFinishState = new FinishState(Status.DOWNLOAD_STATUS_ERROR, new OnFileDownloadStatusFailReason
+                    (mTaskParamInfo.url, e));
             return false;
         }
     }
@@ -609,7 +615,8 @@ class DownloadTaskImpl implements DownloadTask, OnHttpDownloadListener, OnFileSa
             return true;
         } catch (Exception e) {
             e.printStackTrace();
-            mFinishState = new FinishState(Status.DOWNLOAD_STATUS_ERROR, new OnFileDownloadStatusFailReason(e));
+            mFinishState = new FinishState(Status.DOWNLOAD_STATUS_ERROR, new OnFileDownloadStatusFailReason
+                    (mTaskParamInfo.url, e));
             return false;
         }
     }
@@ -627,8 +634,8 @@ class DownloadTaskImpl implements DownloadTask, OnHttpDownloadListener, OnFileSa
             if (downloadFileInfo == null) {
                 // if error, make sure the increaseSize is zero
                 increaseSize = 0;
-                FileDownloadStatusFailReason failReason = new OnFileDownloadStatusFailReason("the DownloadFile is " +
-                        "null!", OnFileDownloadStatusFailReason.TYPE_NULL_POINTER);
+                FileDownloadStatusFailReason failReason = new OnFileDownloadStatusFailReason(mTaskParamInfo.url, "the" +
+                        " DownloadFile is " + "null!", OnFileDownloadStatusFailReason.TYPE_NULL_POINTER);
                 mFinishState = new FinishState(Status.DOWNLOAD_STATUS_ERROR, increaseSize, failReason);
 
                 return false;
@@ -666,8 +673,7 @@ class DownloadTaskImpl implements DownloadTask, OnHttpDownloadListener, OnFileSa
             e.printStackTrace();
             // if error, make sure the increaseSize is zero
             increaseSize = 0;
-            mFinishState = new FinishState(Status.DOWNLOAD_STATUS_ERROR, increaseSize, new 
-                    OnFileDownloadStatusFailReason(e));
+            mFinishState = new FinishState(Status.DOWNLOAD_STATUS_ERROR, increaseSize, new OnFileDownloadStatusFailReason(mTaskParamInfo.url, e));
             return false;
         }
     }
@@ -745,8 +751,7 @@ class DownloadTaskImpl implements DownloadTask, OnHttpDownloadListener, OnFileSa
                         e1.printStackTrace();
                     }
                     if (mOnFileDownloadStatusListener != null) {
-                        mOnFileDownloadStatusListener.onFileDownloadStatusFailed(getUrl(), getDownloadFile(), new 
-                                OnFileDownloadStatusFailReason(e));
+                        mOnFileDownloadStatusListener.onFileDownloadStatusFailed(getUrl(), getDownloadFile(), new OnFileDownloadStatusFailReason(mTaskParamInfo.url, e));
                     }
 
                     Log.e(TAG, "file-downloader-status 记录【暂停/完成/出错状态】失败，url：" + mTaskParamInfo.url);
@@ -824,8 +829,8 @@ class DownloadTaskImpl implements DownloadTask, OnHttpDownloadListener, OnFileSa
 
         // if it is stopped,notify stop failed
         if (isStopped()) {
-            notifyStopTaskFailedIfNecessary(new StopDownloadFileTaskFailReason("the task has been stopped!", 
-                    StopDownloadFileTaskFailReason.TYPE_TASK_HAS_BEEN_STOPPED));
+            notifyStopTaskFailedIfNecessary(new StopDownloadFileTaskFailReason(mTaskParamInfo.url, "the task has been" +
+                    " stopped!", StopDownloadFileTaskFailReason.TYPE_TASK_HAS_BEEN_STOPPED));
             return;
         }
         // stop must be async
