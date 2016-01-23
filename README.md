@@ -1,11 +1,11 @@
 # file-downloader
 
-FileDownloader, is a powerful http-file download tool, my goal is to make downloading http-file easily.
+FileDownloader, a powerful http-file download tool, I am to make downloading http-file easily.
 
 [中文说明文档](https://github.com/wlfcolin/file-downloader/blob/master/README-zh.md)
 
 **Features**
-* Multi task at same time, Broken-point download, Auto retry, Support download large file bigger than 2G, download files CRUD and so on.
+* Multi task at same time, Broken-point download, Auto retry, Support download large file bigger than 2G, Powerful to deal with exceptions, download files CRUD and so on.
 
 ----------------------------------------------------------------------
 **Captures**
@@ -14,15 +14,15 @@ FileDownloader, is a powerful http-file download tool, my goal is to make downlo
 
 ----------------------------------------------------------------------
 **Quick start**
-* step 1.add in dependencies in your module's build.gradle
+* step 1. add in dependencies in your module's build.gradle
 ``` java
-compile 'org.wlf:FileDownloader:0.3.0'
+compile 'org.wlf:FileDownloader:0.3.1'
 ``` 
 for eclipse users, jars here:
-**[FileDownloader-0.3.0.jar](https://github.com/wlfcolin/file-downloader/raw/master/download/release/FileDownloader-0.3.0.jar)**, 
-**[FileDownloader-0.3.0-sources.jar](https://dl.bintray.com/wlfcolin/maven/org/wlf/FileDownloader/0.3.0/FileDownloader-0.3.0-sources.jar)**
+**[FileDownloader-0.3.1.jar](https://github.com/wlfcolin/file-downloader/raw/master/download/release/FileDownloader-0.3.1.jar)**,
+**[FileDownloader-0.3.1-sources.jar](https://dl.bintray.com/wlfcolin/maven/org/wlf/FileDownloader/0.3.1/FileDownloader-0.3.1-sources.jar)**
 
-* step 2.init FileDownloader in your application's onCreate()
+* step 2. init FileDownloader in your application's onCreate()
 ``` java
 // 1.create FileDownloadConfiguration.Builder
 Builder builder = new FileDownloadConfiguration.Builder(this);
@@ -44,19 +44,20 @@ FileDownloadConfiguration configuration = builder.build(); // build FileDownload
 FileDownloader.init(configuration);
 ```
 
-* step 3.register listeners
+* step 3. register listeners
 
 -register a DownloadStatusListener(may be at the time the fragment or activity's onCreate called, 
-you can ignore this if your app do not care the download progress such as you are using a service in background)
+you can ignore this if your app do not care the download progress, if you want to use in android service,
+see [Use FileDownloader in Service](https://github.com/wlfcolin/file-downloader/blob/master/USEINSERVICE.md))
 ``` java
-private OnFileDownloadStatusListener mOnFileDownloadStatusListener = new OnRetryableFileDownloadStatusListener() {
+private OnFileDownloadStatusListener mOnFileDownloadStatusListener = new OnSimpleFileDownloadStatusListener() {
     @Override
     public void onFileDownloadStatusRetrying(DownloadFileInfo downloadFileInfo, int retryTimes) {
-        // retrying download when failed once
+        // retrying download when failed once, the retryTimes is the current trying times
     }
     @Override
     public void onFileDownloadStatusWaiting(DownloadFileInfo downloadFileInfo) {
-        // waiting for download(wait for other task paused)
+        // waiting for download(wait for other task paused, or FileDownloader is busy for other operations)
     }
     @Override
     public void onFileDownloadStatusPreparing(DownloadFileInfo downloadFileInfo) {
@@ -69,7 +70,7 @@ private OnFileDownloadStatusListener mOnFileDownloadStatusListener = new OnRetry
     @Override
     public void onFileDownloadStatusDownloading(DownloadFileInfo downloadFileInfo, float downloadSpeed, long
             remainingTime) {
-        // downloading
+        // downloading, the downloadSpeed with KB/s unit, the remainingTime with seconds unit
     }
     @Override
     public void onFileDownloadStatusPaused(DownloadFileInfo downloadFileInfo) {
@@ -82,18 +83,27 @@ private OnFileDownloadStatusListener mOnFileDownloadStatusListener = new OnRetry
     @Override
     public void onFileDownloadStatusFailed(String url, DownloadFileInfo downloadFileInfo, FileDownloadStatusFailReason failReason) {
         // error occur, see failReason for details, some of the failReason you must concern
+
         String failType = failReason.getType();
+        String failUrl = failReason.getUrl();// or failUrl = url, both url and failReason.getType() are the same
+
         if(FileDownloadStatusFailReason.TYPE_URL_ILLEGAL.equals(failType)){
-            // url error
+            // the url error when downloading file with failUrl
         }else if(FileDownloadStatusFailReason.TYPE_STORAGE_SPACE_IS_FULL.equals(failType)){
-            // storage space is full
+            // storage space is full when downloading file with failUrl
         }else if(FileDownloadStatusFailReason.TYPE_NETWORK_DENIED.equals(failType)){
-            // network access denied
+            // network access denied when downloading file with failUrl
         }else if(FileDownloadStatusFailReason.TYPE_NETWORK_TIMEOUT.equals(failType)){
-            // connect timeout
+            // connect timeout when downloading file with failUrl
         }else{
             // more....
         }
+
+        // exception details
+        Throwable failCause = failReason.getCause();// or failReason.getOriginalCause()
+
+        // also you can see the exception message
+        String failMsg = failReason.getMessage();// or failReason.getOriginalCause().getMessage()
     }
 };
 FileDownloader.registerDownloadStatusListener(mOnFileDownloadStatusListener);
@@ -104,7 +114,7 @@ FileDownloader.registerDownloadStatusListener(mOnFileDownloadStatusListener);
 private OnDownloadFileChangeListener mOnDownloadFileChangeListener = new OnDownloadFileChangeListener() {
     @Override
     public void onDownloadFileCreated(DownloadFileInfo downloadFileInfo) {
-        // a new download file created, may be you need to sync your own data storage status, such as delete a record in your own database
+        // a new download file created, may be you need to sync your own data storage status, such as add a record in your own database
     }
     @Override
     public void onDownloadFileUpdated(DownloadFileInfo downloadFileInfo, Type type) {
@@ -120,11 +130,11 @@ FileDownloader.registerDownloadFileChangeListener(mOnDownloadFileChangeListener)
 the difference between DownloadStatusListener and DownloadFileChangeListener is, 
 DownloadStatusListener concerns the download progress, and DownloadFileChangeListener concerns the data change 
 
-* step 4.start to download and operate the url files
+* step 4. start to download and operate the url files
 
 -create a new download
 ``` java
-FileDownloader.start(url);
+FileDownloader.start(url);// start a new download if not download yet, or continue download if it start download before, it will auto Broken-point if the server supported
 ```
 
 -or create a custom new download
@@ -132,7 +142,7 @@ FileDownloader.start(url);
 FileDownloader.detect(url, new OnDetectBigUrlFileListener() {
     @Override
     public void onDetectNewDownloadFile(String url, String fileName, String saveDir, long fileSize) {
-        // here to change fileName, saveDir if needed
+        // here to change to custom fileName, saveDir if needed
         FileDownloader.createAndStart(url, newFileDir, newFileName);
     }
     @Override
@@ -156,7 +166,7 @@ FileDownloader.pauseAll();// pause all
 
 -continue a paused download
 ``` java
-FileDownloader.start(url);
+FileDownloader.start(url);// continue to download, it will auto Broken-point if the server supported
 ```
 
 -move download files to new dir path
@@ -176,7 +186,7 @@ FileDownloader.delete(urls, true, mOnDeleteDownloadFilesListener);// delete mult
 FileDownloader.rename(url, newName, true, mOnRenameDownloadFileListener);
 ```
 
-* step 5.unregister listeners
+* step 5. unregister listeners
 
 -unregister the DownloadStatusListener(may be at the time the fragment or activity's onDestroy called)
 ``` java
@@ -189,7 +199,7 @@ FileDownloader.unregisterDownloadFileChangeListener(mOnDownloadFileChangeListene
 ```
 
 ----------------------------------------------------------------------
-**[API docs](http://htmlpreview.github.io/?https://raw.githubusercontent.com/wlfcolin/file-downloader/master/download/release/FileDownloader-0.3.0-javadoc/index.html)**
+**[API docs](http://htmlpreview.github.io/?https://raw.githubusercontent.com/wlfcolin/file-downloader/master/download/release/FileDownloader-0.3.1-javadoc/index.html)**
 
 ----------------------------------------------------------------------
 **[Version change log](https://github.com/wlfcolin/file-downloader/blob/master/CHANGELOG.md)**
@@ -197,23 +207,23 @@ FileDownloader.unregisterDownloadFileChangeListener(mOnDownloadFileChangeListene
 ----------------------------------------------------------------------
 **Upgrade to latest version help**
 
-* 0.2.X --> 0.3.0
+* 0.2.X --> 0.3.X
 
 -replace FileDownloader.detect(String, OnDetectUrlFileListener) with FileDownloader.detect(String, OnDetectBigUrlFileListener) for supporting large file bigger than 2G to detect recommended.
 
 -replace DownloadFileInfo.getFileSize() with DownloadFileInfo.getFileSizeLong(), and also replace DownloadFileInfo.getDownloadedSize() with DownloadFileInfo.getDownloadedSizeLong() for supporting large file bigger than 2G to detect recommended.
 
--replace FileDownloader.registerDownloadStatusListener(OnFileDownloadStatusListener) with FileDownloader.registerDownloadStatusListener(OnRetryableFileDownloadStatusListener) for better experience.
+-replace FileDownloader.registerDownloadStatusListener(OnFileDownloadStatusListener) with FileDownloader.registerDownloadStatusListener(OnSimpleFileDownloadStatusListener or OnRetryableFileDownloadStatusListener) for better experience.
 
 -do not forget to do unregisterDownloadStatusListener(OnFileDownloadStatusListener) and unregisterDownloadFileChangeListener(OnDownloadFileChangeListener) if your registered then, because the listeners may cause memory overflow if you never unregister then.
 
 -replace all FailReason classes started with On by those ones started with non-On, eg. OnFileDownloadStatusFailReason -->FileDownloadStatusFailReason.
 
-* 0.1.X --> 0.3.0
+* 0.1.X --> 0.3.X
 
 -replace class FileDownloadManager with new class FileDownloader, also replace all methods in the FileDownloadManager with new ones recommended.
 
--do steps in 0.2.X --> 0.3.0
+-do steps in 0.2.X --> 0.3.X
 
 ----------------------------------------------------------------------
 **[Design of FileDownloader](https://github.com/wlfcolin/file-downloader/blob/master/DESIGN.md)**

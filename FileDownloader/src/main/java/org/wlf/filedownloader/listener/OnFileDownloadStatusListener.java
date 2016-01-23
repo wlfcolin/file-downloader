@@ -45,8 +45,8 @@ public interface OnFileDownloadStatusListener {
      * downloading
      *
      * @param downloadFileInfo download file info
-     * @param downloadSpeed    download speed,KB/s
-     * @param remainingTime    remain time,seconds
+     * @param downloadSpeed    download speed, KB/s
+     * @param remainingTime    remain time, seconds
      */
     void onFileDownloadStatusDownloading(DownloadFileInfo downloadFileInfo, float downloadSpeed, long remainingTime);
 

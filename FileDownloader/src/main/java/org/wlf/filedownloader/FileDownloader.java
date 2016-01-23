@@ -3,6 +3,7 @@ package org.wlf.filedownloader;
 import android.content.Context;
 
 import org.wlf.filedownloader.base.Control;
+import org.wlf.filedownloader.base.Status;
 import org.wlf.filedownloader.listener.OnDeleteDownloadFileListener;
 import org.wlf.filedownloader.listener.OnDeleteDownloadFilesListener;
 import org.wlf.filedownloader.listener.OnDetectBigUrlFileListener;
@@ -13,7 +14,9 @@ import org.wlf.filedownloader.listener.OnMoveDownloadFileListener;
 import org.wlf.filedownloader.listener.OnMoveDownloadFilesListener;
 import org.wlf.filedownloader.listener.OnRenameDownloadFileListener;
 import org.wlf.filedownloader.listener.OnRetryableFileDownloadStatusListener;
+import org.wlf.filedownloader.util.DownloadFileUtil;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -118,6 +121,28 @@ public final class FileDownloader {
         return getFileDownloadManager().getDownloadFiles();
     }
 
+    //    /**
+    //     * get all DownloadUrls
+    //     *
+    //     * @return all DownloadUrls
+    //     */
+    //    public static List<String> getDownloadUrls() {
+    //
+    //        Set<String> urls = new HashSet<String>();
+    //
+    //        List<DownloadFileInfo> downloadFileInfos = getDownloadFiles();
+    //        if (downloadFileInfos != null) {
+    //            for (DownloadFileInfo downloadFileInfo : downloadFileInfos) {
+    //                if (!DownloadFileUtil.isLegal(downloadFileInfo)) {
+    //                    continue;
+    //                }
+    //                urls.add(downloadFileInfo.getUrl());
+    //            }
+    //        }
+    //
+    //        return new ArrayList<String>(urls);
+    //    }
+
     /**
      * get download save dir
      *
@@ -125,6 +150,15 @@ public final class FileDownloader {
      */
     public static String getDownloadDir() {
         return getFileDownloadManager().getDownloadDir();
+    }
+
+    /**
+     * get FileDownloadConfiguration
+     *
+     * @return the FileDownloadConfiguration
+     */
+    public static FileDownloadConfiguration getFileDownloadConfiguration() {
+        return FileDownloadManager.getFileDownloadConfiguration();
     }
 
     // --------------------------------------register & unregister listeners--------------------------------------
@@ -151,9 +185,9 @@ public final class FileDownloader {
      * @param downloadStatusConfiguration  Configuration for the OnFileDownloadStatusListener impl
      * @since 0.3.0
      */
-    public static void registerDownloadStatusListener(OnFileDownloadStatusListener onFileDownloadStatusListener, 
+    public static void registerDownloadStatusListener(OnFileDownloadStatusListener onFileDownloadStatusListener,
                                                       DownloadStatusConfiguration downloadStatusConfiguration) {
-        getFileDownloadManager().registerDownloadStatusListener(onFileDownloadStatusListener, 
+        getFileDownloadManager().registerDownloadStatusListener(onFileDownloadStatusListener,
                 downloadStatusConfiguration);
     }
 
@@ -214,9 +248,10 @@ public final class FileDownloader {
      * @param downloadFileChangeConfiguration Configuration for the OnDownloadFileChangeListener impl
      * @since 0.3.0
      */
-    public static void registerDownloadFileChangeListener(OnDownloadFileChangeListener onDownloadFileChangeListener, 
-                                                   DownloadFileChangeConfiguration downloadFileChangeConfiguration) {
-        getFileDownloadManager().registerDownloadFileChangeListener(onDownloadFileChangeListener, 
+    public static void registerDownloadFileChangeListener(OnDownloadFileChangeListener onDownloadFileChangeListener,
+                                                          DownloadFileChangeConfiguration
+                                                                  downloadFileChangeConfiguration) {
+        getFileDownloadManager().registerDownloadFileChangeListener(onDownloadFileChangeListener,
                 downloadFileChangeConfiguration);
     }
 
@@ -304,6 +339,39 @@ public final class FileDownloader {
         getFileDownloadManager().start(urls);
     }
 
+    /**
+     * continue all downloads those recorded by file-downloader
+     *
+     * @param isIncludedErrorDownloads true means force to start download the download file that with error status
+     */
+    public static void continueAll(boolean isIncludedErrorDownloads) {
+
+        List<String> urls = new ArrayList<String>();
+
+        List<DownloadFileInfo> downloadFileInfos = getDownloadFiles();
+        if (downloadFileInfos != null) {
+            for (DownloadFileInfo downloadFileInfo : downloadFileInfos) {
+                if (!DownloadFileUtil.isLegal(downloadFileInfo)) {
+                    continue;
+                }
+                if (downloadFileInfo.getStatus() != Status.DOWNLOAD_STATUS_COMPLETED) {
+                    if (isIncludedErrorDownloads) {
+                        urls.add(downloadFileInfo.getUrl());
+                    } else {
+                        if (downloadFileInfo.getStatus() != Status.DOWNLOAD_STATUS_ERROR) {
+                            urls.add(downloadFileInfo.getUrl());
+                        } else {
+                            // ignore
+                        }
+                    }
+                }
+            }
+        }
+
+        start(urls);
+
+    }
+
     // --------------------------------------pause downloads--------------------------------------
 
     /**
@@ -384,7 +452,7 @@ public final class FileDownloader {
      * @param onMoveDownloadFilesListener OnMoveDownloadFilesListener impl
      * @return a control for the operation
      */
-    public static Control move(List<String> urls, String newDirPath, OnMoveDownloadFilesListener 
+    public static Control move(List<String> urls, String newDirPath, OnMoveDownloadFilesListener
             onMoveDownloadFilesListener) {
         return getFileDownloadManager().move(urls, newDirPath, onMoveDownloadFilesListener);
     }
@@ -398,7 +466,7 @@ public final class FileDownloader {
      * @param deleteDownloadedFileInPath   whether delete file in path
      * @param onDeleteDownloadFileListener OnDeleteDownloadFileListener impl
      */
-    public static void delete(String url, boolean deleteDownloadedFileInPath, OnDeleteDownloadFileListener 
+    public static void delete(String url, boolean deleteDownloadedFileInPath, OnDeleteDownloadFileListener
             onDeleteDownloadFileListener) {
         getFileDownloadManager().delete(url, deleteDownloadedFileInPath, onDeleteDownloadFileListener);
     }
@@ -411,7 +479,7 @@ public final class FileDownloader {
      * @param onDeleteDownloadFilesListener OnDeleteDownloadFilesListener impl
      * @return a control for the operation
      */
-    public static Control delete(List<String> urls, boolean deleteDownloadedFile, OnDeleteDownloadFilesListener 
+    public static Control delete(List<String> urls, boolean deleteDownloadedFile, OnDeleteDownloadFilesListener
             onDeleteDownloadFilesListener) {
         return getFileDownloadManager().delete(urls, deleteDownloadedFile, onDeleteDownloadFilesListener);
     }
@@ -427,7 +495,7 @@ public final class FileDownloader {
      *                                     newFileName not include the suffix
      * @param onRenameDownloadFileListener OnRenameDownloadFileListener impl
      */
-    public static void rename(String url, String newFileName, boolean includedSuffix, OnRenameDownloadFileListener 
+    public static void rename(String url, String newFileName, boolean includedSuffix, OnRenameDownloadFileListener
             onRenameDownloadFileListener) {
         getFileDownloadManager().rename(url, newFileName, includedSuffix, onRenameDownloadFileListener);
     }

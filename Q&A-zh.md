@@ -12,4 +12,4 @@ A: 不会，FileDownloader回通过状态告诉你文件不存在了（DownloadF
 
 ----------------------------------------------------------------------
 Q: 如果服务器文件被替换了，但是下载URL还是一样，请问会自动重新下载这个URL地址一样的新文件吗？
-A: 不会，如果服务器支持eTag，FileDownloader会通过失败回调告诉你文件改变了（FileDownloadStatusFailReason.TYPE_DOWNLOAD_FILE_ERROR,0.3.1之后将改为FileDownloadStatusFailReason.TYPE_URL_FILE_CHANGED）。
+A: 不会，如果服务器支持eTag，FileDownloader会通过失败回调告诉你文件改变了（FileDownloadStatusFailReason.TYPE_DOWNLOAD_FILE_ERROR，0.3.1之后这种情况失败改为FileDownloadStatusFailReason.TYPE_URL_FILE_CHANGED）。

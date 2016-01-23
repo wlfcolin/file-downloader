@@ -28,13 +28,22 @@ public class CustomVideoInfo implements OnDownloadFileChangeListener {
         mStartTime = startTime;
         mEndTime = endTime;
 
+        init();
+    }
+
+    /**
+     * init resources
+     */
+    private void init() {
         // register DownloadFileChangeListener
         FileDownloader.registerDownloadFileChangeListener(this);
-
         // init DownloadFileInfo if has been downloaded
         mDownloadFileInfo = FileDownloader.getDownloadFile(mUrl);
     }
 
+    /**
+     * release resources
+     */
     public void release() {
         // unregister
         FileDownloader.unregisterDownloadFileChangeListener(this);

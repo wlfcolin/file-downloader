@@ -13,4 +13,4 @@
 ----------------------------------------------------------------------
 *Q:* if the server url file change a new file, but the url is not changed, whether the FileDownloader will reStart download the url file automatic
 
-*A:* No, if the server provided eTag, FileDownloader will tell you FileDownloadStatusFailReason.TYPE_DOWNLOAD_FILE_ERROR (since 0.3.1,the type will be FileDownloadStatusFailReason.TYPE_URL_FILE_CHANGED) in OnFileDownloadStatusListener.onFileDownloadStatusFailed callback.
+*A:* No, if the server provided eTag, FileDownloader will tell you FileDownloadStatusFailReason.TYPE_DOWNLOAD_FILE_ERROR (since 0.3.1, in this case the type will be FileDownloadStatusFailReason.TYPE_URL_FILE_CHANGED) in OnFileDownloadStatusListener.onFileDownloadStatusFailed callback.

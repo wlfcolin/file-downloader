@@ -46,11 +46,10 @@ public class CoursePreviewInfo implements OnDownloadFileChangeListener {
     private CourseDbHelper mCourseDbHelper;//the DbOpenHelper
 
     private CoursePreviewInfo() {
-
         init();
     }
 
-    public CoursePreviewInfo(String courseId, String courseUrl, String courseCoverUrl, String courseName, 
+    public CoursePreviewInfo(String courseId, String courseUrl, String courseCoverUrl, String courseName,
                              CourseDbHelper courseDbHelper) {
         mCourseId = courseId;
         mCourseUrl = courseUrl;
@@ -61,16 +60,21 @@ public class CoursePreviewInfo implements OnDownloadFileChangeListener {
         init();
     }
 
+    /**
+     * init resources
+     */
     public void init() {
         // register DownloadFileChangeListener
         FileDownloader.registerDownloadFileChangeListener(this);
-
         // init DownloadFileInfo if has been downloaded
         if (!TextUtils.isEmpty(mCourseUrl)) {
             mDownloadFileInfo = FileDownloader.getDownloadFile(mCourseUrl);
         }
     }
 
+    /**
+     * release resources
+     */
     public void release() {
         // unregister
         FileDownloader.unregisterDownloadFileChangeListener(this);
@@ -141,12 +145,12 @@ public class CoursePreviewInfo implements OnDownloadFileChangeListener {
                     if (mCourseDbHelper == null) {
                         return;
                     }
-                   UpdateBuilder builder = mCourseDbHelper.getDao(CoursePreviewInfo.class).updateBuilder();
+                    UpdateBuilder builder = mCourseDbHelper.getDao(CoursePreviewInfo.class).updateBuilder();
                     builder.where().eq(CoursePreviewInfo.COLUMN_NAME_OF_FIELD_COURSE_URL, downloadFileInfo.getUrl());
                     int result = builder.update();
-                    if(result == 1){
+                    if (result == 1) {
                         this.mDownloadFileInfo = downloadFileInfo;
-                    }else{
+                    } else {
                         Dao<CoursePreviewInfo, Integer> dao = mCourseDbHelper.getDao(CoursePreviewInfo.class);
                         CreateOrUpdateStatus status = dao.createOrUpdate(this);
                         if (status.isCreated() || status.isUpdated()) {

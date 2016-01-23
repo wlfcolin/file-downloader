@@ -14,11 +14,11 @@ FileDownloader是安卓上轻量级Http文件下载框架，我的目标是让�
 **三、快速上手使用**
 * 第一步、在项目模块的build.gradle配置gradle
 ``` java
-compile 'org.wlf:FileDownloader:0.3.0'
+compile 'org.wlf:FileDownloader:0.3.1'
 ``` 
 eclipse用户，可以在这里下载jar包：
-**[FileDownloader-0.3.0.jar](https://github.com/wlfcolin/file-downloader/raw/master/download/release/FileDownloader-0.3.0.jar)**, 
-**[FileDownloader-0.3.0-sources.jar](https://dl.bintray.com/wlfcolin/maven/org/wlf/FileDownloader/0.3.0/FileDownloader-0.3.0-sources.jar)**
+**[FileDownloader-0.3.1.jar](https://github.com/wlfcolin/file-downloader/raw/master/download/release/FileDownloader-0.3.1.jar)**,
+**[FileDownloader-0.3.1-sources.jar](https://dl.bintray.com/wlfcolin/maven/org/wlf/FileDownloader/0.3.1/FileDownloader-0.3.1-sources.jar)**
 
 * 第二步、在你的应用application的onCreate()中初始化FileDownloader
 ``` java
@@ -45,16 +45,16 @@ FileDownloader.init(configuration);
 
 * 第三步、注册监听器（如果不需要监听，可以忽略），监听器是基于观察者模式设计的全局监听器，可以设置多个，记得在不需要的时候取消注册
 
--注册下载状态监听器(一搬在fragment或activity的onCreate方法中注册，亦可能在service中统一处理)
+-注册下载状态监听器(一般在fragment或activity的onCreate方法中注册，如果你使用service，请查看[在Service中使用FileDownloader](https://github.com/wlfcolin/file-downloader/blob/master/USEINSERVICE-zh.md))
 ``` java
-private OnFileDownloadStatusListener mOnFileDownloadStatusListener = new OnRetryableFileDownloadStatusListener() {
+private OnFileDownloadStatusListener mOnFileDownloadStatusListener = new OnSimpleFileDownloadStatusListener() {
     @Override
     public void onFileDownloadStatusRetrying(DownloadFileInfo downloadFileInfo, int retryTimes) {
-        // 正在重试下载（如果你配置了重试次数，当一旦下载失败时会尝试重试下载）
+        // 正在重试下载（如果你配置了重试次数，当一旦下载失败时会尝试重试下载），retryTimes是当前第几次重试
     }
     @Override
     public void onFileDownloadStatusWaiting(DownloadFileInfo downloadFileInfo) {
-        // 等待下载（等待其它任务执行完成，或者FileDownloader还没准备好下载）
+        // 等待下载（等待其它任务执行完成，或者FileDownloader在忙别的操作）
     }
     @Override
     public void onFileDownloadStatusPreparing(DownloadFileInfo downloadFileInfo) {
@@ -67,7 +67,7 @@ private OnFileDownloadStatusListener mOnFileDownloadStatusListener = new OnRetry
     @Override
     public void onFileDownloadStatusDownloading(DownloadFileInfo downloadFileInfo, float downloadSpeed, long
             remainingTime) {
-        // 正在下载
+        // 正在下载，downloadSpeed为当前下载速度，单位KB/s，remainingTime为预估的剩余时间，单位秒
     }
     @Override
     public void onFileDownloadStatusPaused(DownloadFileInfo downloadFileInfo) {
@@ -80,18 +80,27 @@ private OnFileDownloadStatusListener mOnFileDownloadStatusListener = new OnRetry
     @Override
     public void onFileDownloadStatusFailed(String url, DownloadFileInfo downloadFileInfo, FileDownloadStatusFailReason failReason) {
         // 下载失败了，详细查看失败原因failReason，有些失败原因你可能必须关心
+
         String failType = failReason.getType();
+        String failUrl = failReason.getUrl();// 或：failUrl = url，url和failReason.getType()会是一样的
+
         if(FileDownloadStatusFailReason.TYPE_URL_ILLEGAL.equals(failType)){
-            // url有错误
+            // 下载failUrl时出现url错误
         }else if(FileDownloadStatusFailReason.TYPE_STORAGE_SPACE_IS_FULL.equals(failType)){
-            // 本地存储空间不足
+            // 下载failUrl时出现本地存储空间不足
         }else if(FileDownloadStatusFailReason.TYPE_NETWORK_DENIED.equals(failType)){
-            // 无法访问网络
+            // 下载failUrl时出现无法访问网络
         }else if(FileDownloadStatusFailReason.TYPE_NETWORK_TIMEOUT.equals(failType)){
-            // 连接超时
+            // 下载failUrl时出现连接超时
         }else{
             // 更多错误....
         }
+
+        // 查看详细异常信息
+        Throwable failCause = failReason.getCause();// 或：failReason.getOriginalCause()
+
+        // 查看异常描述信息
+        String failMsg = failReason.getMessage();// 或：failReason.getOriginalCause().getMessage()
     }
 };
 FileDownloader.registerDownloadStatusListener(mOnFileDownloadStatusListener);
@@ -175,7 +184,7 @@ FileDownloader.rename(url, newName, true, mOnRenameDownloadFileListener);// 重�
 
 * 第五步、取消注册的监听器
 
--取消注册下载状态监听器(一搬在fragment或activity的onDestroy方法中取消注册)
+-取消注册下载状态监听器(一般在fragment或activity的onDestroy方法中取消注册)
 ``` java
 FileDownloader.unregisterDownloadStatusListener(mOnFileDownloadStatusListener);
 ```
@@ -186,7 +195,7 @@ FileDownloader.unregisterDownloadFileChangeListener(mOnDownloadFileChangeListene
 ```
 
 
-**[四、详细API文档](http://htmlpreview.github.io/?https://raw.githubusercontent.com/wlfcolin/file-downloader/master/download/release/FileDownloader-0.3.0-javadoc/index.html)**
+**[四、详细API文档](http://htmlpreview.github.io/?https://raw.githubusercontent.com/wlfcolin/file-downloader/master/download/release/FileDownloader-0.3.1-javadoc/index.html)**
 
 
 **[五、版本更新日志](https://github.com/wlfcolin/file-downloader/blob/master/CHANGELOG.md)**
@@ -194,23 +203,23 @@ FileDownloader.unregisterDownloadFileChangeListener(mOnDownloadFileChangeListene
 
 **六、旧版升级到最新版帮助说明**
 
-* 0.2.X --> 0.3.0
+* 0.2.X --> 0.3.X
 
 -建议替换用FileDownloader.detect(String, OnDetectBigUrlFileListener)替换掉FileDownloader.detect(String, OnDetectUrlFileListener)，以支持超过2G的大文件下载。
 
 -建议用DownloadFileInfo.getFileSizeLong()替换掉DownloadFileInfo.getFileSize()，用DownloadFileInfo.getDownloadedSizeLong()替换掉DownloadFileInfo.getDownloadedSize()，以便能正常显示超过2G文件的大小。
 
--建议用FileDownloader.registerDownloadStatusListener(OnRetryableFileDownloadStatusListener)替换掉FileDownloader.registerDownloadStatusListener(OnFileDownloadStatusListener)，以获得更好的体验。
+-建议用FileDownloader.registerDownloadStatusListener(OnSimpleFileDownloadStatusListener 或者 OnRetryableFileDownloadStatusListener)替换掉FileDownloader.registerDownloadStatusListener(OnFileDownloadStatusListener)，以获得更好的体验。
 
 -如果你注册了监听器，务必不要忘记在新版的合适时机取消注册unregisterDownloadStatusListener(OnFileDownloadStatusListener)和unregisterDownloadFileChangeListener(OnDownloadFileChangeListener)，以防止不必要的内存泄露麻烦。
 
 -所有以On开头的失败原因类（如：OnFileDownloadStatusFailReason）都替换成没有On开头的失败原因类（如：FileDownloadStatusFailReason）
 
-* 0.1.X --> 0.3.0
+* 0.1.X --> 0.3.X
 
 -建议使用类FileDownloader替换掉类FileDownloadManager，同时对应的方法也替换掉。
 
--执行0.2.X --> 0.3.0中的说明。
+-执行0.2.X --> 0.3.X中的说明。
 
 
 **[七、框架设计](https://github.com/wlfcolin/file-downloader/blob/master/DESIGN.md)**

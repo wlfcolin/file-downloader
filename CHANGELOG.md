@@ -1,5 +1,19 @@
 # file-downloader Version Change Log
 
+**0.3.1**
+* Fix the bug that can not download file from some php servers
+* Fix the bug that the method FileDownloader.registerDownloadFileChangeListener(OnDownloadFileChangeListener, DownloadFileChangeConfiguration) is not static
+* Fix the bug that calling FileDownloader.start will case the download file size error when the file does not exist in file system
+
+* Introduced abstract class OnSimpleFileDownloadStatusListener to implements OnRetryableFileDownloadStatusListener for easy use
+
+* New API in those classes extends from UrlFailReason such as FileDownloadStatusFailReason, DeleteDownloadFileFailReason, MoveDownloadFileFailReason, RenameDownloadFileFailReason:
+ * String getUrl()
+
+* New API in FileDownloader:
+ * continueAll(boolean)
+
+
 **0.3.0**
 * Fix can not call the listener's method some times because of the weak reference of the listener
 * Fix the wrong status that delete the file in file system when downloading
@@ -16,8 +30,8 @@
  * configDebugMode(boolean)
 
 * New API in FileDownloader:
- * registerDownloadFileChangeListener(OnDownloadFileChangeListener,DownloadFileChangeConfiguration)
- * registerDownloadStatusListener(OnFileDownloadStatusListener,DownloadStatusConfiguration)
+ * registerDownloadFileChangeListener(OnDownloadFileChangeListener, DownloadFileChangeConfiguration)
+ * registerDownloadStatusListener(OnFileDownloadStatusListener, DownloadStatusConfiguration)
 
 * Deprecated in DownloadFileInfo:
  * getFileSize()-->getFileSizeLong() instead
