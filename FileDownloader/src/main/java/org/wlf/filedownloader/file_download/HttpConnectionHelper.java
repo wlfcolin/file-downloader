@@ -8,7 +8,6 @@ import org.wlf.filedownloader.util.CollectionUtil;
 import org.wlf.filedownloader.util.MapUtil;
 import org.wlf.filedownloader.util.UrlUtil;
 
-import java.io.File;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
@@ -36,7 +35,7 @@ public class HttpConnectionHelper {
     /**
      * create Detect http file Connection
      */
-    public static HttpURLConnection createDetectConnection(String url, int connectTimeout, String charset) throws 
+    public static HttpURLConnection createDetectConnection(String url, int connectTimeout, String charset) throws
             Exception {
         return createHttpUrlConnection(new RequestParam(url, connectTimeout, charset));
     }
@@ -79,13 +78,13 @@ public class HttpConnectionHelper {
         conn.setReadTimeout(requestParam.mConnectTimeout);// FIXME read timeout equals to connect timeout
 
         conn.setRequestProperty("Accept-Encoding", "identity");// FIXME now identity only
-        System.setProperty("http.keepAlive", "false");// FIXME now force do not keep alive
+        // System.setProperty("http.keepAlive", "false");
 
         if (!TextUtils.isEmpty(requestParam.mCharset)) {
             conn.setRequestProperty("Charset", requestParam.mCharset);
         }
 
-        // set range, Support HTTP 1.1 and above only
+        // set range, Support HTTP 1.1 and above
         if (requestParam.mRangeStartPos > 0) {
             if (requestParam.mRangeEndPos > 0 && requestParam.mRangeEndPos > requestParam.mRangeStartPos) {
                 conn.setRequestProperty("Range", "bytes=" + requestParam.mRangeStartPos + "-" + requestParam
@@ -93,6 +92,7 @@ public class HttpConnectionHelper {
             } else {
                 conn.setRequestProperty("Range", "bytes=" + requestParam.mRangeStartPos + "-");
             }
+            // eTag first
             if (!TextUtils.isEmpty(requestParam.mETag)) {
                 conn.setRequestProperty("If-Range", requestParam.mETag);
             } else {
@@ -107,17 +107,17 @@ public class HttpConnectionHelper {
         return conn;
     }
 
-    // FIXME not use now
-    private static void enableHttpResponseCache(String cacheDirPath) {
-        try {
-            long httpCacheSize = 10 * 1024 * 1024;// 10M
-            File httpCacheDir = new File(cacheDirPath, "http_cache");
-            Class.forName("android.net.http.HttpResponseCache").getMethod("install", File.class, long.class).invoke
-                    (null, httpCacheDir, httpCacheSize);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
+    //    private static void enableHttpResponseCache(String cacheDirPath) {
+    //        try {
+    //            long httpCacheSize = 10 * 1024 * 1024;// 10M
+    //            File httpCacheDir = new File(cacheDirPath, "http_cache");
+    //            Class.forName("android.net.http.HttpResponseCache").getMethod("install", File.class, long.class)
+    // .invoke
+    //                    (null, httpCacheDir, httpCacheSize);
+    //        } catch (Exception e) {
+    //            e.printStackTrace();
+    //        }
+    //    }
 
     public static class RequestParam {
 
@@ -135,7 +135,7 @@ public class HttpConnectionHelper {
             mCharset = charset;
         }
 
-        public RequestParam(String url, int connectTimeout, String charset, long rangeStartPos, long rangeEndPos, 
+        public RequestParam(String url, int connectTimeout, String charset, long rangeStartPos, long rangeEndPos,
                             String ETag, String lastModified) {
             mUrl = url;
             mConnectTimeout = connectTimeout;
@@ -376,7 +376,7 @@ public class HttpConnectionHelper {
      * @param readOnlyMap a read only map
      * @return a writable map
      */
-    private static Map<String, ArrayList<String>> getWritableMap(final Map<String, ? extends List<String>> 
+    private static Map<String, ArrayList<String>> getWritableMap(final Map<String, ? extends List<String>>
                                                                          readOnlyMap) {
 
         Map<String, ArrayList<String>> readAndWriteMap = new TreeMap<String, ArrayList<String>>();

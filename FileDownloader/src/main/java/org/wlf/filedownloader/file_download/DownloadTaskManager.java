@@ -191,8 +191,9 @@ public class DownloadTaskManager implements Pauseable {
      * @param onFileDownloadStatusListener OnFileDownloadStatusListener impl
      * @param downloadStatusConfiguration  Configuration for the OnFileDownloadStatusListener impl
      */
-    public void registerDownloadStatusListener(OnFileDownloadStatusListener onFileDownloadStatusListener, DownloadStatusConfiguration downloadStatusConfiguration) {
-        mDownloadStatusObserver.addOnFileDownloadStatusListener(onFileDownloadStatusListener, 
+    public void registerDownloadStatusListener(OnFileDownloadStatusListener onFileDownloadStatusListener,
+                                               DownloadStatusConfiguration downloadStatusConfiguration) {
+        mDownloadStatusObserver.addOnFileDownloadStatusListener(onFileDownloadStatusListener,
                 downloadStatusConfiguration);
     }
 
@@ -212,7 +213,7 @@ public class DownloadTaskManager implements Pauseable {
     /**
      * start a detect url file task
      */
-    private void addAndRunDetectUrlFileTask(String url, boolean forceDetect, OnDetectBigUrlFileListener 
+    private void addAndRunDetectUrlFileTask(String url, boolean forceDetect, OnDetectBigUrlFileListener
             onDetectBigUrlFileListener) {
 
         // ------------start checking conditions & notifying caller if necessary------------
@@ -242,7 +243,7 @@ public class DownloadTaskManager implements Pauseable {
         // ------------end checking conditions & notifying caller if necessary------------
 
         // prepare the DetectUrlFileTask
-        DetectUrlFileTask detectUrlFileTask = new DetectUrlFileTask(url, mConfiguration.getFileDownloadDir(), 
+        DetectUrlFileTask detectUrlFileTask = new DetectUrlFileTask(url, mConfiguration.getFileDownloadDir(),
                 mDetectUrlFileCacher, mDownloadRecorder);
         detectUrlFileTask.setOnDetectBigUrlFileListener(onDetectBigUrlFileListener);
         // set the CloseConnectionEngine
@@ -266,20 +267,20 @@ public class DownloadTaskManager implements Pauseable {
 
         // 1.check url
         if (!UrlUtil.isUrl(callerUrl)) {
-            failReason = new OnFileDownloadStatusFailReason(callerUrl, "url illegal !", 
+            failReason = new OnFileDownloadStatusFailReason(callerUrl, "url illegal !",
                     OnFileDownloadStatusFailReason.TYPE_URL_ILLEGAL);
         }
 
         // 2.network check
         if (failReason == null && !NetworkUtil.isNetworkAvailable(mConfiguration.getContext())) {
-            failReason = new OnFileDownloadStatusFailReason(callerUrl, "network not available !", 
+            failReason = new OnFileDownloadStatusFailReason(callerUrl, "network not available !",
                     OnFileDownloadStatusFailReason.TYPE_NETWORK_DENIED);
         }
 
         // 3.check downloadFileInfo
         if (failReason == null) {
             if (!DownloadFileUtil.isLegal(downloadFileInfo)) {
-                failReason = new OnFileDownloadStatusFailReason(callerUrl, "the download file does not exist or " + 
+                failReason = new OnFileDownloadStatusFailReason(callerUrl, "the download file does not exist or " +
                         "illegal !", OnFileDownloadStatusFailReason.TYPE_DOWNLOAD_FILE_ERROR);
             }
             if (failReason == null) {
@@ -293,7 +294,7 @@ public class DownloadTaskManager implements Pauseable {
 
         // 4.check download size
         if (failReason == null && downloadFileInfo.getDownloadedSizeLong() > downloadFileInfo.getFileSizeLong()) {
-            failReason = new OnFileDownloadStatusFailReason(callerUrl, "download size illegal, please delete or " + 
+            failReason = new OnFileDownloadStatusFailReason(callerUrl, "download size illegal, please delete or " +
                     "re-download !", OnFileDownloadStatusFailReason.TYPE_DOWNLOAD_FILE_ERROR);
         }
 
@@ -327,11 +328,13 @@ public class DownloadTaskManager implements Pauseable {
         if (taskInMap != null) {
             if (!taskInMap.isStopped()) {
                 // running, ignore
+                return;
             } else {
                 // remove
                 mRunningDownloadTaskMap.remove(downloadTask.getUrl());
             }
         }
+
         // record in the task map
         mRunningDownloadTaskMap.put(downloadTask.getUrl(), downloadTask);
         // exec the task
@@ -343,7 +346,7 @@ public class DownloadTaskManager implements Pauseable {
     /**
      * notifyDetectUrlFileFailed
      */
-    private void notifyDetectUrlFileFailed(String url, DetectBigUrlFileFailReason failReason, 
+    private void notifyDetectUrlFileFailed(String url, DetectBigUrlFileFailReason failReason,
                                            OnDetectBigUrlFileListener onDetectBigUrlFileListener) {
 
         Log.d(TAG, "探测文件失败，url：" + url);
@@ -355,7 +358,7 @@ public class DownloadTaskManager implements Pauseable {
     /**
      * notifyDownloadStatusFailed
      */
-    private boolean notifyDownloadStatusFailed(String url, final FileDownloadStatusFailReason failReason, final 
+    private boolean notifyDownloadStatusFailed(String url, final FileDownloadStatusFailReason failReason, final
     boolean recordStatus) {
         final String finalUrl = url;
         // check whether the download task of the url is running
@@ -371,7 +374,7 @@ public class DownloadTaskManager implements Pauseable {
                 @Override
                 public void onStopFileDownloadTaskFailed(String url, StopDownloadFileTaskFailReason stopFailReason) {
                     // continue notify caller
-                    FileDownloadStatusFailReason notifyFailReason = failReason == null ? new 
+                    FileDownloadStatusFailReason notifyFailReason = failReason == null ? new
                             OnFileDownloadStatusFailReason(finalUrl, stopFailReason) : failReason;
                     notifyDownloadStatusFailedInternal(url, notifyFailReason, recordStatus);
                 }
@@ -386,7 +389,7 @@ public class DownloadTaskManager implements Pauseable {
     /**
      * notifyDownloadStatusFailedInternal
      */
-    private boolean notifyDownloadStatusFailedInternal(String url, FileDownloadStatusFailReason failReason, boolean 
+    private boolean notifyDownloadStatusFailedInternal(String url, FileDownloadStatusFailReason failReason, boolean
             recordStatus) {
         if (recordStatus) {
             // record status
@@ -409,7 +412,7 @@ public class DownloadTaskManager implements Pauseable {
     /**
      * notifyStopDownloadTaskSucceed
      */
-    private void notifyStopDownloadTaskSucceed(String url, OnStopFileDownloadTaskListener 
+    private void notifyStopDownloadTaskSucceed(String url, OnStopFileDownloadTaskListener
             onStopFileDownloadTaskListener) {
         // if task stopped, remove the task of the url from download map
         if (mRunningDownloadTaskMap.containsKey(url)) {
@@ -424,7 +427,7 @@ public class DownloadTaskManager implements Pauseable {
     /**
      * notifyStopDownloadTaskFailed
      */
-    private void notifyStopDownloadTaskFailed(String url, StopDownloadFileTaskFailReason failReason, 
+    private void notifyStopDownloadTaskFailed(String url, StopDownloadFileTaskFailReason failReason,
                                               OnStopFileDownloadTaskListener onStopFileDownloadTaskListener) {
         // if task stopped, remove the task of the url from download map
         DownloadTask downloadTask = getRunningDownloadTask(url);
@@ -460,7 +463,7 @@ public class DownloadTaskManager implements Pauseable {
     /**
      * detect a big url file
      */
-    private void detectInternal(String url, boolean forceDetect, OnDetectBigUrlFileListener 
+    private void detectInternal(String url, boolean forceDetect, OnDetectBigUrlFileListener
             onDetectBigUrlFileListener) {
         // start detect task
         addAndRunDetectUrlFileTask(url, forceDetect, onDetectBigUrlFileListener);
@@ -498,7 +501,7 @@ public class DownloadTaskManager implements Pauseable {
             public void onDetectUrlFileFailed(String url, DetectBigUrlFileFailReason failReason) {
                 // continue notify caller
                 if (onDetectUrlFileListener != null) {
-                    onDetectUrlFileListener.onDetectUrlFileFailed(finalUrl, new DetectUrlFileFailReason(finalUrl, 
+                    onDetectUrlFileListener.onDetectUrlFileFailed(finalUrl, new DetectUrlFileFailReason(finalUrl,
                             failReason));
                 }
             }
@@ -555,7 +558,7 @@ public class DownloadTaskManager implements Pauseable {
             if (failReason == null) {
                 if (!UrlUtil.isUrl(callerUrl) || !callerUrl.equals(detectUrlFileInfo.getUrl())) {
                     failReason = new OnFileDownloadStatusFailReason(callerUrl, "detect file does not exist, please " +
-                            "use detect" + "(String,OnDetectBigUrlFileListener) first !", 
+                            "use detect" + "(String,OnDetectBigUrlFileListener) first !",
                             OnFileDownloadStatusFailReason.TYPE_FILE_NOT_DETECT);
                 }
             }
@@ -696,7 +699,7 @@ public class DownloadTaskManager implements Pauseable {
             // stop the download task
             downloadTask.stop();
         } else {
-            StopDownloadFileTaskFailReason failReason = new StopDownloadFileTaskFailReason(finalUrl, "the download " 
+            StopDownloadFileTaskFailReason failReason = new StopDownloadFileTaskFailReason(finalUrl, "the download "
                     + "task has been paused !", StopDownloadFileTaskFailReason.TYPE_TASK_HAS_BEEN_STOPPED);
 
             Log.d(TAG, "pauseInternal 任务已经被暂停，url：" + url + ",failReason:" + failReason.getType());
@@ -759,7 +762,7 @@ public class DownloadTaskManager implements Pauseable {
 
         // 1.check url
         if (!UrlUtil.isUrl(url)) {
-            FileDownloadStatusFailReason failReason = new OnFileDownloadStatusFailReason(url, "url illegal !", 
+            FileDownloadStatusFailReason failReason = new OnFileDownloadStatusFailReason(url, "url illegal !",
                     OnFileDownloadStatusFailReason.TYPE_URL_ILLEGAL);
             // notify caller
             notifyDownloadStatusFailed(url, failReason, getDownloadFile(url) != null);
@@ -811,7 +814,7 @@ public class DownloadTaskManager implements Pauseable {
                 @Override
                 public void onDetectUrlFileFailed(String url, DetectBigUrlFileFailReason failReason) {
                     // notify caller
-                    notifyDownloadStatusFailed(finalUrl, new OnFileDownloadStatusFailReason(finalUrl, failReason), 
+                    notifyDownloadStatusFailed(finalUrl, new OnFileDownloadStatusFailReason(finalUrl, failReason),
                             getDownloadFile(finalUrl) != null);
                 }
             });
