@@ -1,12 +1,12 @@
 # Use FileDownloader in Service, this is a simple use below
 
-** step 1. init FileDownloader **
-see * step 2. init FileDownloader in your application's onCreate() in * [README](https://github.com/wlfcolin/file-downloader/blob/master/README.md)
+**step 1. init FileDownloader**
+see step 2. init FileDownloader in your application's onCreate() in **[README](https://github.com/wlfcolin/file-downloader/blob/master/README.md)**
 
 
-** step 2. to make your service implements OnRetryableFileDownloadStatusListener
+**step 2. to make your service implements OnRetryableFileDownloadStatusListener
 and registerDownloadStatusListener(OnFileDownloadStatusListener) in your service's onCreate()
-and unregisterDownloadStatusListener(OnFileDownloadStatusListener) in your service's onDestroy() **
+and unregisterDownloadStatusListener(OnFileDownloadStatusListener) in your service's onDestroy()**
 ``` java
 public class YourService extends Service implements OnRetryableFileDownloadStatusListener {
     @Override
@@ -68,14 +68,14 @@ public class YourService extends Service implements OnRetryableFileDownloadStatu
 ```
 
 
-** step 3. start service in other place such as in your application's onCreate() or your MainActivity's onCreate(), also you can use bind service **
+**step 3. start service in other place such as in your application's onCreate() or your MainActivity's onCreate(), also you can use bind service**
 ``` java
 Intent intent = new Intent(this, YourService.class);
 startService(intent);
 ```
 
 
-** step 4. use FileDownloader download API in other place such as in a activity or a fragment **
+**step 4. use FileDownloader download API in other place such as in a activity or a fragment**
 ``` java
 FileDownloader.detect(url, mOnDetectBigUrlFileListener);
 FileDownloader.createAndStart(url, newFileDir, newFileName);// create a custom new download after FileDownloader.detect(url, mOnDetectBigUrlFileListener)
@@ -85,7 +85,7 @@ FileDownloader.pause(urls);// pause multi
 FileDownloader.pauseAll();// pause all
 ```
 
-** step 5. send a notification or a broadcast in the method that the service implements form OnRetryableFileDownloadStatusListener **
+**step 5. send a notification or a broadcast in the method that the service implements form OnRetryableFileDownloadStatusListener**
 ``` java
 public class YourService extends Service implements OnRetryableFileDownloadStatusListener {
     @Override
@@ -101,7 +101,7 @@ public class YourService extends Service implements OnRetryableFileDownloadStatu
 }
 ```
 
-** step 6. stop the service in other place such as in your application's onTerminate() or your MainActivity's onDestroy() **
+**step 6. stop the service in other place such as in your application's onTerminate() or your MainActivity's onDestroy()**
 ``` java
 Intent intent = new Intent(this, YourService.class);
 stopService(intent);
