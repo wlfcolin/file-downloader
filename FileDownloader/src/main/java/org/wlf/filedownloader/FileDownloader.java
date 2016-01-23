@@ -343,6 +343,7 @@ public final class FileDownloader {
      * continue all downloads those recorded by file-downloader
      *
      * @param isIncludedErrorDownloads true means force to start download the download file that with error status
+     * @since 0.3.1
      */
     public static void continueAll(boolean isIncludedErrorDownloads) {
 

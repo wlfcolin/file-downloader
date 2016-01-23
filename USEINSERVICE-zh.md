@@ -1,11 +1,11 @@
 # 在Service中使用FileDownloader，下面是一个简单的示例
 
 ** 第一步、初始化FileDownloader
-参考* [中文说明文档](https://github.com/wlfcolin/file-downloader/blob/master/README-zh.md) 中的：* 第二步、在你的应用application的onCreate()中初始化FileDownloader
+参考* [中文说明文档](https://github.com/wlfcolin/file-downloader/blob/master/README-zh.md) 中的：* 第二步、在你的应用application的onCreate()中初始化FileDownloader **
 
 
 ** 第二步、让你的service实现OnRetryableFileDownloadStatusListener接口，并且在service的onCreate方法中注册当前service为FileDownloader的下载状态监听器，
-并在service的onCreate方法中取消注册当前service为FileDownloader的下载状态监听器。
+并在service的onCreate方法中取消注册当前service为FileDownloader的下载状态监听器。**
 ``` java
 public class YourService extends Service implements OnRetryableFileDownloadStatusListener {
     @Override
@@ -74,7 +74,7 @@ startService(intent);
 ```
 
 
-** 第四步、在其它地方（比如在activity或者fragment中）使用FileDownloader下载API下载文件
+** 第四步、在其它地方（比如在activity或者fragment中）使用FileDownloader下载API下载文件 **
 ``` java
 FileDownloader.detect(url, mOnDetectBigUrlFileListener);
 FileDownloader.createAndStart(url, newFileDir, newFileName);// create a custom new download after FileDownloader.detect(url, mOnDetectBigUrlFileListener)
@@ -84,7 +84,7 @@ FileDownloader.pause(urls);// 暂停多个下载任务
 FileDownloader.pauseAll();// 暂停所有下载任务
 ```
 
-** 第五步、在service实现的OnRetryableFileDownloadStatusListener接口方法中发送通知或者广播出去
+** 第五步、在service实现的OnRetryableFileDownloadStatusListener接口方法中发送通知或者广播出去 **
 ``` java
 public class YourService extends Service implements OnRetryableFileDownloadStatusListener {
     @Override
@@ -100,7 +100,7 @@ public class YourService extends Service implements OnRetryableFileDownloadStatu
 }
 ```
 
-** 第六步、在其它地方（比如应用application的onTerminate方法，或者MainActivity的onDestroy方法）关闭service
+** 第六步、在其它地方（比如应用application的onTerminate方法，或者MainActivity的onDestroy方法）关闭service **
 ``` java
 Intent intent = new Intent(this, YourService.class);
 stopService(intent);
