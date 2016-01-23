@@ -77,9 +77,23 @@ startService(intent);
 
 **step 4. use FileDownloader download API in other place such as in a activity or a fragment**
 ``` java
-FileDownloader.detect(url, mOnDetectBigUrlFileListener);
-FileDownloader.createAndStart(url, newFileDir, newFileName);// create a custom new download after FileDownloader.detect(url, mOnDetectBigUrlFileListener)
-FileDownloader.start(url);// new download or continue download
+FileDownloader.detect(url, new OnDetectBigUrlFileListener() {// create a custom new download
+    @Override
+    public void onDetectNewDownloadFile(String url, String fileName, String saveDir, long fileSize) {
+        // here to change to custom fileName, saveDir if needed
+        FileDownloader.createAndStart(url, newFileDir, newFileName);
+    }
+    @Override
+    public void onDetectUrlFileExist(String url) {
+        // continue to download
+        FileDownloader.start(url);
+    }
+    @Override
+    public void onDetectUrlFileFailed(String url, DetectBigUrlFileFailReason failReason) {
+        // error occur, see failReason for details
+    }
+});
+FileDownloader.start(url);// start a new download or continue a paused download, it will auto Broken-point if the server supported
 FileDownloader.pause(url);// pause single
 FileDownloader.pause(urls);// pause multi
 FileDownloader.pauseAll();// pause all

@@ -77,8 +77,22 @@ startService(intent);
 
 **第四步、在其它地方（比如在activity或者fragment中）使用FileDownloader下载API下载文件**
 ``` java
-FileDownloader.detect(url, mOnDetectBigUrlFileListener);
-FileDownloader.createAndStart(url, newFileDir, newFileName);// create a custom new download after FileDownloader.detect(url, mOnDetectBigUrlFileListener)
+FileDownloader.detect(url, new OnDetectBigUrlFileListener() {// 创建一个自定义保存路径和文件名称的下载
+    @Override
+    public void onDetectNewDownloadFile(String url, String fileName, String saveDir, long fileSize) {
+        // 如果有必要，可以改变文件名称fileName和下载保存的目录saveDir
+        FileDownloader.createAndStart(url, newFileDir, newFileName);
+    }
+    @Override
+    public void onDetectUrlFileExist(String url) {
+        // 继续下载，自动会断点续传（如果服务器无法支持断点续传将从头开始下载）
+        FileDownloader.start(url);
+    }
+    @Override
+    public void onDetectUrlFileFailed(String url, DetectBigUrlFileFailReason failReason) {
+        // 探测一个网络文件失败了，具体查看failReason
+    }
+});
 FileDownloader.start(url);// 如果文件没被下载过，将创建并开启下载，否则继续下载，自动会断点续传（如果服务器无法支持断点续传将从头开始下载）
 FileDownloader.pause(url);// 暂停单个下载任务
 FileDownloader.pause(urls);// 暂停多个下载任务

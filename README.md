@@ -166,7 +166,7 @@ FileDownloader.pauseAll();// pause all
 
 -continue a paused download
 ``` java
-FileDownloader.start(url);// continue to download, it will auto Broken-point if the server supported
+FileDownloader.start(url);// continue a paused download, it will auto Broken-point if the server supported
 ```
 
 -move download files to new dir path
