@@ -18,8 +18,8 @@ public class YourService extends Service implements OnRetryableFileDownloadStatu
         super.onCreate();
         // registerDownloadStatusListener
         FileDownloader.registerDownloadStatusListener(this);
-        // start all the download task if you hope that the service started, the download auto start too
-        FileDownloader.start(FileDownloader.getDownloadUrls());
+        // continue all the download task if you hope that the service started, the download auto start too
+        FileDownloader.continueAll(true);
     }
     @Override
     public void onDestroy() {
