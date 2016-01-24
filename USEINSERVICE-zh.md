@@ -6,7 +6,7 @@
 
 
 **第二步、让你的service实现OnRetryableFileDownloadStatusListener接口，并且在service的onCreate方法中注册当前service为FileDownloader的下载状态监听器，
-并在service的onCreate方法中取消注册当前service为FileDownloader的下载状态监听器。**
+并在service的onDestroy方法中取消注册当前service为FileDownloader的下载状态监听器。**
 ``` java
 public class YourService extends Service implements OnRetryableFileDownloadStatusListener {
     @Override
