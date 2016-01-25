@@ -1,4 +1,4 @@
-# file-downloader 疑问解答
+# file-downloader 常见问题
 
 ----------------------------------------------------------------------
 Q: 如果针对同一的url连续调用FileDownloader.start(url)两次会导致这个url对对于的文件下载两次吗？
