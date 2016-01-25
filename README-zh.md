@@ -3,15 +3,21 @@
 FileDownloader是安卓上轻量级Http文件下载框架，我的目标是让文件下载越简单越好，尽可能以最简洁明了的方式完成复杂需求。
 
 **一、特点**
-* 多任务并行下载、自动断点续传、失败自动重试机制、支持大文件（超过2G）下载、强大方便的异常处理和异常恢复机制、轻松管理下载文件的生命周期（下载文件的增删改查）等。
+* 多任务并行下载、自动断点续传、失败自动重试机制、支持大文件（超过2G）下载、强大方便的异常处理和异常恢复机制、轻松管理下载文件的生命周期（下载文件的增删改查）等
 
 
-**二、截图**
+**二、非常适合的使用场景**
+*1、需要多页面同步下载进度和下载状态（比如商店APP，A页面开启点击下载，B页面和C页面也可以看到下载进度和暂停这个下载）
+*2、需要断点续传节约流量（比如做批量应用更新APP、单个应用自己更新下载新版本、做影视需要批量缓存视频的APP，做MP3歌曲下载的APP）
+*3、专门做下载的（比如迅雷之类的APP，需要下载任何服务器上的东西，并且兼顾下载效率和开发效率的）
+
+
+**三、截图**
 * ![image](https://github.com/wlfcolin/file-downloader/blob/master/capture/simple_download_zh.gif)
 * ![image](https://github.com/wlfcolin/file-downloader/blob/master/capture/manager_download_zh.gif)
 
 
-**三、快速上手使用**
+**四、快速上手使用**
 * 第一步、在项目模块的build.gradle配置gradle
 ``` java
 compile 'org.wlf:FileDownloader:0.3.1'
@@ -195,13 +201,13 @@ FileDownloader.unregisterDownloadFileChangeListener(mOnDownloadFileChangeListene
 ```
 
 
-**[四、详细API文档](http://htmlpreview.github.io/?https://raw.githubusercontent.com/wlfcolin/file-downloader/master/download/release/FileDownloader-0.3.1-javadoc/index.html)**
+**[五、详细API文档](http://htmlpreview.github.io/?https://raw.githubusercontent.com/wlfcolin/file-downloader/master/download/release/FileDownloader-0.3.1-javadoc/index.html)**
 
 
-**[五、版本更新日志](https://github.com/wlfcolin/file-downloader/blob/master/CHANGELOG.md)**
+**[六、版本更新日志](https://github.com/wlfcolin/file-downloader/blob/master/CHANGELOG.md)**
 
 
-**六、旧版升级到最新版帮助说明**
+**七、旧版升级到最新版帮助说明**
 
 * 0.2.X --> 0.3.X
 
@@ -222,18 +228,18 @@ FileDownloader.unregisterDownloadFileChangeListener(mOnDownloadFileChangeListene
 -执行0.2.X --> 0.3.X中的说明。
 
 
-**[七、框架设计](https://github.com/wlfcolin/file-downloader/blob/master/DESIGN.md)**
+**[八、框架设计](https://github.com/wlfcolin/file-downloader/blob/master/DESIGN.md)**
 
 
-**八、编码规范，遵循[谷歌安卓官方编码规范](http://source.android.com/source/code-style.html)，同时要求参与的贡献者也遵循该规范**
+**九、编码规范，遵循[谷歌安卓官方编码规范](http://source.android.com/source/code-style.html)，同时要求参与的贡献者也遵循该规范**
 
 
-**九、支持的系统版本：API 8及以上（安卓2.2及以上）**
+**十、支持的系统版本：API 8及以上（安卓2.2及以上）**
 
 
-**十、[疑问解答](https://github.com/wlfcolin/file-downloader/blob/master/Q&A-zh.md)**
+**十一、[疑问解答](https://github.com/wlfcolin/file-downloader/blob/master/Q&A-zh.md)**
 
-**十一、LICENSE**
+**十二、LICENSE**
 ```
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
