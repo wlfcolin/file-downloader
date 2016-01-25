@@ -235,7 +235,7 @@ FileDownloader.unregisterDownloadFileChangeListener(mOnDownloadFileChangeListene
 **Supported system version: API 8 and above(Android 2.2+)**
 
 ----------------------------------------------------------------------
-**[Q & A](https://github.com/wlfcolin/file-downloader/blob/master/Q&A.md)**
+**[FAQ](https://github.com/wlfcolin/file-downloader/blob/master/Q&A.md)**
 
 ----------------------------------------------------------------------
 **LICENSE**
