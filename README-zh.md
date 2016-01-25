@@ -237,7 +237,7 @@ FileDownloader.unregisterDownloadFileChangeListener(mOnDownloadFileChangeListene
 **十、支持的系统版本：API 8及以上（安卓2.2及以上）**
 
 
-**十一、[疑问解答](https://github.com/wlfcolin/file-downloader/blob/master/Q&A-zh.md)**
+**十一、[常见问题](https://github.com/wlfcolin/file-downloader/blob/master/Q&A-zh.md)**
 
 **十二、LICENSE**
 ```
