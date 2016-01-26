@@ -130,6 +130,10 @@ public class MainActivity extends Activity implements OnItemSelectListener {
             case R.id.optionsNewBigFileWithDetect:
                 showNewBigDownloadDialog();
                 return true;
+            // new https file download
+            case R.id.optionsNewHttps:
+                showNewHttpsDownloadDialog();
+                return true;
         }
         return super.onOptionsItemSelected(item);
     }
@@ -415,6 +419,103 @@ public class MainActivity extends Activity implements OnItemSelectListener {
         builder.show();
     }
 
+    // show new download(https file download) dialog
+    private void showNewHttpsDownloadDialog() {
+
+        final EditText etUrlCustom = new EditText(this);
+        // big download file witch bigger than 2G to download
+        etUrlCustom.setText("https://raw.githubusercontent.com/wlfcolin/file-downloader/master/design/file-downloader uml.eap");
+        etUrlCustom.setFocusable(true);
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle(getString(R.string.main__please_input_download_file)).setView(etUrlCustom).setNegativeButton
+                (getString(R.string.main__dialog_btn_cancel), null);
+        builder.setPositiveButton(getString(R.string.main__dialog_btn_confirm), new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int which) {
+                // file url
+                String url = etUrlCustom.getText().toString().trim();
+                FileDownloader.detect(url, new OnDetectBigUrlFileListener() {
+                    // ----------------------detect url file callback----------------------
+                    @Override
+                    public void onDetectNewDownloadFile(final String url, String fileName, final String saveDir, long
+                            fileSize) {
+                        final TextView tvFileDir = new TextView(MainActivity.this);
+                        tvFileDir.setText(getString(R.string.main__save_path));
+
+                        final EditText etFileDir = new EditText(MainActivity.this);
+                        etFileDir.setText(saveDir);
+                        etFileDir.setFocusable(true);
+
+                        final TextView tvFileName = new TextView(MainActivity.this);
+                        tvFileName.setText(getString(R.string.main__save_file_name));
+
+                        final EditText etFileName = new EditText(MainActivity.this);
+                        etFileName.setText(fileName);
+                        etFileName.setFocusable(true);
+
+                        final TextView tvFileSize = new TextView(MainActivity.this);
+                        float size = fileSize / 1024f / 1024f;
+                        tvFileSize.setText(getString(R.string.main__file_size) + ((float) (Math.round(size * 100)) /
+                                100) + "M");
+
+                        LinearLayout linearLayout = new LinearLayout(MainActivity.this);
+                        linearLayout.setOrientation(LinearLayout.VERTICAL);
+                        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(LinearLayout.LayoutParams
+                                .MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+                        linearLayout.addView(tvFileDir, params);
+                        linearLayout.addView(etFileDir, params);
+                        linearLayout.addView(tvFileName, params);
+                        linearLayout.addView(etFileName, params);
+                        linearLayout.addView(tvFileSize, params);
+
+                        AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+                        builder.setTitle(getString(R.string.main__confirm_save_path_and_name)).setView(linearLayout)
+                                .setNegativeButton(getString(R.string.main__dialog_btn_cancel), null);
+                        builder.setPositiveButton(getString(R.string.main__dialog_btn_confirm), new DialogInterface
+                                .OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+                                // save file dir
+                                String newFileDir = etFileDir.getText().toString().trim();
+                                // save file name
+                                String newFileName = etFileName.getText().toString().trim();
+                                // create download
+                                showToast(getString(R.string.main__new_download) + url);
+                                Log.e("wlf", "探测文件，新建下载：" + url);
+                                FileDownloader.createAndStart(url, newFileDir, newFileName);
+                            }
+                        });
+                        builder.show();
+                    }
+
+                    @Override
+                    public void onDetectUrlFileExist(String url) {
+                        showToast(getString(R.string.main__continue_download) + url);
+                        Log.e("wlf", "探测文件，继续下载：" + url);
+                        // continue download
+                        FileDownloader.start(url);
+                    }
+
+                    @Override
+                    public void onDetectUrlFileFailed(String url, DetectBigUrlFileFailReason failReason) {
+                        String msg = null;
+                        if (failReason != null) {
+                            msg = failReason.getMessage();
+                            if (TextUtils.isEmpty(msg)) {
+                                Throwable t = failReason.getCause();
+                                if (t != null) {
+                                    msg = t.getLocalizedMessage();
+                                }
+                            }
+                        }
+                        showToast(getString(R.string.main__detect_file_error) + msg + "," + url);
+                        Log.e("wlf", "出错回调，探测文件出错：" + msg + "," + url);
+                    }
+                });
+            }
+        });
+        builder.show();
+    }
+    
     // show toast
     private void showToast(CharSequence text) {
         if (mToast == null) {

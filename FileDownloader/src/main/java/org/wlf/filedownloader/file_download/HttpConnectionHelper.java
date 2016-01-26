@@ -10,12 +10,22 @@ import org.wlf.filedownloader.util.UrlUtil;
 
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.security.SecureRandom;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSession;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
 
 /**
  * HttpConnectionHelper
@@ -35,7 +45,7 @@ public class HttpConnectionHelper {
     /**
      * create Detect http file Connection
      */
-    public static HttpURLConnection createDetectConnection(String url, int connectTimeout, String charset) throws
+    public static HttpURLConnection createDetectConnection(String url, int connectTimeout, String charset) throws 
             Exception {
         return createHttpUrlConnection(new RequestParam(url, connectTimeout, charset));
     }
@@ -45,6 +55,40 @@ public class HttpConnectionHelper {
      */
     public static HttpURLConnection createDownloadFileConnection(RequestParam requestParam) throws Exception {
         return createHttpUrlConnection(requestParam);
+    }
+
+    /**
+     * init initTrustSSL
+     */
+    private static void initTrustSSL(HttpsURLConnection conn) {
+        try {
+            SSLContext sslContext = SSLContext.getInstance("TLS");
+            sslContext.init(null, new TrustManager[]{new X509TrustManager() {
+                // do nothing, let the check pass
+                @Override
+                public void checkClientTrusted(X509Certificate[] chain, String authType) throws CertificateException {
+                }
+
+                @Override
+                public void checkServerTrusted(X509Certificate[] chain, String authType) throws CertificateException {
+                }
+
+                @Override
+                public X509Certificate[] getAcceptedIssuers() {
+                    return null;
+                }
+            }}, new SecureRandom());
+            // config https
+            conn.setDefaultSSLSocketFactory(sslContext.getSocketFactory());
+            conn.setDefaultHostnameVerifier(new HostnameVerifier() {
+                public boolean verify(String hostname, SSLSession session) {
+                    // always true, let the check pass
+                    return true;
+                }
+            });
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -72,7 +116,17 @@ public class HttpConnectionHelper {
             throw new IllegalAccessException("URL Illegal !");
         }
 
-        HttpURLConnection conn = (HttpURLConnection) new URL(encodedUrl).openConnection();
+        HttpURLConnection conn = null;
+
+        URL url = new URL(encodedUrl);
+        if (encodedUrl.startsWith("https")) {
+            // https
+            HttpsURLConnection httpsConn = (HttpsURLConnection) url.openConnection();
+            initTrustSSL(httpsConn);
+            conn = httpsConn;
+        } else {
+            conn = (HttpURLConnection) url.openConnection();
+        }
 
         conn.setConnectTimeout(requestParam.mConnectTimeout);
         conn.setReadTimeout(requestParam.mConnectTimeout);// FIXME read timeout equals to connect timeout
@@ -135,7 +189,7 @@ public class HttpConnectionHelper {
             mCharset = charset;
         }
 
-        public RequestParam(String url, int connectTimeout, String charset, long rangeStartPos, long rangeEndPos,
+        public RequestParam(String url, int connectTimeout, String charset, long rangeStartPos, long rangeEndPos, 
                             String ETag, String lastModified) {
             mUrl = url;
             mConnectTimeout = connectTimeout;
@@ -376,7 +430,7 @@ public class HttpConnectionHelper {
      * @param readOnlyMap a read only map
      * @return a writable map
      */
-    private static Map<String, ArrayList<String>> getWritableMap(final Map<String, ? extends List<String>>
+    private static Map<String, ArrayList<String>> getWritableMap(final Map<String, ? extends List<String>> 
                                                                          readOnlyMap) {
 
         Map<String, ArrayList<String>> readAndWriteMap = new TreeMap<String, ArrayList<String>>();

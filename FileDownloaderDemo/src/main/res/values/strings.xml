@@ -85,7 +85,8 @@
     <string name="main__menu_new_downloads">New multi downloads</string>
     <string name="main__menu_new_custom_download">New custom download</string>
     <string name="main__menu_new_big_file_download">New big file(more than 2G) download</string>
-
+    <string name="main__menu_new_https_download">New Https download</string>
+    
     <string name="main__btn_delete">Delete</string>
     <string name="main__btn_move">Move</string>
     <string name="main__btn_rename">Rename(Single File)</string>

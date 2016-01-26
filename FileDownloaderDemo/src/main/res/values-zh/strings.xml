@@ -84,7 +84,8 @@
     <string name="main__menu_new_downloads">新建批量下载</string>
     <string name="main__menu_new_custom_download">新建自定义保存路径和名称下载</string>
     <string name="main__menu_new_big_file_download">新建大文件（超过2G）下载</string>
-
+    <string name="main__menu_new_https_download">新建Https下载</string>
+    
     <string name="main__btn_delete">删除</string>
     <string name="main__btn_move">移动</string>
     <string name="main__btn_rename">重命名(单个)</string>
