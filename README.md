@@ -130,7 +130,7 @@ FileDownloader.registerDownloadFileChangeListener(mOnDownloadFileChangeListener)
 the difference between DownloadStatusListener and DownloadFileChangeListener is, 
 DownloadStatusListener concerns the download progress, and DownloadFileChangeListener concerns the data change 
 
-* step 4. start to download and operate the url files(use FileDownloader APIs)
+* step 4. start to download and operate the url files(the useage of FileDownloader APIs)
 
 -create a new download
 ``` java
