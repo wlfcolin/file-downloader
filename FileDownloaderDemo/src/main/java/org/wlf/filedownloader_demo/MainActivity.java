@@ -285,8 +285,8 @@ public class MainActivity extends Activity implements OnItemSelectListener {
                                 // save file name
                                 String newFileName = etFileName.getText().toString().trim();
                                 // create download
-                                showToast(getString(R.string.main__new_download) + url);
-                                Log.e("wlf", "探测文件，新建下载：" + url);
+                                showToast(getString(R.string.main__new_download) + newFileName);
+                                Log.e("wlf", "探测文件，新建下载：" + newFileName);
                                 FileDownloader.createAndStart(url, newFileDir, newFileName);
                             }
                         });
