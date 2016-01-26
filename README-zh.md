@@ -132,7 +132,7 @@ FileDownloader.registerDownloadFileChangeListener(mOnDownloadFileChangeListener)
 ```
 下载状态监听器和文件数据变化监听器的主要区别在于，前者关心下载进度和错误（前端UI），后者关心文件数据变化（数据存储）
 
-* 第四步、下载文件和管理文件
+* 第四步、下载文件和管理文件（FileDownloader API的使用）
 
 -创建一个新下载
 ``` java
