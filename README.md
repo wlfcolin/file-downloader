@@ -1,6 +1,6 @@
 # file-downloader
 
-FileDownloader, a powerful http-file download tool, I am to make downloading http-file easily.
+FileDownloader, a powerful http/https file download tool, I am to make downloading http-file easily.
 
 [中文说明文档](https://github.com/wlfcolin/file-downloader/blob/master/README-zh.md)
 
