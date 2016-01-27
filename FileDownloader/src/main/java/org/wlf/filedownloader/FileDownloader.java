@@ -185,9 +185,8 @@ public final class FileDownloader {
      * @param downloadStatusConfiguration  Configuration for the OnFileDownloadStatusListener impl
      * @since 0.3.0
      */
-    public static void registerDownloadStatusListener(OnFileDownloadStatusListener onFileDownloadStatusListener,
-                                                      DownloadStatusConfiguration downloadStatusConfiguration) {
-        getFileDownloadManager().registerDownloadStatusListener(onFileDownloadStatusListener,
+    public static void registerDownloadStatusListener(OnFileDownloadStatusListener onFileDownloadStatusListener, DownloadStatusConfiguration downloadStatusConfiguration) {
+        getFileDownloadManager().registerDownloadStatusListener(onFileDownloadStatusListener, 
                 downloadStatusConfiguration);
     }
 
@@ -248,10 +247,10 @@ public final class FileDownloader {
      * @param downloadFileChangeConfiguration Configuration for the OnDownloadFileChangeListener impl
      * @since 0.3.0
      */
-    public static void registerDownloadFileChangeListener(OnDownloadFileChangeListener onDownloadFileChangeListener,
-                                                          DownloadFileChangeConfiguration
+    public static void registerDownloadFileChangeListener(OnDownloadFileChangeListener onDownloadFileChangeListener, 
+                                                          DownloadFileChangeConfiguration 
                                                                   downloadFileChangeConfiguration) {
-        getFileDownloadManager().registerDownloadFileChangeListener(onDownloadFileChangeListener,
+        getFileDownloadManager().registerDownloadFileChangeListener(onDownloadFileChangeListener, 
                 downloadFileChangeConfiguration);
     }
 
@@ -290,6 +289,21 @@ public final class FileDownloader {
         getFileDownloadManager().detect(url, onDetectBigUrlFileListener);
     }
 
+    /**
+     * detect a big url file, which means can detect the url file bigger than 2G
+     *
+     * @param url                        file url
+     * @param onDetectBigUrlFileListener OnDetectBigUrlFileListener impl
+     * @param downloadConfiguration      download configuration
+     * @since 0.3.2
+     */
+    public static void detect(String url, OnDetectBigUrlFileListener onDetectBigUrlFileListener, 
+                              DownloadConfiguration downloadConfiguration) {
+        if (downloadConfiguration != null) {
+            downloadConfiguration.initNullKeyForUrl(url);
+        }
+        getFileDownloadManager().detect(url, onDetectBigUrlFileListener, downloadConfiguration);
+    }
     // --------------------------------------create/continue downloads--------------------------------------
 
     /**
@@ -310,6 +324,28 @@ public final class FileDownloader {
     }
 
     /**
+     * create a new download after detected a url file by using {@link #detect(String, OnDetectBigUrlFileListener,
+     * DownloadConfiguration)}
+     * <br/>
+     * if the caller cares for the download status, please register an listener before by using
+     * <br>
+     * {@link #registerDownloadStatusListener(OnFileDownloadStatusListener, DownloadStatusConfiguration)}
+     *
+     * @param url                   file url
+     * @param saveDir               saveDir
+     * @param fileName              saveFileName
+     * @param downloadConfiguration download configuration
+     * @since 0.3.2
+     */
+    public static void createAndStart(String url, String saveDir, String fileName, DownloadConfiguration 
+            downloadConfiguration) {
+        if (downloadConfiguration != null) {
+            downloadConfiguration.initNullKeyForUrl(url);
+        }
+        getFileDownloadManager().createAndStart(url, saveDir, fileName, downloadConfiguration);
+    }
+
+    /**
      * start/continue a download
      * <br/>
      * if the caller cares for the download status, please register an listener before by using
@@ -322,6 +358,24 @@ public final class FileDownloader {
      */
     public static void start(String url) {
         getFileDownloadManager().start(url);
+    }
+
+    /**
+     * start/continue a download
+     * <br/>
+     * if the caller cares for the download status, please register an listener before by using
+     * <br/>
+     * {@link #registerDownloadStatusListener(OnFileDownloadStatusListener, DownloadStatusConfiguration)}
+     *
+     * @param url                   file url
+     * @param downloadConfiguration download configuration
+     * @since 0.3.2
+     */
+    public static void start(String url, DownloadConfiguration downloadConfiguration) {
+        if (downloadConfiguration != null) {
+            downloadConfiguration.initNullKeyForUrl(url);
+        }
+        getFileDownloadManager().start(url, downloadConfiguration);
     }
 
     /**
@@ -340,12 +394,41 @@ public final class FileDownloader {
     }
 
     /**
+     * start/continue multi downloads
+     * <br/>
+     * if the caller cares for the download status, please register an listener before by using
+     * <br>
+     * {@link #registerDownloadStatusListener(OnFileDownloadStatusListener, DownloadStatusConfiguration)}
+     *
+     * @param urls                  file urls
+     * @param downloadConfiguration download configuration
+     * @since 0.3.2
+     */
+    public static void start(List<String> urls, DownloadConfiguration downloadConfiguration) {
+        if (downloadConfiguration != null) {
+            downloadConfiguration.initNullKeyForUrls(urls);
+        }
+        getFileDownloadManager().start(urls, downloadConfiguration);
+    }
+
+    /**
      * continue all downloads those recorded by file-downloader
      *
      * @param isIncludedErrorDownloads true means force to start download the download file that with error status
      * @since 0.3.1
      */
     public static void continueAll(boolean isIncludedErrorDownloads) {
+        continueAll(isIncludedErrorDownloads, null);
+    }
+
+    /**
+     * continue all downloads those recorded by file-downloader
+     *
+     * @param isIncludedErrorDownloads true means force to start download the download file that with error status
+     * @param downloadConfiguration    download configuration
+     * @since 0.3.2
+     */
+    public static void continueAll(boolean isIncludedErrorDownloads, DownloadConfiguration downloadConfiguration) {
 
         List<String> urls = new ArrayList<String>();
 
@@ -369,8 +452,7 @@ public final class FileDownloader {
             }
         }
 
-        start(urls);
-
+        start(urls, downloadConfiguration);
     }
 
     // --------------------------------------pause downloads--------------------------------------
@@ -418,6 +500,24 @@ public final class FileDownloader {
     }
 
     /**
+     * restart a download
+     * <br/>
+     * if the caller cares for the download status, please register an listener before by using
+     * <br>
+     * {@link #registerDownloadStatusListener(OnFileDownloadStatusListener, DownloadStatusConfiguration)}
+     *
+     * @param url                   file url
+     * @param downloadConfiguration download configuration
+     * @since 0.3.2
+     */
+    public static void reStart(String url, final DownloadConfiguration downloadConfiguration) {
+        if (downloadConfiguration != null) {
+            downloadConfiguration.initNullKeyForUrl(url);
+        }
+        getFileDownloadManager().reStart(url, downloadConfiguration);
+    }
+
+    /**
      * restart multi downloads
      * <br/>
      * if the caller cares for the download status, please register an listener before by using
@@ -430,6 +530,24 @@ public final class FileDownloader {
      */
     public static void reStart(List<String> urls) {
         getFileDownloadManager().reStart(urls);
+    }
+
+    /**
+     * restart multi downloads
+     * <br/>
+     * if the caller cares for the download status, please register an listener before by using
+     * <br/>
+     * {@link #registerDownloadStatusListener(OnFileDownloadStatusListener, DownloadStatusConfiguration)}
+     *
+     * @param urls                  file urls
+     * @param downloadConfiguration download configuration
+     * @since 0.3.2
+     */
+    public void reStart(List<String> urls, DownloadConfiguration downloadConfiguration) {
+        if (downloadConfiguration != null) {
+            downloadConfiguration.initNullKeyForUrls(urls);
+        }
+        getFileDownloadManager().reStart(urls, downloadConfiguration);
     }
 
     // --------------------------------------move download files--------------------------------------
@@ -453,7 +571,7 @@ public final class FileDownloader {
      * @param onMoveDownloadFilesListener OnMoveDownloadFilesListener impl
      * @return a control for the operation
      */
-    public static Control move(List<String> urls, String newDirPath, OnMoveDownloadFilesListener
+    public static Control move(List<String> urls, String newDirPath, OnMoveDownloadFilesListener 
             onMoveDownloadFilesListener) {
         return getFileDownloadManager().move(urls, newDirPath, onMoveDownloadFilesListener);
     }
@@ -467,7 +585,7 @@ public final class FileDownloader {
      * @param deleteDownloadedFileInPath   whether delete file in path
      * @param onDeleteDownloadFileListener OnDeleteDownloadFileListener impl
      */
-    public static void delete(String url, boolean deleteDownloadedFileInPath, OnDeleteDownloadFileListener
+    public static void delete(String url, boolean deleteDownloadedFileInPath, OnDeleteDownloadFileListener 
             onDeleteDownloadFileListener) {
         getFileDownloadManager().delete(url, deleteDownloadedFileInPath, onDeleteDownloadFileListener);
     }
@@ -480,7 +598,7 @@ public final class FileDownloader {
      * @param onDeleteDownloadFilesListener OnDeleteDownloadFilesListener impl
      * @return a control for the operation
      */
-    public static Control delete(List<String> urls, boolean deleteDownloadedFile, OnDeleteDownloadFilesListener
+    public static Control delete(List<String> urls, boolean deleteDownloadedFile, OnDeleteDownloadFilesListener 
             onDeleteDownloadFilesListener) {
         return getFileDownloadManager().delete(urls, deleteDownloadedFile, onDeleteDownloadFilesListener);
     }
@@ -496,7 +614,7 @@ public final class FileDownloader {
      *                                     newFileName not include the suffix
      * @param onRenameDownloadFileListener OnRenameDownloadFileListener impl
      */
-    public static void rename(String url, String newFileName, boolean includedSuffix, OnRenameDownloadFileListener
+    public static void rename(String url, String newFileName, boolean includedSuffix, OnRenameDownloadFileListener 
             onRenameDownloadFileListener) {
         getFileDownloadManager().rename(url, newFileName, includedSuffix, onRenameDownloadFileListener);
     }

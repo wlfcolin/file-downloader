@@ -53,7 +53,7 @@ public class FileDownloadApplication extends Application {
         builder.configRetryDownloadTimes(5);
 
         // enable debug mode
-        // builder.configDebugMode(true);
+        builder.configDebugMode(true);
 
         // config connect timeout
         builder.configConnectTimeout(25000); // 25s

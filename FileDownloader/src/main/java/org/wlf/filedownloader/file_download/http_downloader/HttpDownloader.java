@@ -12,6 +12,7 @@ import org.wlf.filedownloader.file_download.file_saver.FileSaver.FileSaveExcepti
 
 import java.io.InputStream;
 import java.net.HttpURLConnection;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 
 /**
@@ -40,6 +41,7 @@ public class HttpDownloader implements Download {
     private String mLastModified;// file last modified time
     private int mConnectTimeout = CONNECT_TIMEOUT;// connect time out, millisecond
     private String mCharset = DEFAULT_CHARSET;// FIXME now UTF-8 only
+    private Map<String, String> mHeaders;//custom  headers
 
     private ExecutorService mCloseConnectionEngine;// engine use for closing the http connection
 
@@ -111,6 +113,15 @@ public class HttpDownloader implements Download {
     }
 
     /**
+     * set custom headers
+     *
+     * @param headers custom headers
+     */
+    public void setHeaders(Map<String, String> headers) {
+        mHeaders = headers;
+    }
+
+    /**
      * set connect timeout
      *
      * @param connectTimeout connect timeout
@@ -135,6 +146,7 @@ public class HttpDownloader implements Download {
         try {
             RequestParam requestParam = new RequestParam(url, mConnectTimeout, mCharset, mRange.startPos, mRange
                     .endPos, mETag, mLastModified);
+            requestParam.setHeaders(mHeaders);
 
             conn = HttpConnectionHelper.createDownloadFileConnection(requestParam);
 

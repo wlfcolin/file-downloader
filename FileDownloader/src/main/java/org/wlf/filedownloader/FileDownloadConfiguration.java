@@ -22,7 +22,7 @@ public class FileDownloadConfiguration {
     /**
      * Configuration Builder
      */
-    public static class Builder {
+    public static class Builder extends BaseBuilder {
 
         /**
          * max download task at the same time, max is 10
@@ -33,33 +33,10 @@ public class FileDownloadConfiguration {
          */
         public static final int DEFAULT_DOWNLOAD_TASK_SIZE = 2;
 
-        /**
-         * max retry download times, max is 10
-         */
-        public static final int MAX_RETRY_DOWNLOAD_TIMES = 10;
-        /**
-         * default retry download times, default is 0
-         */
-        public static final int DEFAULT_RETRY_DOWNLOAD_TIMES = 0;
-        /**
-         * default connect timeout, default is 15s
-         */
-        public static final int DEFAULT_CONNECT_TIMEOUT = 15 * 1000;// 15s
-        /**
-         * default connect timeout, default is 5s
-         */
-        public static final int MIN_CONNECT_TIMEOUT = 5 * 1000;// 5s
-        /**
-         * default connect timeout, default is 2min
-         */
-        public static final int MAX_CONNECT_TIMEOUT = 120 * 1000;// 120s
-
         private Context mContext;
         private String mFileDownloadDir;
         private int mDownloadTaskSize;
-        private int mRetryDownloadTimes;
         private boolean mIsDebugMode = false;
-        private int mConnectTimeout;
 
         public Builder(Context context) {
             super();
@@ -74,8 +51,6 @@ public class FileDownloadConfiguration {
                 mFileDownloadDir = this.mContext.getFilesDir().getAbsolutePath() + File.separator + "file_downloader";
             }
             mDownloadTaskSize = DEFAULT_DOWNLOAD_TASK_SIZE;
-            mRetryDownloadTimes = DEFAULT_RETRY_DOWNLOAD_TIMES;
-            mConnectTimeout = DEFAULT_CONNECT_TIMEOUT;
 
             // set log mode
             Log.setDebugMode(mIsDebugMode);
@@ -132,27 +107,6 @@ public class FileDownloadConfiguration {
         }
 
         /**
-         * config RetryDownloadTimes
-         *
-         * @param retryDownloadTimes DownloadTaskSize at the same time, please set 0 to {@link
-         *                           #MAX_RETRY_DOWNLOAD_TIMES}, if not set, default is {@link
-         *                           #DEFAULT_RETRY_DOWNLOAD_TIMES}, set 0 means not retry
-         * @return the builder
-         */
-        public Builder configRetryDownloadTimes(int retryDownloadTimes) {
-            if (retryDownloadTimes >= 0 && retryDownloadTimes <= MAX_RETRY_DOWNLOAD_TIMES) {
-                this.mRetryDownloadTimes = retryDownloadTimes;
-            } else if (retryDownloadTimes > MAX_RETRY_DOWNLOAD_TIMES) {
-                this.mRetryDownloadTimes = MAX_RETRY_DOWNLOAD_TIMES;
-            } else if (retryDownloadTimes < 0) {
-                this.mRetryDownloadTimes = 0;
-            } else {
-                Log.i(TAG, "configRetryDownloadTimes 配置下载失败重试次数失败，retryDownloadTimes：" + retryDownloadTimes);
-            }
-            return this;
-        }
-
-        /**
          * config whether is debug, debug mode can print log and some debug operations
          *
          * @param isDebugMode true means debug mode
@@ -165,24 +119,15 @@ public class FileDownloadConfiguration {
             return this;
         }
 
-        /**
-         * config connect timeout
-         *
-         * @param connectTimeout please set {@link#MIN_CONNECT_TIMEOUT} to {@link#MAX_CONNECT_TIMEOUT}, if not set,
-         *                       default is {@link#DEFAULT_CONNECT_TIMEOUT}, millisecond
-         * @return the builder
-         */
-        public Builder configConnectTimeout(int connectTimeout) {
-            if (connectTimeout >= MIN_CONNECT_TIMEOUT && connectTimeout <= MAX_CONNECT_TIMEOUT) {
-                mConnectTimeout = connectTimeout;
-            } else if (connectTimeout > MAX_CONNECT_TIMEOUT) {
-                mConnectTimeout = MAX_CONNECT_TIMEOUT;
-            } else if (connectTimeout < MIN_CONNECT_TIMEOUT) {
-                mConnectTimeout = MIN_CONNECT_TIMEOUT;
-            } else {
-                Log.i(TAG, "configConnectTimeout 配置连接超时时间失败，connectTimeout：" + connectTimeout);
-            }
+        @Override
+        public Builder configRetryDownloadTimes(int retryDownloadTimes) {
+            super.configRetryDownloadTimes(retryDownloadTimes);
+            return this;
+        }
 
+        @Override
+        public Builder configConnectTimeout(int connectTimeout) {
+            super.configConnectTimeout(connectTimeout);
             return this;
         }
 
@@ -265,21 +210,21 @@ public class FileDownloadConfiguration {
     }
 
     /**
-     * get RetryDownloadTimes
-     *
-     * @return retry download times
-     */
-    public int getRetryDownloadTimes() {
-        return mBuilder.mRetryDownloadTimes;
-    }
-
-    /**
      * whether is debug mode, debug mode can print log and some debug operations
      *
      * @return true means debug mode
      */
     public boolean isDebugMode() {
         return mBuilder.mIsDebugMode;
+    }
+
+    /**
+     * get RetryDownloadTimes
+     *
+     * @return retry download times
+     */
+    public int getRetryDownloadTimes() {
+        return mBuilder.mRetryDownloadTimes;
     }
 
     /**

@@ -2,6 +2,8 @@ package org.wlf.filedownloader.file_download;
 
 import org.wlf.filedownloader.DownloadFileInfo;
 
+import java.util.Map;
+
 /**
  * FileDownloadTaskParam
  *
@@ -13,52 +15,107 @@ class FileDownloadTaskParam {
     /**
      * file url
      */
-    public final String url;
+    private String mUrl;
     /**
      * the position of this time to start
      */
-    public final long startPosInTotal;
+    private long mStartPosInTotal;
     /**
      * file total size
      */
-    public final long fileTotalSize;
+    private long mFileTotalSize;
     /**
      * file eTag
      */
-    public final String eTag;
+    private String mETag;
     /**
      * file last modified datetime(in server)
      */
-    public final String lastModified;
+    private String mLastModified;
     /**
      * AcceptRangeType
      */
-    public final String acceptRangeType;
+    private String mAcceptRangeType;
     /**
      * TempFilePath
      */
-    public final String tempFilePath;
+    private String mTempFilePath;
     /**
      * SaveFilePath
      */
-    public final String filePath;
+    private String mFilePath;
 
-    public FileDownloadTaskParam(String url, long startPosInTotal, long fileTotalSize, String eTag, String lastModified, String acceptRangeType, String tempFilePath, String filePath) {
-        super();
-        this.url = url;
-        this.startPosInTotal = startPosInTotal;
-        this.fileTotalSize = fileTotalSize;
-        this.eTag = eTag;
-        this.lastModified = lastModified;
-        this.acceptRangeType = acceptRangeType;
-        this.tempFilePath = tempFilePath;
-        this.filePath = filePath;
+    private Map<String, String> mHeaders;// custom  headers
+
+    public FileDownloadTaskParam(String url, long startPosInTotal, long fileTotalSize, String ETag, String 
+            lastModified, String acceptRangeType, String tempFilePath, String filePath) {
+        mUrl = url;
+        mStartPosInTotal = startPosInTotal;
+        mFileTotalSize = fileTotalSize;
+        mETag = ETag;
+        mLastModified = lastModified;
+        mAcceptRangeType = acceptRangeType;
+        mTempFilePath = tempFilePath;
+        mFilePath = filePath;
     }
 
-    public static FileDownloadTaskParam createByDownloadFile(DownloadFileInfo downloadFileInfo) {
+    public static FileDownloadTaskParam createByDownloadFile(DownloadFileInfo downloadFileInfo, Map<String, String> 
+            headers) {
+
         if (downloadFileInfo == null) {
             return null;
         }
-        return new FileDownloadTaskParam(downloadFileInfo.getUrl(), downloadFileInfo.getDownloadedSizeLong(), downloadFileInfo.getFileSizeLong(), downloadFileInfo.getETag(), downloadFileInfo.getLastModified(), downloadFileInfo.getAcceptRangeType(), downloadFileInfo.getTempFilePath(), downloadFileInfo.getFilePath());
+
+        FileDownloadTaskParam fileDownloadTaskParam = new FileDownloadTaskParam(downloadFileInfo.getUrl(), 
+                downloadFileInfo.getDownloadedSizeLong(), downloadFileInfo.getFileSizeLong(), downloadFileInfo
+                .getETag(), downloadFileInfo.getLastModified(), downloadFileInfo.getAcceptRangeType(), 
+                downloadFileInfo.getTempFilePath(), downloadFileInfo.getFilePath());
+        fileDownloadTaskParam.mHeaders = headers;
+
+        return fileDownloadTaskParam;
+    }
+
+    // --------------------------------------setters--------------------------------------
+
+    public void setHeaders(Map<String, String> headers) {
+        mHeaders = headers;
+    }
+
+    // --------------------------------------getters--------------------------------------
+
+    public String getUrl() {
+        return mUrl;
+    }
+
+    public long getStartPosInTotal() {
+        return mStartPosInTotal;
+    }
+
+    public long getFileTotalSize() {
+        return mFileTotalSize;
+    }
+
+    public String getETag() {
+        return mETag;
+    }
+
+    public String getLastModified() {
+        return mLastModified;
+    }
+
+    public String getAcceptRangeType() {
+        return mAcceptRangeType;
+    }
+
+    public String getTempFilePath() {
+        return mTempFilePath;
+    }
+
+    public String getFilePath() {
+        return mFilePath;
+    }
+
+    public Map<String, String> getHeaders() {
+        return mHeaders;
     }
 }

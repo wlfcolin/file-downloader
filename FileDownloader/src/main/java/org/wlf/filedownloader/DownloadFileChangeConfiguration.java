@@ -10,8 +10,6 @@ import java.util.Set;
 
 /**
  * DownloadFileChange Configuration
- * <br/>
- * 下载文件缓存器
  *
  * @author wlf(Andy)
  * @email 411086563@qq.com

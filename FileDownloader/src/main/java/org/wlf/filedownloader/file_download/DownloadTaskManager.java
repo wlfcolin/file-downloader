@@ -2,6 +2,8 @@ package org.wlf.filedownloader.file_download;
 
 import android.text.TextUtils;
 
+import org.wlf.filedownloader.DownloadConfiguration;
+import org.wlf.filedownloader.DownloadConfiguration.Builder;
 import org.wlf.filedownloader.DownloadFileInfo;
 import org.wlf.filedownloader.DownloadStatusConfiguration;
 import org.wlf.filedownloader.FileDownloadConfiguration;
@@ -214,8 +216,7 @@ public class DownloadTaskManager implements Pauseable {
     /**
      * start a detect url file task
      */
-    private void addAndRunDetectUrlFileTask(String url, boolean forceDetect, OnDetectBigUrlFileListener 
-            onDetectBigUrlFileListener) {
+    private void addAndRunDetectUrlFileTask(String url, boolean forceDetect, OnDetectBigUrlFileListener onDetectBigUrlFileListener, DownloadConfiguration downloadConfiguration) {
 
         // ------------start checking conditions & notifying caller if necessary------------
         {
@@ -250,6 +251,10 @@ public class DownloadTaskManager implements Pauseable {
         // set the CloseConnectionEngine
         detectUrlFileTask.setCloseConnectionEngine(mConfiguration.getFileOperationEngine());
         detectUrlFileTask.setConnectTimeout(mConfiguration.getConnectTimeout());
+        if (downloadConfiguration != null) {
+            // set headers
+            detectUrlFileTask.setHeaders(downloadConfiguration.getHeaders(url));
+        }
         if (forceDetect) {
             // enableForceDetectMode
             detectUrlFileTask.enableForceDetect();
@@ -262,7 +267,8 @@ public class DownloadTaskManager implements Pauseable {
     /**
      * start a download task
      */
-    private void addAndRunDownloadTask(String callerUrl, DownloadFileInfo downloadFileInfo) {
+    private void addAndRunDownloadTask(String callerUrl, DownloadFileInfo downloadFileInfo, DownloadConfiguration 
+            downloadConfiguration) {
 
         FileDownloadStatusFailReason failReason = null;// null means there are not errors
 
@@ -311,19 +317,29 @@ public class DownloadTaskManager implements Pauseable {
             return;
         }
 
-        //        // create download task
-        //        DownloadTaskImpl downloadTask = new DownloadTaskImpl(FileDownloadTaskParam.createByDownloadFile
-        //                (downloadFileInfo), mDownloadRecorder, mDownloadStatusObserver, mConfiguration
-        // .getFileDetectEngine());
+        // use global configuration first
+        int retryDownloadTimes = mConfiguration.getRetryDownloadTimes();
+        int connectTimeout = mConfiguration.getConnectTimeout();
+        Map<String, String> headers = null;
+
+        if (downloadConfiguration != null) {
+            int localRetryDownloadTimes = downloadConfiguration.getRetryDownloadTimes(callerUrl);
+            if (localRetryDownloadTimes != Builder.DEFAULT_RETRY_DOWNLOAD_TIMES) {
+                retryDownloadTimes = localRetryDownloadTimes;
+            }
+            int localConnectTimeout = downloadConfiguration.getRetryDownloadTimes(callerUrl);
+            if (localConnectTimeout != Builder.DEFAULT_CONNECT_TIMEOUT) {
+                connectTimeout = localConnectTimeout;
+            }
+            headers = downloadConfiguration.getHeaders(callerUrl);
+        }
 
         // create retryable download task
-        RetryableDownloadTaskImpl downloadTask = new RetryableDownloadTaskImpl(FileDownloadTaskParam
-                .createByDownloadFile(downloadFileInfo), mDownloadRecorder, mDownloadStatusObserver);
-        // set RetryDownloadTimes
-        downloadTask.setRetryDownloadTimes(mConfiguration.getRetryDownloadTimes());
+        RetryableDownloadTaskImpl downloadTask = new RetryableDownloadTaskImpl(FileDownloadTaskParam.createByDownloadFile(downloadFileInfo, headers), mDownloadRecorder, mDownloadStatusObserver);
         downloadTask.setCloseConnectionEngine(mConfiguration.getFileOperationEngine());
-        downloadTask.setConnectTimeout(mConfiguration.getConnectTimeout());
-
+        // set RetryDownloadTimes
+        downloadTask.setRetryDownloadTimes(retryDownloadTimes);
+        downloadTask.setConnectTimeout(connectTimeout);
         // remove the task when it is illegal first
         DownloadTask taskInMap = getRunningDownloadTask(downloadTask.getUrl());
         if (taskInMap != null) {
@@ -464,10 +480,9 @@ public class DownloadTaskManager implements Pauseable {
     /**
      * detect a big url file
      */
-    private void detectInternal(String url, boolean forceDetect, OnDetectBigUrlFileListener 
-            onDetectBigUrlFileListener) {
+    private void detectInternal(String url, boolean forceDetect, OnDetectBigUrlFileListener onDetectBigUrlFileListener, DownloadConfiguration downloadConfiguration) {
         // start detect task
-        addAndRunDetectUrlFileTask(url, forceDetect, onDetectBigUrlFileListener);
+        addAndRunDetectUrlFileTask(url, forceDetect, onDetectBigUrlFileListener, downloadConfiguration);
     }
 
     /**
@@ -475,11 +490,13 @@ public class DownloadTaskManager implements Pauseable {
      *
      * @param url                     file url
      * @param onDetectUrlFileListener OnDetectUrlFileListener impl
+     * @param downloadConfiguration   download configuration
      * @deprecated this method can not detect the url file which bigger than 2G, use {@link #detect(String,
-     * OnDetectBigUrlFileListener)}instead
+     * OnDetectBigUrlFileListener, DownloadConfiguration)}instead
      */
     @Deprecated
-    public void detect(String url, final OnDetectUrlFileListener onDetectUrlFileListener) {
+    public void detect(String url, final OnDetectUrlFileListener onDetectUrlFileListener, DownloadConfiguration 
+            downloadConfiguration) {
         final String finalUrl = url;
         detect(finalUrl, new OnDetectBigUrlFileListener() {// inner change callback
             @Override
@@ -506,7 +523,7 @@ public class DownloadTaskManager implements Pauseable {
                             failReason));
                 }
             }
-        });
+        }, downloadConfiguration);
     }
 
     /**
@@ -514,25 +531,30 @@ public class DownloadTaskManager implements Pauseable {
      *
      * @param url                        file url
      * @param onDetectBigUrlFileListener OnDetectBigUrlFileListener impl
+     * @param downloadConfiguration      download configuration
      */
-    public void detect(String url, OnDetectBigUrlFileListener onDetectBigUrlFileListener) {
-        detectInternal(url, false, onDetectBigUrlFileListener);
+    public void detect(String url, OnDetectBigUrlFileListener onDetectBigUrlFileListener, DownloadConfiguration 
+            downloadConfiguration) {
+        detectInternal(url, false, onDetectBigUrlFileListener, downloadConfiguration);
     }
 
     // --------------------------------------create/continue downloads--------------------------------------
 
     /**
-     * create a new download after detected a url file by using {@link #detect(String, OnDetectBigUrlFileListener)}
+     * create a new download after detected a url file by using {@link #detect(String, OnDetectBigUrlFileListener,
+     * DownloadConfiguration)}
      * <br/>
      * if the caller cares for the download status, please register an listener before by using
      * <br>
      * {@link #registerDownloadStatusListener(OnFileDownloadStatusListener, DownloadStatusConfiguration)}
      *
-     * @param url      file url
-     * @param saveDir  saveDir
-     * @param fileName saveFileName
+     * @param url                   file url
+     * @param saveDir               saveDir
+     * @param fileName              saveFileName
+     * @param downloadConfiguration download configuration
      */
-    public void createAndStart(String url, String saveDir, String fileName) {
+    public void createAndStart(String url, String saveDir, String fileName, DownloadConfiguration 
+            downloadConfiguration) {
         // 1.get detected file
         DetectUrlFileInfo detectUrlFileInfo = getDetectUrlFile(url);
         if (detectUrlFileInfo != null) {
@@ -545,13 +567,14 @@ public class DownloadTaskManager implements Pauseable {
         }
 
         // 2.create detect task
-        createAndStartByDetectUrlFile(url, detectUrlFileInfo);
+        createAndStartByDetectUrlFile(url, detectUrlFileInfo, downloadConfiguration);
     }
 
     /**
      * create download task by using DetectUrlFileInfo
      */
-    private void createAndStartByDetectUrlFile(String callerUrl, DetectUrlFileInfo detectUrlFileInfo) {
+    private void createAndStartByDetectUrlFile(String callerUrl, DetectUrlFileInfo detectUrlFileInfo, 
+                                               DownloadConfiguration downloadConfiguration) {
 
         FileDownloadStatusFailReason failReason = null;// null means there are not errors
 
@@ -586,15 +609,16 @@ public class DownloadTaskManager implements Pauseable {
         }
 
         // 3.start download task
-        startInternal(callerUrl, downloadFileInfo);
+        startInternal(callerUrl, downloadFileInfo, downloadConfiguration);
     }
 
     /**
      * start a download task
      */
-    private void startInternal(String callerUrl, DownloadFileInfo downloadFileInfo) {
+    private void startInternal(String callerUrl, DownloadFileInfo downloadFileInfo, DownloadConfiguration 
+            downloadConfiguration) {
         // start a download task
-        addAndRunDownloadTask(callerUrl, downloadFileInfo);
+        addAndRunDownloadTask(callerUrl, downloadFileInfo, downloadConfiguration);
     }
 
     /**
@@ -604,14 +628,15 @@ public class DownloadTaskManager implements Pauseable {
      * <br/>
      * {@link #registerDownloadStatusListener(OnFileDownloadStatusListener, DownloadStatusConfiguration)}
      *
-     * @param url file url
+     * @param url                   file url
+     * @param downloadConfiguration download configuration
      */
-    public void start(String url) {
+    public void start(String url, final DownloadConfiguration downloadConfiguration) {
         DownloadFileInfo downloadFileInfo = getDownloadFile(url);
         // has been downloaded
         if (downloadFileInfo != null) {
             // continue download task
-            startInternal(url, downloadFileInfo);
+            startInternal(url, downloadFileInfo, downloadConfiguration);
         }
         // not download
         else {
@@ -619,7 +644,7 @@ public class DownloadTaskManager implements Pauseable {
             // detected
             if (detectUrlFileInfo != null) {
                 // create download task
-                createAndStartByDetectUrlFile(url, detectUrlFileInfo);
+                createAndStartByDetectUrlFile(url, detectUrlFileInfo, downloadConfiguration);
             }
             // not detect
             else {
@@ -636,15 +661,15 @@ public class DownloadTaskManager implements Pauseable {
                     @Override
                     public void onDetectUrlFileExist(String url) {
                         // continue download task
-                        startInternal(finalUrl, getDownloadFile(finalUrl));
+                        startInternal(finalUrl, getDownloadFile(finalUrl), downloadConfiguration);
                     }
 
                     @Override
                     public void onDetectNewDownloadFile(String url, String fileName, String savedDir, long fileSize) {
                         // create and start download
-                        createAndStart(finalUrl, savedDir, fileName);
+                        createAndStart(finalUrl, savedDir, fileName, downloadConfiguration);
                     }
-                });
+                }, downloadConfiguration);
             }
         }
     }
@@ -656,11 +681,12 @@ public class DownloadTaskManager implements Pauseable {
      * <br>
      * {@link #registerDownloadStatusListener(OnFileDownloadStatusListener, DownloadStatusConfiguration)}
      *
-     * @param urls file urls
+     * @param urls                  file urls
+     * @param downloadConfiguration download configuration
      */
-    public void start(List<String> urls) {
+    public void start(List<String> urls, DownloadConfiguration downloadConfiguration) {
         for (String url : urls) {
-            start(url);
+            start(url, downloadConfiguration);
         }
     }
 
@@ -763,7 +789,8 @@ public class DownloadTaskManager implements Pauseable {
     /**
      * restart a download
      */
-    private void reStartInternal(String url, final boolean isDelete) {
+    private void reStartInternal(String url, final boolean isDelete, final DownloadConfiguration 
+            downloadConfiguration) {
 
         // 1.check url
         if (!UrlUtil.isUrl(url)) {
@@ -790,7 +817,7 @@ public class DownloadTaskManager implements Pauseable {
                         // delete old one
                         mDownloadRecorder.resetDownloadFile(finalUrl, isDelete);
                         // create new one
-                        createAndStart(finalUrl, oldFileDir, oldFileName);
+                        createAndStart(finalUrl, oldFileDir, oldFileName, downloadConfiguration);
                     } catch (Exception e) {
                         e.printStackTrace();
                         // TODO need a special exception ?
@@ -806,7 +833,7 @@ public class DownloadTaskManager implements Pauseable {
                         // delete old one
                         mDownloadRecorder.resetDownloadFile(finalUrl, isDelete);
                         // start download
-                        start(url);
+                        start(url, downloadConfiguration);
                     } catch (Exception e) {
                         e.printStackTrace();
                         // TODO need a special exception ?
@@ -822,11 +849,11 @@ public class DownloadTaskManager implements Pauseable {
                     notifyDownloadStatusFailed(finalUrl, new OnFileDownloadStatusFailReason(finalUrl, failReason), 
                             getDownloadFile(finalUrl) != null);
                 }
-            });
+            }, downloadConfiguration);
         } else {
             // download do not exist
             // start download
-            start(url);
+            start(url, downloadConfiguration);
         }
     }
 
@@ -837,9 +864,10 @@ public class DownloadTaskManager implements Pauseable {
      * <br>
      * {@link #registerDownloadStatusListener(OnFileDownloadStatusListener, DownloadStatusConfiguration)}
      *
-     * @param url file url
+     * @param url                   file url
+     * @param downloadConfiguration download configuration
      */
-    public void reStart(String url) {
+    public void reStart(String url, final DownloadConfiguration downloadConfiguration) {
         // downloading, pause first
         if (isDownloading(url)) {
             final String finalUrl = url;
@@ -848,7 +876,7 @@ public class DownloadTaskManager implements Pauseable {
                 @Override
                 public void onStopFileDownloadTaskSucceed(String url) {
                     // stop succeed, restart
-                    reStartInternal(finalUrl, true);
+                    reStartInternal(finalUrl, true, downloadConfiguration);
                 }
 
                 @Override
@@ -857,7 +885,7 @@ public class DownloadTaskManager implements Pauseable {
                     if (failReason != null) {
                         if (StopDownloadFileTaskFailReason.TYPE_TASK_HAS_BEEN_STOPPED.equals(failReason.getType())) {
                             // has been stopped, so can restart normally
-                            reStartInternal(finalUrl, true);
+                            reStartInternal(finalUrl, true, downloadConfiguration);
                             return;
                         }
                     }
@@ -868,7 +896,7 @@ public class DownloadTaskManager implements Pauseable {
             });
         } else {
             // has been stopped, restart directly
-            reStartInternal(url, true);
+            reStartInternal(url, true, downloadConfiguration);
         }
     }
 
@@ -879,11 +907,12 @@ public class DownloadTaskManager implements Pauseable {
      * <br/>
      * {@link #registerDownloadStatusListener(OnFileDownloadStatusListener, DownloadStatusConfiguration)}
      *
-     * @param urls file urls
+     * @param urls                  file urls
+     * @param downloadConfiguration download configuration
      */
-    public void reStart(List<String> urls) {
+    public void reStart(List<String> urls, DownloadConfiguration downloadConfiguration) {
         for (String url : urls) {
-            reStart(url);
+            reStart(url, downloadConfiguration);
         }
     }
 

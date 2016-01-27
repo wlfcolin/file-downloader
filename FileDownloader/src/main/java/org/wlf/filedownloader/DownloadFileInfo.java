@@ -447,4 +447,14 @@ public class DownloadFileInfo extends BaseUrlFileInfo {
     public String getTempFilePath() {
         return getFileDir() + File.separator + mTempFileName;
     }
+
+    @Override
+    public String toString() {
+        return "DownloadFileInfo{" +
+                "mId=" + mId +
+                ", mDownloadedSize=" + mDownloadedSize +
+                ", mTempFileName='" + mTempFileName + '\'' +
+                ", mStatus=" + mStatus +
+                "} " + super.toString();
+    }
 }

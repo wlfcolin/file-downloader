@@ -19,6 +19,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import org.wlf.filedownloader.DownloadConfiguration;
 import org.wlf.filedownloader.DownloadFileInfo;
 import org.wlf.filedownloader.FileDownloader;
 import org.wlf.filedownloader.listener.OnDeleteDownloadFileListener;
@@ -81,6 +82,11 @@ public class MainActivity extends Activity implements OnItemSelectListener {
 
         // listen all
         FileDownloader.registerDownloadStatusListener(mDownloadFileListAdapter);
+
+        // TEST DownloadConfiguration
+        // DownloadStatusConfiguration.Builder builder = new DownloadStatusConfiguration.Builder();
+        // builder.addListenUrl("http://yjh.t4s.cn/Home/new/downloadFile/id/31");
+        // FileDownloader.registerDownloadStatusListener(mDownloadFileListAdapter,builder.build());
     }
 
     @Override
@@ -157,7 +163,13 @@ public class MainActivity extends Activity implements OnItemSelectListener {
             public void onClick(DialogInterface dialog, int which) {
                 // file url
                 String url = etUrl.getText().toString().trim();
-                FileDownloader.start(url);
+
+                // FileDownloader.start(url);
+
+                // TEST DownloadConfiguration
+                DownloadConfiguration.Builder builder1 = new DownloadConfiguration.Builder();
+                builder1.addHeader("Accept", "*/*");
+                FileDownloader.start(url, builder1.build());
             }
         });
         builder.show();
@@ -216,7 +228,16 @@ public class MainActivity extends Activity implements OnItemSelectListener {
                 urls.add(url4);
                 urls.add(url5);
 
-                FileDownloader.start(urls);
+                // FileDownloader.start(urls);
+
+                // TEST DownloadConfiguration
+                DownloadConfiguration.Builder builder1 = new DownloadConfiguration.Builder();
+                builder1.addHeaderWithUrl(url1, "Accept", "*/*");
+                builder1.addHeaderWithUrl(url2, "Date", "Tue, 15 Nov 2015 08:12:31 GMT");
+                builder1.addHeaderWithUrl(url3, "Pragma", "no-cache");
+                builder1.addHeader("Pragma", "no-cache-common");
+                builder1.replaceHeaderWithUrl(url2, "Date", "Tue, 15 Nov 2016 08:12:31 GMT");
+                FileDownloader.start(urls, builder1.build());
             }
         });
         builder.show();
@@ -424,7 +445,8 @@ public class MainActivity extends Activity implements OnItemSelectListener {
 
         final EditText etUrlCustom = new EditText(this);
         // big download file witch bigger than 2G to download
-        etUrlCustom.setText("https://raw.githubusercontent.com/wlfcolin/file-downloader/master/design/file-downloader uml.eap");
+        etUrlCustom.setText("https://raw.githubusercontent" +
+                ".com/wlfcolin/file-downloader/master/design/file-downloader" + " uml.eap");
         etUrlCustom.setFocusable(true);
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -455,8 +477,7 @@ public class MainActivity extends Activity implements OnItemSelectListener {
 
                         final TextView tvFileSize = new TextView(MainActivity.this);
                         float size = fileSize / 1024f / 1024f;
-                        tvFileSize.setText(getString(R.string.main__file_size) + ((float) (Math.round(size * 100)) /
-                                100) + "M");
+                        tvFileSize.setText(getString(R.string.main__file_size) + ((float) (Math.round(size * 100)) / 100) + "M");
 
                         LinearLayout linearLayout = new LinearLayout(MainActivity.this);
                         linearLayout.setOrientation(LinearLayout.VERTICAL);
@@ -515,7 +536,7 @@ public class MainActivity extends Activity implements OnItemSelectListener {
         });
         builder.show();
     }
-    
+
     // show toast
     private void showToast(CharSequence text) {
         if (mToast == null) {

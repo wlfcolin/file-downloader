@@ -12,6 +12,7 @@ import org.wlf.filedownloader.util.UrlUtil;
 
 import java.io.InputStream;
 import java.net.HttpURLConnection;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 
 /**
@@ -34,6 +35,7 @@ class DetectUrlFileTask implements Runnable {
     private String mDownloadSaveDir;
     private int mConnectTimeout = CONNECT_TIMEOUT;// connect time out, millisecond
     private String mCharset = DEFAULT_CHARSET;// FIXME now UTF-8 only
+    private Map<String, String> mHeaders;//custom  headers
 
     private DetectUrlFileCacher mDetectUrlFileCacher;
     private DownloadRecorder mDownloadRecorder;
@@ -78,6 +80,15 @@ class DetectUrlFileTask implements Runnable {
      */
     public void setConnectTimeout(int connectTimeout) {
         mConnectTimeout = connectTimeout;
+    }
+
+    /**
+     * set custom headers
+     *
+     * @param headers custom headers
+     */
+    public void setHeaders(Map<String, String> headers) {
+        mHeaders = headers;
     }
 
     /**
@@ -131,11 +142,11 @@ class DetectUrlFileTask implements Runnable {
             }
             // ------------end checking conditions------------
 
-            conn = HttpConnectionHelper.createDetectConnection(mUrl, mConnectTimeout, mCharset);
+            conn = HttpConnectionHelper.createDetectConnection(mUrl, mConnectTimeout, mCharset, mHeaders);
 
             int redirectCount = 0;
             while (conn.getResponseCode() / 100 == 3 && redirectCount < MAX_REDIRECT_TIMES) {
-                conn = HttpConnectionHelper.createDetectConnection(mUrl, mConnectTimeout, mCharset);
+                conn = HttpConnectionHelper.createDetectConnection(mUrl, mConnectTimeout, mCharset, mHeaders);
                 redirectCount++;
             }
 
@@ -144,7 +155,8 @@ class DetectUrlFileTask implements Runnable {
 
             if (redirectCount > MAX_REDIRECT_TIMES) {
                 // error over max redirect
-                failReason = new DetectUrlFileFailReason(mUrl, "over max redirect:" + MAX_REDIRECT_TIMES + "!", DetectUrlFileFailReason.TYPE_URL_OVER_REDIRECT_COUNT);
+                failReason = new DetectUrlFileFailReason(mUrl, "over max redirect:" + MAX_REDIRECT_TIMES + "!", 
+                        DetectUrlFileFailReason.TYPE_URL_OVER_REDIRECT_COUNT);
                 // goto finally, over redirect limit error
                 return;
             }

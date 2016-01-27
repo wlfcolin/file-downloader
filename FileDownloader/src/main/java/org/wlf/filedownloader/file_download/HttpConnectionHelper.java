@@ -42,12 +42,19 @@ public class HttpConnectionHelper {
      */
     private static final String TAG = HttpConnectionHelper.class.getSimpleName();
 
+    //    private static final String[] IGNORE_HEADER_KEY = new String[]{
+    //            // Accept-Encoding
+    //            "Accept-Encoding",
+    //    };
+
     /**
      * create Detect http file Connection
      */
-    public static HttpURLConnection createDetectConnection(String url, int connectTimeout, String charset) throws 
-            Exception {
-        return createHttpUrlConnection(new RequestParam(url, connectTimeout, charset));
+    public static HttpURLConnection createDetectConnection(String url, int connectTimeout, String charset, 
+                                                           Map<String, String> headers) throws Exception {
+        RequestParam requestParam = new RequestParam(url, connectTimeout, charset);
+        requestParam.setHeaders(headers);
+        return createHttpUrlConnection(requestParam);
     }
 
     /**
@@ -58,7 +65,7 @@ public class HttpConnectionHelper {
     }
 
     /**
-     * init initTrustSSL
+     * initTrustSSL
      */
     private static void initTrustSSL(HttpsURLConnection conn) {
         try {
@@ -119,7 +126,7 @@ public class HttpConnectionHelper {
         HttpURLConnection conn = null;
 
         URL url = new URL(encodedUrl);
-        if (encodedUrl.startsWith("https")) {
+        if (encodedUrl.toLowerCase().startsWith("https")) {
             // https
             HttpsURLConnection httpsConn = (HttpsURLConnection) url.openConnection();
             initTrustSSL(httpsConn);
@@ -130,6 +137,25 @@ public class HttpConnectionHelper {
 
         conn.setConnectTimeout(requestParam.mConnectTimeout);
         conn.setReadTimeout(requestParam.mConnectTimeout);// FIXME read timeout equals to connect timeout
+
+        // -----------------------------headers-----------------------------------------
+
+        if (!MapUtil.isEmpty(requestParam.mHeaders)) {
+            // custom headers first
+            Set<String> keys = requestParam.mHeaders.keySet();
+
+            Log.i(TAG, "自定义头信息大小：" + keys.size());
+
+            for (String key : keys) {
+                if (TextUtils.isEmpty(key)) {
+                    continue;
+                }
+                String value = requestParam.mHeaders.get(key);
+                conn.setRequestProperty(key, value);
+
+                Log.i(TAG, "添加自定义头信息，url：" + url + "，key：" + key + "，value：" + value);
+            }
+        }
 
         conn.setRequestProperty("Accept-Encoding", "identity");// FIXME now identity only
         // System.setProperty("http.keepAlive", "false");
@@ -182,6 +208,7 @@ public class HttpConnectionHelper {
         private long mRangeEndPos = -1;
         private String mETag;
         private String mLastModified;
+        private Map<String, String> mHeaders;
 
         public RequestParam(String url, int connectTimeout, String charset) {
             mUrl = url;
@@ -227,6 +254,10 @@ public class HttpConnectionHelper {
         //        public void setLastModified(String lastModified) {
         //            mLastModified = lastModified;
         //        }
+
+        public void setHeaders(Map<String, String> headers) {
+            mHeaders = headers;
+        }
 
         @Override
         public String toString() {

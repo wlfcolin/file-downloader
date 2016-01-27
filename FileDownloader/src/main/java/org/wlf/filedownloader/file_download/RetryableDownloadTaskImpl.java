@@ -34,7 +34,6 @@ class RetryableDownloadTaskImpl implements RetryableDownloadTask, OnFileDownload
     private static final String TAG = RetryableDownloadTaskImpl.class.getSimpleName();
 
     private final FileDownloadTaskParam mOriginalTaskParamInfo;// Download Param Info original
-    private FileDownloadTaskParam mTaskParamInfo;// Download Param Info
     private DownloadRecorder mDownloadRecorder;// DownloadRecorder
 
     private DownloadTaskImpl mFileDownloadTaskImpl;
@@ -100,12 +99,17 @@ class RetryableDownloadTaskImpl implements RetryableDownloadTask, OnFileDownload
 
     private void init() {
         if (mRecordedRange == null) {// first time to start internal impl task
-            mRecordedRange = new Range(mOriginalTaskParamInfo.startPosInTotal, mOriginalTaskParamInfo.startPosInTotal);
+            mRecordedRange = new Range(mOriginalTaskParamInfo.getStartPosInTotal(), mOriginalTaskParamInfo
+                    .getStartPosInTotal());
         }
         // init
-        mTaskParamInfo = new FileDownloadTaskParam(mOriginalTaskParamInfo.url, mOriginalTaskParamInfo.startPosInTotal + mRecordedRange.getLength(), mOriginalTaskParamInfo.fileTotalSize, mOriginalTaskParamInfo.eTag, mOriginalTaskParamInfo.lastModified, mOriginalTaskParamInfo.
-                acceptRangeType, mOriginalTaskParamInfo.tempFilePath, mOriginalTaskParamInfo.filePath);
-        mFileDownloadTaskImpl = new DownloadTaskImpl(mTaskParamInfo, mDownloadRecorder, this);
+        FileDownloadTaskParam taskParamInfo = new FileDownloadTaskParam(getUrl(), mOriginalTaskParamInfo
+                .getStartPosInTotal() + mRecordedRange.getLength(), mOriginalTaskParamInfo.getFileTotalSize(), 
+                mOriginalTaskParamInfo.getETag(), mOriginalTaskParamInfo.getLastModified(), mOriginalTaskParamInfo.
+                getAcceptRangeType(), mOriginalTaskParamInfo.getTempFilePath(), mOriginalTaskParamInfo.getFilePath());
+        taskParamInfo.setHeaders(mOriginalTaskParamInfo.getHeaders());
+
+        mFileDownloadTaskImpl = new DownloadTaskImpl(taskParamInfo, mDownloadRecorder, this);
         mFileDownloadTaskImpl.setCloseConnectionEngine(mCloseConnectionEngine);
         mFileDownloadTaskImpl.setConnectTimeout(mConnectTimeout);
     }
@@ -157,15 +161,15 @@ class RetryableDownloadTaskImpl implements RetryableDownloadTask, OnFileDownload
         if (mDownloadRecorder == null) {
             return null;
         }
-        return mDownloadRecorder.getDownloadFile(mTaskParamInfo.url);
+        return mDownloadRecorder.getDownloadFile(getUrl());
     }
 
     @Override
     public String getUrl() {
-        if (mTaskParamInfo == null) {
+        if (mOriginalTaskParamInfo == null) {
             return null;
         }
-        return mTaskParamInfo.url;
+        return mOriginalTaskParamInfo.getUrl();
     }
 
     // --------------------------------------notify caller--------------------------------------
@@ -181,13 +185,13 @@ class RetryableDownloadTaskImpl implements RetryableDownloadTask, OnFileDownload
             if (mOnFileDownloadStatusListener instanceof OnRetryableFileDownloadStatusListener) {
                 OnRetryableFileDownloadStatusListener onRetryableFileDownloadStatusListener = 
                         (OnRetryableFileDownloadStatusListener) mOnFileDownloadStatusListener;
-                mDownloadRecorder.recordStatus(mTaskParamInfo.url, Status.DOWNLOAD_STATUS_RETRYING, 0);
+                mDownloadRecorder.recordStatus(getUrl(), Status.DOWNLOAD_STATUS_RETRYING, 0);
                 if (onRetryableFileDownloadStatusListener != null) {
                     onRetryableFileDownloadStatusListener.onFileDownloadStatusRetrying(getDownloadFile(), 
                             mHasRetriedTimes);
                 }
 
-                Log.i(TAG, "file-downloader-status 记录【重试状态】成功，url：" + mTaskParamInfo.url);
+                Log.i(TAG, "file-downloader-status 记录【重试状态】成功，url：" + getUrl());
 
                 return true;
             }
@@ -210,12 +214,12 @@ class RetryableDownloadTaskImpl implements RetryableDownloadTask, OnFileDownload
      */
     private boolean notifyStatusWaiting() {
         try {
-            mDownloadRecorder.recordStatus(mTaskParamInfo.url, Status.DOWNLOAD_STATUS_WAITING, 0);
+            mDownloadRecorder.recordStatus(getUrl(), Status.DOWNLOAD_STATUS_WAITING, 0);
             if (mOnFileDownloadStatusListener != null) {
                 mOnFileDownloadStatusListener.onFileDownloadStatusWaiting(getDownloadFile());
             }
 
-            Log.i(TAG, "file-downloader-status 记录【等待状态】成功，url：" + mTaskParamInfo.url);
+            Log.i(TAG, "file-downloader-status 记录【等待状态】成功，url：" + getUrl());
 
             return true;
         } catch (Exception e) {
@@ -249,14 +253,14 @@ class RetryableDownloadTaskImpl implements RetryableDownloadTask, OnFileDownload
                     return;
                 }
                 try {
-                    mDownloadRecorder.recordStatus(mTaskParamInfo.url, status, increaseSize);
+                    mDownloadRecorder.recordStatus(getUrl(), status, increaseSize);
                     switch (status) {
                         case Status.DOWNLOAD_STATUS_PAUSED:
                             if (mOnFileDownloadStatusListener != null) {
                                 mOnFileDownloadStatusListener.onFileDownloadStatusPaused(getDownloadFile());
                             }
 
-                            Log.i(TAG, "file-downloader-status 记录【暂停状态】成功，url：" + mTaskParamInfo.url);
+                            Log.i(TAG, "file-downloader-status 记录【暂停状态】成功，url：" + getUrl());
 
                             mIsNotifyTaskFinish = true;
                             break;
@@ -265,7 +269,7 @@ class RetryableDownloadTaskImpl implements RetryableDownloadTask, OnFileDownload
                                 mOnFileDownloadStatusListener.onFileDownloadStatusCompleted(getDownloadFile());
                             }
 
-                            Log.i(TAG, "file-downloader-status 记录【完成状态】成功，url：" + mTaskParamInfo.url);
+                            Log.i(TAG, "file-downloader-status 记录【完成状态】成功，url：" + getUrl());
 
                             mIsNotifyTaskFinish = true;
                             break;
@@ -275,7 +279,7 @@ class RetryableDownloadTaskImpl implements RetryableDownloadTask, OnFileDownload
                                         failReason);
                             }
 
-                            Log.i(TAG, "file-downloader-status 记录【错误状态】成功，url：" + mTaskParamInfo.url);
+                            Log.i(TAG, "file-downloader-status 记录【错误状态】成功，url：" + getUrl());
 
                             mIsNotifyTaskFinish = true;
                             break;
@@ -285,7 +289,7 @@ class RetryableDownloadTaskImpl implements RetryableDownloadTask, OnFileDownload
                                         failReason);
                             }
 
-                            Log.i(TAG, "file-downloader-status 记录【文件不存在状态】成功，url：" + mTaskParamInfo.url);
+                            Log.i(TAG, "file-downloader-status 记录【文件不存在状态】成功，url：" + getUrl());
 
                             mIsNotifyTaskFinish = true;
                             break;
@@ -294,15 +298,16 @@ class RetryableDownloadTaskImpl implements RetryableDownloadTask, OnFileDownload
                     e.printStackTrace();
                     // error
                     try {
-                        mDownloadRecorder.recordStatus(mTaskParamInfo.url, Status.DOWNLOAD_STATUS_ERROR, 0);
+                        mDownloadRecorder.recordStatus(getUrl(), Status.DOWNLOAD_STATUS_ERROR, 0);
                     } catch (Exception e1) {
                         e1.printStackTrace();
                     }
                     if (mOnFileDownloadStatusListener != null) {
-                        mOnFileDownloadStatusListener.onFileDownloadStatusFailed(getUrl(), getDownloadFile(), new OnFileDownloadStatusFailReason(getUrl(), e));
+                        mOnFileDownloadStatusListener.onFileDownloadStatusFailed(getUrl(), getDownloadFile(), new 
+                                OnFileDownloadStatusFailReason(getUrl(), e));
                     }
 
-                    Log.e(TAG, "file-downloader-status 记录【暂停/完成/出错状态】失败，url：" + mTaskParamInfo.url);
+                    Log.e(TAG, "file-downloader-status 记录【暂停/完成/出错状态】失败，url：" + getUrl());
 
                     mIsNotifyTaskFinish = true;
                 } finally {
@@ -310,7 +315,7 @@ class RetryableDownloadTaskImpl implements RetryableDownloadTask, OnFileDownload
                     if (!mIsNotifyTaskFinish) {
                         // if not notify, however paused status will be recorded
                         try {
-                            mDownloadRecorder.recordStatus(mTaskParamInfo.url, Status.DOWNLOAD_STATUS_PAUSED, 0);
+                            mDownloadRecorder.recordStatus(getUrl(), Status.DOWNLOAD_STATUS_PAUSED, 0);
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
@@ -318,7 +323,7 @@ class RetryableDownloadTaskImpl implements RetryableDownloadTask, OnFileDownload
                             mOnFileDownloadStatusListener.onFileDownloadStatusPaused(getDownloadFile());
                         }
 
-                        Log.i(TAG, "file-downloader-status 记录【暂停状态】成功，url：" + mTaskParamInfo.url);
+                        Log.i(TAG, "file-downloader-status 记录【暂停状态】成功，url：" + getUrl());
 
                         mIsNotifyTaskFinish = true;
                     }
@@ -332,11 +337,11 @@ class RetryableDownloadTaskImpl implements RetryableDownloadTask, OnFileDownload
      */
     private void notifyStopTaskSucceedIfNecessary() {
         if (mOnStopFileDownloadTaskListener != null) {
-            mOnStopFileDownloadTaskListener.onStopFileDownloadTaskSucceed(mTaskParamInfo.url);
+            mOnStopFileDownloadTaskListener.onStopFileDownloadTaskSucceed(getUrl());
             // notify once only
             mOnStopFileDownloadTaskListener = null;
 
-            Log.i(TAG, "file-downloader-status 通知【暂停任务】成功，url：" + mTaskParamInfo.url);
+            Log.i(TAG, "file-downloader-status 通知【暂停任务】成功，url：" + getUrl());
         }
     }
 
@@ -345,11 +350,11 @@ class RetryableDownloadTaskImpl implements RetryableDownloadTask, OnFileDownload
      */
     private void notifyStopTaskFailedIfNecessary(StopDownloadFileTaskFailReason failReason) {
         if (mOnStopFileDownloadTaskListener != null) {
-            mOnStopFileDownloadTaskListener.onStopFileDownloadTaskFailed(mTaskParamInfo.url, failReason);
+            mOnStopFileDownloadTaskListener.onStopFileDownloadTaskFailed(getUrl(), failReason);
             // notify once only
             mOnStopFileDownloadTaskListener = null;
 
-            Log.e(TAG, "file-downloader-status 通知【暂停任务】失败，url：" + mTaskParamInfo.url);
+            Log.e(TAG, "file-downloader-status 通知【暂停任务】失败，url：" + getUrl());
         }
     }
 
@@ -429,7 +434,7 @@ class RetryableDownloadTaskImpl implements RetryableDownloadTask, OnFileDownload
                     return;
                 }
 
-                Log.d(TAG, TAG + ".run 正在重试，url：" + mTaskParamInfo.url);
+                Log.d(TAG, TAG + ".run 正在重试，url：" + getUrl());
 
                 try {
                     Thread.sleep(2000);// FIXME sleep 2s
@@ -475,7 +480,7 @@ class RetryableDownloadTaskImpl implements RetryableDownloadTask, OnFileDownload
             boolean hasException = (mFinishState != null && mFinishState.failReason != null && DownloadFileUtil
                     .hasException(mFinishState.status)) ? true : false;
 
-            Log.d(TAG, TAG + ".run 文件下载任务【已结束】，是否有异常：" + hasException + "，url：" + mTaskParamInfo.url);
+            Log.d(TAG, TAG + ".run 文件下载任务【已结束】，是否有异常：" + hasException + "，url：" + getUrl());
         }
     }
 
@@ -499,11 +504,11 @@ class RetryableDownloadTaskImpl implements RetryableDownloadTask, OnFileDownload
     @Override
     public void stop() {
 
-        Log.d(TAG, TAG + ".stop 结束任务执行，url：" + mTaskParamInfo.url + ",是否已经暂停：" + mIsTaskStop);
+        Log.d(TAG, TAG + ".stop 结束任务执行，url：" + getUrl() + ",是否已经暂停：" + mIsTaskStop);
 
         // if it is stopped,notify stop failed
         if (isStopped()) {
-            notifyStopTaskFailedIfNecessary(new StopDownloadFileTaskFailReason(mTaskParamInfo.url, "the task has " +
+            notifyStopTaskFailedIfNecessary(new StopDownloadFileTaskFailReason(getUrl(), "the task has " +
                     "been" + " stopped!", StopDownloadFileTaskFailReason.TYPE_TASK_HAS_BEEN_STOPPED));
             return;
         }
@@ -515,7 +520,7 @@ class RetryableDownloadTaskImpl implements RetryableDownloadTask, OnFileDownload
                 public void run() {
                     mIsTaskStop = true;
 
-                    Log.d(TAG, TAG + ".stop 结束任务执行(主线程发起)，url：" + mTaskParamInfo.url + ",是否已经暂停：" + mIsTaskStop);
+                    Log.d(TAG, TAG + ".stop 结束任务执行(主线程发起)，url：" + getUrl() + ",是否已经暂停：" + mIsTaskStop);
 
                     stopInternalImpl();
                 }
@@ -523,7 +528,7 @@ class RetryableDownloadTaskImpl implements RetryableDownloadTask, OnFileDownload
         } else {
             mIsTaskStop = true;
 
-            Log.d(TAG, TAG + ".stop 结束任务执行(其它线程发起)，url：" + mTaskParamInfo.url + ",是否已经暂停：" + mIsTaskStop);
+            Log.d(TAG, TAG + ".stop 结束任务执行(其它线程发起)，url：" + getUrl() + ",是否已经暂停：" + mIsTaskStop);
 
             stopInternalImpl();
         }

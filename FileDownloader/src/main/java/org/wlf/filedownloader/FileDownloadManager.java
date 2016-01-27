@@ -356,7 +356,7 @@ public final class FileDownloadManager {
      */
     @Deprecated
     public void detect(String url, OnDetectUrlFileListener onDetectUrlFileListener) {
-        getDownloadTaskManager().detect(url, onDetectUrlFileListener);
+        getDownloadTaskManager().detect(url, onDetectUrlFileListener, null);
     }
 
     /**
@@ -366,7 +366,7 @@ public final class FileDownloadManager {
      * @param onDetectBigUrlFileListener OnDetectBigUrlFileListener impl
      */
     public void detect(String url, OnDetectBigUrlFileListener onDetectBigUrlFileListener) {
-        getDownloadTaskManager().detect(url, onDetectBigUrlFileListener);
+        detect(url, onDetectBigUrlFileListener, null);
     }
 
     // --------------------------------------create/continue downloads--------------------------------------
@@ -384,7 +384,7 @@ public final class FileDownloadManager {
      * @since 0.2.0
      */
     public void createAndStart(String url, String saveDir, String fileName) {
-        getDownloadTaskManager().createAndStart(url, saveDir, fileName);
+        getDownloadTaskManager().createAndStart(url, saveDir, fileName, null);
     }
 
     /**
@@ -419,7 +419,7 @@ public final class FileDownloadManager {
      * @since 0.2.0
      */
     public void start(String url) {
-        getDownloadTaskManager().start(url);
+        getDownloadTaskManager().start(url, null);
     }
 
     /**
@@ -451,7 +451,7 @@ public final class FileDownloadManager {
      * @since 0.2.0
      */
     public void start(List<String> urls) {
-        getDownloadTaskManager().start(urls);
+        getDownloadTaskManager().start(urls, null);
     }
 
     /**
@@ -512,7 +512,7 @@ public final class FileDownloadManager {
      * @since 0.2.0
      */
     public void reStart(String url) {
-        getDownloadTaskManager().reStart(url);
+        getDownloadTaskManager().reStart(url, null);
     }
 
     /**
@@ -544,7 +544,7 @@ public final class FileDownloadManager {
      * @since 0.2.0
      */
     public void reStart(List<String> urls) {
-        getDownloadTaskManager().reStart(urls);
+        getDownloadTaskManager().reStart(urls, null);
     }
 
     /**
@@ -691,5 +691,99 @@ public final class FileDownloadManager {
      */
     void unregisterDownloadFileChangeListener(OnDownloadFileChangeListener onDownloadFileChangeListener) {
         mDownloadFileCacher.unregisterDownloadFileChangeListener(onDownloadFileChangeListener);
+    }
+
+    // -------------------------internal implements-------------------------
+
+    /**
+     * detect a big url file, which means can detect the url file bigger than 2G
+     *
+     * @param url                        file url
+     * @param onDetectBigUrlFileListener OnDetectBigUrlFileListener impl
+     * @param downloadConfiguration      download configuration
+     * @since 0.3.2
+     */
+    void detect(String url, OnDetectBigUrlFileListener onDetectBigUrlFileListener, DownloadConfiguration 
+            downloadConfiguration) {
+        getDownloadTaskManager().detect(url, onDetectBigUrlFileListener, downloadConfiguration);
+    }
+
+    /**
+     * create a new download after detected a url file by using {@link #detect(String, OnDetectBigUrlFileListener,
+     * DownloadConfiguration)}
+     * <br/>
+     * if the caller cares for the download status, please register an listener before by using
+     * <br>
+     * {@link #registerDownloadStatusListener(OnFileDownloadStatusListener, DownloadStatusConfiguration)}
+     *
+     * @param url                   file url
+     * @param saveDir               saveDir
+     * @param fileName              saveFileName
+     * @param downloadConfiguration download configuration
+     * @since 0.3.2
+     */
+    void createAndStart(String url, String saveDir, String fileName, DownloadConfiguration downloadConfiguration) {
+        getDownloadTaskManager().createAndStart(url, saveDir, fileName, downloadConfiguration);
+    }
+
+    /**
+     * start/continue a download
+     * <br/>
+     * if the caller cares for the download status, please register an listener before by using
+     * <br/>
+     * {@link #registerDownloadStatusListener(OnFileDownloadStatusListener, DownloadStatusConfiguration)}
+     *
+     * @param url                   file url
+     * @param downloadConfiguration download configuration
+     * @since 0.3.2
+     */
+    void start(String url, DownloadConfiguration downloadConfiguration) {
+        getDownloadTaskManager().start(url, downloadConfiguration);
+    }
+
+    /**
+     * start/continue multi downloads
+     * <br/>
+     * if the caller cares for the download status, please register an listener before by using
+     * <br>
+     * {@link #registerDownloadStatusListener(OnFileDownloadStatusListener, DownloadStatusConfiguration)}
+     *
+     * @param urls                  file urls
+     * @param downloadConfiguration download configuration
+     * @since 0.3.2
+     */
+    void start(List<String> urls, DownloadConfiguration downloadConfiguration) {
+        getDownloadTaskManager().start(urls, downloadConfiguration);
+    }
+
+    /**
+     * restart a download
+     * <br/>
+     * if the caller cares for the download status, please register an listener before by using
+     * <br>
+     * {@link #registerDownloadStatusListener(OnFileDownloadStatusListener, DownloadStatusConfiguration)}
+     *
+     * @param url                   file url
+     * @param downloadConfiguration download configuration
+     * @since 0.3.2
+     */
+    void reStart(String url, DownloadConfiguration downloadConfiguration) {
+        getDownloadTaskManager().reStart(url, downloadConfiguration);
+    }
+
+    /**
+     * restart multi downloads
+     * <br/>
+     * if the caller cares for the download status, please register an listener before by using
+     * <br/>
+     * {@link #registerDownloadStatusListener(OnFileDownloadStatusListener, DownloadStatusConfiguration)}
+     *
+     * @param urls                  file urls
+     * @param downloadConfiguration download configuration
+     * @since 0.3.2
+     */
+    void reStart(List<String> urls, DownloadConfiguration downloadConfiguration) {
+        getDownloadTaskManager().reStart(urls, downloadConfiguration);
+
     }
 }

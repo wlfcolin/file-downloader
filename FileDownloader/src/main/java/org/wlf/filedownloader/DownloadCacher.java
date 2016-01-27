@@ -812,8 +812,14 @@ public class DownloadCacher implements DownloadRecorder, DownloadFileMover, Down
         }
         boolean isSucceed = deleteDownloadFile(downloadFileInfo);
         if (!isSucceed) {
-            // rollback, none
-            throw new Exception("delete failed !");
+            // really deleted ?
+            DownloadFileInfo DownloadFileInfoDeleted = getDownloadFileInternal(downloadFileInfo.getUrl());
+            if (DownloadFileInfoDeleted == null) {
+                // has been deleted
+            } else {
+                // rollback, none
+                throw new Exception("delete failed !");
+            }
         }
     }
 

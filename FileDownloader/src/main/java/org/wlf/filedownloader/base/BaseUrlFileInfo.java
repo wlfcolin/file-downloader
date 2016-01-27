@@ -144,4 +144,18 @@ public abstract class BaseUrlFileInfo {
     public String getFilePath() {
         return getFileDir() + File.separator + mFileName;
     }
+
+    @Override
+    public String toString() {
+        return "BaseUrlFileInfo{" +
+                "mUrl='" + mUrl + '\'' +
+                ", mFileSize=" + mFileSize +
+                ", mETag='" + mETag + '\'' +
+                ", mLastModified='" + mLastModified + '\'' +
+                ", mAcceptRangeType='" + mAcceptRangeType + '\'' +
+                ", mFileDir='" + mFileDir + '\'' +
+                ", mFileName='" + mFileName + '\'' +
+                ", mCreateDatetime='" + mCreateDatetime + '\'' +
+                '}';
+    }
 }
