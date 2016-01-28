@@ -29,6 +29,8 @@ public class DownloadConfiguration {
      */
     private static final String NULL_KEY_FOR_URL = DownloadConfiguration.class + "_temp_key_for_null";
 
+    private static final String DEFAULT_REQUEST_METHOD = "GET";
+
     /**
      * Configuration Builder
      */
@@ -50,9 +52,9 @@ public class DownloadConfiguration {
         private Map<String, Integer> mConnectTimeout = new HashMap<String, Integer>();
 
         /**
-         * request method
+         * all request methods
          */
-        private String mRequestMethod = "GET";
+        private Map<String, String> mRequestMethod = new HashMap<String, String>();
 
         /**
          * add the custom header for download
@@ -229,8 +231,8 @@ public class DownloadConfiguration {
          * @return the builder
          */
         public Builder configRequestMethod(String requestMethod) {
-            // FIXME check illegal param if need
-            this.mRequestMethod = requestMethod;
+            String url = NULL_KEY_FOR_URL;
+            configRequestMethodWithUrl(url, requestMethod);
             return this;
         }
 
@@ -241,8 +243,11 @@ public class DownloadConfiguration {
          * @return the builder
          */
         public Builder configRequestMethodWithUrl(String url, String requestMethod) {
-            // FIXME check illegal param if need
-            this.mRequestMethod = requestMethod;
+            if (!TextUtils.isEmpty(requestMethod)) {
+                mRequestMethod.put(url, requestMethod);
+            } else {
+                Log.i(TAG, "configRequestMethodWithUrl 配置请求方法失败，requestMethod：" + requestMethod);
+            }
             return this;
         }
 
@@ -327,7 +332,7 @@ public class DownloadConfiguration {
         // init retry download times
         if (mBuilder.mConnectTimeout != null) {
             int connectTimeout = getConnectTimeout(NULL_KEY_FOR_URL);
-            int existUrlConnectTimeout = getRetryDownloadTimes(url);
+            int existUrlConnectTimeout = getConnectTimeout(url);
             if (replace) {
                 if (existUrlConnectTimeout != Builder.DEFAULT_CONNECT_TIMEOUT) {
                     mBuilder.mConnectTimeout.remove(url);
@@ -338,6 +343,20 @@ public class DownloadConfiguration {
                 }
             } else {
                 // mBuilder.mConnectTimeout.remove(NULL_KEY_FOR_URL);
+            }
+        }
+
+        // init request method
+        if (mBuilder.mRequestMethod != null) {
+            String requestMethod = getRequestMethod(NULL_KEY_FOR_URL);
+            String existUrlRequestMethod = getRequestMethod(url);
+            if (replace) {
+                if (!DEFAULT_REQUEST_METHOD.equalsIgnoreCase(existUrlRequestMethod)) {
+                    mBuilder.mRequestMethod.remove(url);
+                    mBuilder.mRequestMethod.put(url, requestMethod);
+                } else {
+                }
+            } else {
             }
         }
     }
@@ -418,10 +437,10 @@ public class DownloadConfiguration {
      *
      * @return request method
      */
-    public String getRequestMethod() {
-        if (mBuilder == null) {
-            return "GET";// default is get
+    public String getRequestMethod(String url) {
+        if (!UrlUtil.isUrl(url) || mBuilder == null || mBuilder.mRequestMethod == null) {
+            return DEFAULT_REQUEST_METHOD;// default is get
         }
-        return mBuilder.mRequestMethod;
+        return mBuilder.mRequestMethod.get(url);
     }
 }
