@@ -88,7 +88,7 @@ private OnFileDownloadStatusListener mOnFileDownloadStatusListener = new OnSimpl
         // 下载失败了，详细查看失败原因failReason，有些失败原因你可能必须关心
 
         String failType = failReason.getType();
-        String failUrl = failReason.getUrl();// 或：failUrl = url，url和failReason.getType()会是一样的
+        String failUrl = failReason.getUrl();// 或：failUrl = url，url和failReason.getUrl()会是一样的
 
         if(FileDownloadStatusFailReason.TYPE_URL_ILLEGAL.equals(failType)){
             // 下载failUrl时出现url错误
