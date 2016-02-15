@@ -38,9 +38,6 @@ import java.util.concurrent.ExecutorService;
  */
 class DownloadTaskImpl implements DownloadTask, OnHttpDownloadListener, OnFileSaveListener, OnRangeChangeListener {
 
-    /**
-     * LOG TAG
-     */
     private static final String TAG = DownloadTaskImpl.class.getSimpleName();
 
     /**
@@ -140,6 +137,7 @@ class DownloadTaskImpl implements DownloadTask, OnHttpDownloadListener, OnFileSa
         mDownloader.setCloseConnectionEngine(mCloseConnectionEngine);
         mDownloader.setConnectTimeout(mConnectTimeout);
         mDownloader.setOnRangeChangeListener(this);
+        mDownloader.setRequestMethod(mTaskParamInfo.getRequestMethod());
         mDownloader.setHeaders(mTaskParamInfo.getHeaders());
 
         // init Saver
@@ -179,7 +177,8 @@ class DownloadTaskImpl implements DownloadTask, OnHttpDownloadListener, OnFileSa
         if (failReason == null && (!FileUtil.canWrite(mTaskParamInfo.getTempFilePath()) || !FileUtil.canWrite
                 (mTaskParamInfo.getFilePath()))) {
             // error, savePath can not write
-            failReason = new OnFileDownloadStatusFailReason(url, "savePath can not write !", OnFileDownloadStatusFailReason.TYPE_STORAGE_SPACE_CAN_NOT_WRITE);
+            failReason = new OnFileDownloadStatusFailReason(url, "savePath can not write !", 
+                    OnFileDownloadStatusFailReason.TYPE_STORAGE_SPACE_CAN_NOT_WRITE);
         }
 
         // check download file complete status & file not exist status

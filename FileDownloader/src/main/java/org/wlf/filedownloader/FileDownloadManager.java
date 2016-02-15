@@ -35,9 +35,6 @@ import java.util.List;
 @Deprecated
 public final class FileDownloadManager {
 
-    /**
-     * LOG TAG
-     */
     private static final String TAG = FileDownloadManager.class.getSimpleName();
     /**
      * single instance

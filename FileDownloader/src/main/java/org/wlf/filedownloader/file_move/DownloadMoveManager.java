@@ -23,9 +23,6 @@ import java.util.concurrent.ExecutorService;
  */
 public class DownloadMoveManager {
 
-    /**
-     * LOG TAG
-     */
     private static final String TAG = DownloadMoveManager.class.getSimpleName();
 
     /**
@@ -127,7 +124,8 @@ public class DownloadMoveManager {
                     Log.d(TAG, TAG + ".move 暂停下载任务失败，无法移动，url:" + finalUrl);
 
                     // otherwise error occur, notify caller
-                    notifyMoveDownloadFileFailed(getDownloadFile(finalUrl), new OnMoveDownloadFileFailReason(finalUrl, failReason), onMoveDownloadFileListener);
+                    notifyMoveDownloadFileFailed(getDownloadFile(finalUrl), new OnMoveDownloadFileFailReason
+                            (finalUrl, failReason), onMoveDownloadFileListener);
                 }
             });
         }

@@ -12,8 +12,8 @@ package org.wlf.filedownloader.file_download.file_saver;
 public enum DownloadNoticeStrategy {
 
     NOTICE_AUTO(-1),// notice auto
-    NOTICE_BY_SIZE(1024 * 1024),// notice by size,1M(byte for mValue)
-    NOTICE_BY_TIME(1000 * 2);// notice by time interval,2s(milliseconds for mValue)
+    NOTICE_BY_SIZE(1024 * 1024),// notice by size, 1M(bytes for mValue)
+    NOTICE_BY_TIME(1000 * 2);// notice by time interval, 2s(milliseconds for mValue)
 
     private long mValue;
 

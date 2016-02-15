@@ -161,9 +161,9 @@ public class DownloadFileInfo extends BaseUrlFileInfo {
     }
 
     /**
-     * constructor of HttpDownloader,use DetectUrlFileInfo to create
+     * constructor of HttpDownloader, use {@link DetectUrlFileInfo} to create
      *
-     * @param detectUrlFileInfo DetectUrlFileInfo
+     * @param detectUrlFileInfo DetectUrlFile
      */
     DownloadFileInfo(DetectUrlFileInfo detectUrlFileInfo) {
         this.mUrl = detectUrlFileInfo.getUrl();
@@ -179,7 +179,7 @@ public class DownloadFileInfo extends BaseUrlFileInfo {
     }
 
     /**
-     * constructor of HttpDownloader,use {@link Cursor} to create
+     * constructor of HttpDownloader, use {@link Cursor} to create
      *
      * @param cursor database cursor
      */
@@ -262,7 +262,7 @@ public class DownloadFileInfo extends BaseUrlFileInfo {
                 this.mStatus = status;
                 this.mCreateDatetime = createDatetime;
             } else {
-                throw new IllegalArgumentException("id and url from cursor illegal!");
+                throw new IllegalArgumentException("id or url from cursor illegal!");
             }
         } else {
             throw new NullPointerException("cursor illegal!");
@@ -272,7 +272,7 @@ public class DownloadFileInfo extends BaseUrlFileInfo {
     /**
      * update DownloadFileInfo with new DownloadFileInfo
      *
-     * @param downloadFileInfo new DownloadFileInfo
+     * @param downloadFileInfo new DownloadFile
      */
     void update(DownloadFileInfo downloadFileInfo) {
         if (downloadFileInfo.mId != null && downloadFileInfo.mId > 0) {

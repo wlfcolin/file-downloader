@@ -37,9 +37,6 @@ import javax.net.ssl.X509TrustManager;
  */
 public class HttpConnectionHelper {
 
-    /**
-     * LOG TAG
-     */
     private static final String TAG = HttpConnectionHelper.class.getSimpleName();
 
     //    private static final String[] IGNORE_HEADER_KEY = new String[]{
@@ -50,10 +47,13 @@ public class HttpConnectionHelper {
     /**
      * create Detect http file Connection
      */
-    public static HttpURLConnection createDetectConnection(String url, int connectTimeout, String charset, 
-                                                           Map<String, String> headers) throws Exception {
+    public static HttpURLConnection createDetectConnection(String url, int connectTimeout, String charset, String 
+            requestMethod, Map<String, String> headers) throws Exception {
+
         RequestParam requestParam = new RequestParam(url, connectTimeout, charset);
+        requestParam.setRequestMethod(requestMethod);
         requestParam.setHeaders(headers);
+
         return createHttpUrlConnection(requestParam);
     }
 
@@ -137,6 +137,7 @@ public class HttpConnectionHelper {
 
         conn.setConnectTimeout(requestParam.mConnectTimeout);
         conn.setReadTimeout(requestParam.mConnectTimeout);// FIXME read timeout equals to connect timeout
+        conn.setRequestMethod(requestParam.mRequestMethod);
 
         // -----------------------------headers-----------------------------------------
 
@@ -208,6 +209,7 @@ public class HttpConnectionHelper {
         private long mRangeEndPos = -1;
         private String mETag;
         private String mLastModified;
+        private String mRequestMethod = "GET";// get default
         private Map<String, String> mHeaders;
 
         public RequestParam(String url, int connectTimeout, String charset) {
@@ -255,7 +257,17 @@ public class HttpConnectionHelper {
         //            mLastModified = lastModified;
         //        }
 
+        public void setRequestMethod(String requestMethod) {
+            if (TextUtils.isEmpty(requestMethod)) {
+                return;
+            }
+            this.mRequestMethod = requestMethod;
+        }
+
         public void setHeaders(Map<String, String> headers) {
+            if (headers == null) {
+                return;
+            }
             mHeaders = headers;
         }
 
@@ -269,6 +281,8 @@ public class HttpConnectionHelper {
                     ", mRangeEndPos=" + mRangeEndPos +
                     ", mETag='" + mETag + '\'' +
                     ", mLastModified='" + mLastModified + '\'' +
+                    ", mRequestMethod='" + mRequestMethod + '\'' +
+                    ", mHeaders=" + mHeaders +
                     '}';
         }
     }

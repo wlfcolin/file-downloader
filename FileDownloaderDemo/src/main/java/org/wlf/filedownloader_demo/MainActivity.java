@@ -237,6 +237,8 @@ public class MainActivity extends Activity implements OnItemSelectListener {
                 builder1.addHeaderWithUrl(url3, "Pragma", "no-cache");
                 builder1.addHeader("Pragma", "no-cache-common");
                 builder1.replaceHeaderWithUrl(url2, "Date", "Tue, 15 Nov 2016 08:12:31 GMT");
+                // builder1.configRequestMethod("GET");
+                builder1.configRequestMethodWithUrl(url2, "POST");
                 FileDownloader.start(urls, builder1.build());
             }
         });
@@ -477,7 +479,8 @@ public class MainActivity extends Activity implements OnItemSelectListener {
 
                         final TextView tvFileSize = new TextView(MainActivity.this);
                         float size = fileSize / 1024f / 1024f;
-                        tvFileSize.setText(getString(R.string.main__file_size) + ((float) (Math.round(size * 100)) / 100) + "M");
+                        tvFileSize.setText(getString(R.string.main__file_size) + ((float) (Math.round(size * 100)) / 
+                                100) + "M");
 
                         LinearLayout linearLayout = new LinearLayout(MainActivity.this);
                         linearLayout.setOrientation(LinearLayout.VERTICAL);

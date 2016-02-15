@@ -17,9 +17,6 @@ import org.wlf.filedownloader.db.BaseContentDbDao;
  */
 public class DownloadFileDao extends BaseContentDbDao {
 
-    /**
-     * LOG TAG
-     */
     private static final String TAG = DownloadFileDao.class.getSimpleName();
 
     public DownloadFileDao(SQLiteOpenHelper dbHelper) {

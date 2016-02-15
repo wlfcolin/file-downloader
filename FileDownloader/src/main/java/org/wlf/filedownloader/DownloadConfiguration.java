@@ -2,6 +2,7 @@ package org.wlf.filedownloader;
 
 import android.text.TextUtils;
 
+import org.wlf.filedownloader.base.BaseDownloadConfigBuilder;
 import org.wlf.filedownloader.base.Log;
 import org.wlf.filedownloader.util.CollectionUtil;
 import org.wlf.filedownloader.util.MapUtil;
@@ -12,7 +13,9 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * DownloadConfiguration
+ * Download Configuration
+ * <br/>
+ * 文件下载的配置类（单个）
  *
  * @author wlf(Andy)
  * @email 411086563@qq.com
@@ -20,21 +23,9 @@ import java.util.Map;
 public class DownloadConfiguration {
 
     /**
-     * LOG TAG
-     */
-    private static final String TAG = FileDownloadConfiguration.class.getSimpleName();
-
-    /**
-     * a temp key for those urls are null
-     */
-    private static final String NULL_KEY_FOR_URL = DownloadConfiguration.class + "_temp_key_for_null";
-
-    private static final String DEFAULT_REQUEST_METHOD = "GET";
-
-    /**
      * Configuration Builder
      */
-    public static class Builder extends BaseBuilder {
+    public static class Builder extends BaseDownloadConfigBuilder {
 
         /**
          * all custom headers of urls, default is null which means no custom headers
@@ -251,7 +242,6 @@ public class DownloadConfiguration {
             return this;
         }
 
-
         /**
          * build DownloadConfiguration
          *
@@ -261,6 +251,18 @@ public class DownloadConfiguration {
             return new DownloadConfiguration(this);
         }
     }
+
+    private static final String TAG = FileDownloadConfiguration.class.getSimpleName();
+
+    /**
+     * a temp key for those urls are null
+     */
+    private static final String NULL_KEY_FOR_URL = DownloadConfiguration.class + "_temp_key_for_null";
+
+    /**
+     * default request method
+     */
+    public static final String DEFAULT_REQUEST_METHOD = "GET";
 
     // builder
     private Builder mBuilder;
@@ -276,7 +278,7 @@ public class DownloadConfiguration {
         initNullKeyForUrlInternal(url, false);
     }
 
-    private void initNullKeyForUrlInternal(String url, boolean replace) {
+    private void initNullKeyForUrlInternal(String url, boolean replaceExistWithNullValue) {
 
         if (!UrlUtil.isUrl(url) || mBuilder == null) {
             return;
@@ -287,76 +289,111 @@ public class DownloadConfiguration {
 
             Map<String, String> nullHeaders = getHeaders(NULL_KEY_FOR_URL);
             Map<String, String> existUrlHeaders = getHeaders(url);
-            Map<String, String> needToSetHeaders = null;
+            Map<String, String> headers = new HashMap<String, String>();
 
             if (!MapUtil.isEmpty(nullHeaders)) {
-                if (replace) {
+                if (replaceExistWithNullValue) {
                     // replace
                     mBuilder.mUrlHeaders.remove(url);
-                    needToSetHeaders = nullHeaders;
+                    headers.putAll(nullHeaders);
                 } else {
+                    // exist, add nullHeaders and existUrlHeaders
                     if (!MapUtil.isEmpty(existUrlHeaders)) {
-                        nullHeaders.putAll(existUrlHeaders);
-                        needToSetHeaders = nullHeaders;
-                    } else {
-                        needToSetHeaders = nullHeaders;
+                        mBuilder.mUrlHeaders.remove(url);// remove old ones
+                        headers.putAll(nullHeaders);
+                        headers.putAll(existUrlHeaders);
+                    }
+                    // add nullHeaders only
+                    else {
+                        headers.putAll(nullHeaders);
                     }
                 }
 
-                if (needToSetHeaders == null) {
-                    needToSetHeaders = new HashMap<String, String>();
-                }
-
-                Log.e("wlf", "初始化needToSetHeaders：" + needToSetHeaders.size());
+                Log.e("wlf", "初始化headers：" + headers.size());
 
                 // mBuilder.mUrlHeaders.remove(NULL_KEY_FOR_URL);
-                mBuilder.mUrlHeaders.put(url, needToSetHeaders);
+                mBuilder.mUrlHeaders.put(url, headers);
             }
         }
+
         // init retry download times
         if (mBuilder.mRetryDownloadTimes != null) {
-            int retryDownloadTimes = getRetryDownloadTimes(NULL_KEY_FOR_URL);
             int existUrlRetryDownloadTimes = getRetryDownloadTimes(url);
-            if (replace) {
+            int retryDownloadTimes = getRetryDownloadTimes(NULL_KEY_FOR_URL);
+            // replace
+            if (replaceExistWithNullValue) {
+                // exist, replace
                 if (existUrlRetryDownloadTimes != Builder.DEFAULT_RETRY_DOWNLOAD_TIMES) {
                     mBuilder.mRetryDownloadTimes.remove(url);
                     // mBuilder.mRetryDownloadTimes.remove(NULL_KEY_FOR_URL);
                     mBuilder.mRetryDownloadTimes.put(url, retryDownloadTimes);
-                } else {
+                }
+                // add only
+                else {
                     // mBuilder.mRetryDownloadTimes.remove(NULL_KEY_FOR_URL);
+                    if (!mBuilder.mRetryDownloadTimes.containsKey(url)) {
+                        mBuilder.mRetryDownloadTimes.put(url, retryDownloadTimes);
+                    }
                 }
             } else {
+                // add only
                 // mBuilder.mRetryDownloadTimes.remove(NULL_KEY_FOR_URL);
+                if (!mBuilder.mRetryDownloadTimes.containsKey(url)) {
+                    mBuilder.mRetryDownloadTimes.put(url, retryDownloadTimes);
+                }
             }
         }
+
         // init retry download times
         if (mBuilder.mConnectTimeout != null) {
-            int connectTimeout = getConnectTimeout(NULL_KEY_FOR_URL);
             int existUrlConnectTimeout = getConnectTimeout(url);
-            if (replace) {
+            int connectTimeout = getConnectTimeout(NULL_KEY_FOR_URL);
+            // replace
+            if (replaceExistWithNullValue) {
+                // exist, replace
                 if (existUrlConnectTimeout != Builder.DEFAULT_CONNECT_TIMEOUT) {
                     mBuilder.mConnectTimeout.remove(url);
                     // mBuilder.mConnectTimeout.remove(NULL_KEY_FOR_URL);
                     mBuilder.mConnectTimeout.put(url, connectTimeout);
-                } else {
+                }
+                // add only
+                else {
                     // mBuilder.mConnectTimeout.remove(NULL_KEY_FOR_URL);
+                    if (!mBuilder.mConnectTimeout.containsKey(url)) {
+                        mBuilder.mConnectTimeout.put(url, connectTimeout);
+                    }
                 }
             } else {
+                // add only
                 // mBuilder.mConnectTimeout.remove(NULL_KEY_FOR_URL);
+                if (!mBuilder.mConnectTimeout.containsKey(url)) {
+                    mBuilder.mConnectTimeout.put(url, connectTimeout);
+                }
             }
         }
 
         // init request method
         if (mBuilder.mRequestMethod != null) {
-            String requestMethod = getRequestMethod(NULL_KEY_FOR_URL);
             String existUrlRequestMethod = getRequestMethod(url);
-            if (replace) {
+            String requestMethod = getRequestMethod(NULL_KEY_FOR_URL);
+            // replace
+            if (replaceExistWithNullValue) {
+                // exist, replace
                 if (!DEFAULT_REQUEST_METHOD.equalsIgnoreCase(existUrlRequestMethod)) {
                     mBuilder.mRequestMethod.remove(url);
                     mBuilder.mRequestMethod.put(url, requestMethod);
-                } else {
+                }
+                // add only
+                else {
+                    if (!mBuilder.mRequestMethod.containsKey(url)) {
+                        mBuilder.mRequestMethod.put(url, requestMethod);
+                    }
                 }
             } else {
+                // add only
+                if (!mBuilder.mRequestMethod.containsKey(url)) {
+                    mBuilder.mRequestMethod.put(url, requestMethod);
+                }
             }
         }
     }
@@ -441,6 +478,11 @@ public class DownloadConfiguration {
         if (!UrlUtil.isUrl(url) || mBuilder == null || mBuilder.mRequestMethod == null) {
             return DEFAULT_REQUEST_METHOD;// default is get
         }
-        return mBuilder.mRequestMethod.get(url);
+
+        String requestMethod = mBuilder.mRequestMethod.get(url);
+        if (TextUtils.isEmpty(requestMethod)) {
+            return DEFAULT_REQUEST_METHOD;// default is get
+        }
+        return requestMethod;
     }
 }

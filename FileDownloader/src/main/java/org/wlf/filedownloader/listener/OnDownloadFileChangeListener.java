@@ -113,6 +113,7 @@ public interface OnDownloadFileChangeListener {
      * DownloadFile Update Type
      */
     public static enum Type {
+
         /**
          * download status changed
          */

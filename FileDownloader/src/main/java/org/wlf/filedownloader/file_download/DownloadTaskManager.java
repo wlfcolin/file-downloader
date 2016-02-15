@@ -41,9 +41,6 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class DownloadTaskManager implements Pauseable {
 
-    /**
-     * LOG TAG
-     */
     private static final String TAG = DownloadTaskManager.class.getSimpleName();
 
     /**
@@ -216,7 +213,8 @@ public class DownloadTaskManager implements Pauseable {
     /**
      * start a detect url file task
      */
-    private void addAndRunDetectUrlFileTask(String url, boolean forceDetect, OnDetectBigUrlFileListener onDetectBigUrlFileListener, DownloadConfiguration downloadConfiguration) {
+    private void addAndRunDetectUrlFileTask(String url, boolean forceDetect, OnDetectBigUrlFileListener 
+            onDetectBigUrlFileListener, DownloadConfiguration downloadConfiguration) {
 
         // ------------start checking conditions & notifying caller if necessary------------
         {
@@ -252,6 +250,7 @@ public class DownloadTaskManager implements Pauseable {
         detectUrlFileTask.setCloseConnectionEngine(mConfiguration.getFileOperationEngine());
         detectUrlFileTask.setConnectTimeout(mConfiguration.getConnectTimeout());
         if (downloadConfiguration != null) {
+            detectUrlFileTask.setRequestMethod(downloadConfiguration.getRequestMethod(url));
             // set headers
             detectUrlFileTask.setHeaders(downloadConfiguration.getHeaders(url));
         }
@@ -320,6 +319,7 @@ public class DownloadTaskManager implements Pauseable {
         // use global configuration first
         int retryDownloadTimes = mConfiguration.getRetryDownloadTimes();
         int connectTimeout = mConfiguration.getConnectTimeout();
+        String requestMethod = DownloadConfiguration.DEFAULT_REQUEST_METHOD;
         Map<String, String> headers = null;
 
         if (downloadConfiguration != null) {
@@ -327,15 +327,24 @@ public class DownloadTaskManager implements Pauseable {
             if (localRetryDownloadTimes != Builder.DEFAULT_RETRY_DOWNLOAD_TIMES) {
                 retryDownloadTimes = localRetryDownloadTimes;
             }
-            int localConnectTimeout = downloadConfiguration.getRetryDownloadTimes(callerUrl);
+            int localConnectTimeout = downloadConfiguration.getConnectTimeout(callerUrl);
             if (localConnectTimeout != Builder.DEFAULT_CONNECT_TIMEOUT) {
                 connectTimeout = localConnectTimeout;
+            }
+            String localRequestMethod = downloadConfiguration.getRequestMethod(callerUrl);
+            if (TextUtils.isEmpty(localRequestMethod)) {
+                localRequestMethod = DownloadConfiguration.DEFAULT_REQUEST_METHOD;
+            }
+            if (!TextUtils.isEmpty(localRequestMethod)) {
+                requestMethod = localRequestMethod;
             }
             headers = downloadConfiguration.getHeaders(callerUrl);
         }
 
         // create retryable download task
-        RetryableDownloadTaskImpl downloadTask = new RetryableDownloadTaskImpl(FileDownloadTaskParam.createByDownloadFile(downloadFileInfo, headers), mDownloadRecorder, mDownloadStatusObserver);
+        RetryableDownloadTaskImpl downloadTask = new RetryableDownloadTaskImpl(FileDownloadTaskParam
+                .createByDownloadFile(downloadFileInfo, requestMethod, headers), mDownloadRecorder, 
+                mDownloadStatusObserver);
         downloadTask.setCloseConnectionEngine(mConfiguration.getFileOperationEngine());
         // set RetryDownloadTimes
         downloadTask.setRetryDownloadTimes(retryDownloadTimes);
@@ -480,7 +489,8 @@ public class DownloadTaskManager implements Pauseable {
     /**
      * detect a big url file
      */
-    private void detectInternal(String url, boolean forceDetect, OnDetectBigUrlFileListener onDetectBigUrlFileListener, DownloadConfiguration downloadConfiguration) {
+    private void detectInternal(String url, boolean forceDetect, OnDetectBigUrlFileListener 
+            onDetectBigUrlFileListener, DownloadConfiguration downloadConfiguration) {
         // start detect task
         addAndRunDetectUrlFileTask(url, forceDetect, onDetectBigUrlFileListener, downloadConfiguration);
     }

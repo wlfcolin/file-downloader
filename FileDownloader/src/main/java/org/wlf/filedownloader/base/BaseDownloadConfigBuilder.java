@@ -1,15 +1,13 @@
-package org.wlf.filedownloader;
-
-import org.wlf.filedownloader.base.Log;
+package org.wlf.filedownloader.base;
 
 /**
- * BaseBuilder
+ * BaseDownloadConfigBuilder
  *
  * @author wlf(Andy)
  * @datetime 2016-01-27 15:31 GMT+8
  * @email 411086563@qq.com
  */
-public class BaseBuilder {
+public class BaseDownloadConfigBuilder {
 
     /**
      * max retry download times, max is 10
@@ -35,7 +33,7 @@ public class BaseBuilder {
     protected int mRetryDownloadTimes;
     protected int mConnectTimeout;
 
-    public BaseBuilder() {
+    public BaseDownloadConfigBuilder() {
         mRetryDownloadTimes = DEFAULT_RETRY_DOWNLOAD_TIMES;
         mConnectTimeout = DEFAULT_CONNECT_TIMEOUT;
     }
@@ -48,7 +46,7 @@ public class BaseBuilder {
      *                           #DEFAULT_RETRY_DOWNLOAD_TIMES}, set 0 means not retry
      * @return the builder
      */
-    public BaseBuilder configRetryDownloadTimes(int retryDownloadTimes) {
+    public BaseDownloadConfigBuilder configRetryDownloadTimes(int retryDownloadTimes) {
         if (retryDownloadTimes >= 0 && retryDownloadTimes <= MAX_RETRY_DOWNLOAD_TIMES) {
             this.mRetryDownloadTimes = retryDownloadTimes;
         } else if (retryDownloadTimes > MAX_RETRY_DOWNLOAD_TIMES) {
@@ -70,7 +68,7 @@ public class BaseBuilder {
      *                       default is {@link#DEFAULT_CONNECT_TIMEOUT}, millisecond
      * @return the builder
      */
-    public BaseBuilder configConnectTimeout(int connectTimeout) {
+    public BaseDownloadConfigBuilder configConnectTimeout(int connectTimeout) {
         if (connectTimeout >= MIN_CONNECT_TIMEOUT && connectTimeout <= MAX_CONNECT_TIMEOUT) {
             mConnectTimeout = connectTimeout;
         } else if (connectTimeout > MAX_CONNECT_TIMEOUT) {

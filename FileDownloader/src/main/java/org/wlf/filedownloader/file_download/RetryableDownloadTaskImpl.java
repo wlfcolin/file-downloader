@@ -28,9 +28,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 class RetryableDownloadTaskImpl implements RetryableDownloadTask, OnFileDownloadStatusListener {
 
-    /**
-     * LOG TAG
-     */
     private static final String TAG = RetryableDownloadTaskImpl.class.getSimpleName();
 
     private final FileDownloadTaskParam mOriginalTaskParamInfo;// Download Param Info original
@@ -107,6 +104,7 @@ class RetryableDownloadTaskImpl implements RetryableDownloadTask, OnFileDownload
                 .getStartPosInTotal() + mRecordedRange.getLength(), mOriginalTaskParamInfo.getFileTotalSize(), 
                 mOriginalTaskParamInfo.getETag(), mOriginalTaskParamInfo.getLastModified(), mOriginalTaskParamInfo.
                 getAcceptRangeType(), mOriginalTaskParamInfo.getTempFilePath(), mOriginalTaskParamInfo.getFilePath());
+        taskParamInfo.setRequestMethod(mOriginalTaskParamInfo.getRequestMethod());
         taskParamInfo.setHeaders(mOriginalTaskParamInfo.getHeaders());
 
         mFileDownloadTaskImpl = new DownloadTaskImpl(taskParamInfo, mDownloadRecorder, this);

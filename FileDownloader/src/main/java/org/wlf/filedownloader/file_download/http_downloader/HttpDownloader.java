@@ -25,14 +25,12 @@ import java.util.concurrent.ExecutorService;
  */
 public class HttpDownloader implements Download {
 
-    /**
-     * LOG TAG
-     */
     private static final String TAG = HttpDownloader.class.getSimpleName();
 
     private static final int MAX_REDIRECT_TIMES = 5;
     private static final int CONNECT_TIMEOUT = 15 * 1000;// 15s default
     private static final String DEFAULT_CHARSET = "UTF-8";
+    private static final String DEFAULT_REQUEST_METHOD = "GET";// GET default
 
     private String mUrl;// download url
     private Range mRange;// download data range
@@ -41,6 +39,7 @@ public class HttpDownloader implements Download {
     private String mLastModified;// file last modified time
     private int mConnectTimeout = CONNECT_TIMEOUT;// connect time out, millisecond
     private String mCharset = DEFAULT_CHARSET;// FIXME now UTF-8 only
+    private String mRequestMethod = DEFAULT_REQUEST_METHOD;
     private Map<String, String> mHeaders;//custom  headers
 
     private ExecutorService mCloseConnectionEngine;// engine use for closing the http connection
@@ -113,6 +112,15 @@ public class HttpDownloader implements Download {
     }
 
     /**
+     * set request method
+     *
+     * @param requestMethod request method
+     */
+    public void setRequestMethod(String requestMethod) {
+        this.mRequestMethod = requestMethod;
+    }
+
+    /**
      * set custom headers
      *
      * @param headers custom headers
@@ -146,6 +154,7 @@ public class HttpDownloader implements Download {
         try {
             RequestParam requestParam = new RequestParam(url, mConnectTimeout, mCharset, mRange.startPos, mRange
                     .endPos, mETag, mLastModified);
+            requestParam.setRequestMethod(mRequestMethod);
             requestParam.setHeaders(mHeaders);
 
             conn = HttpConnectionHelper.createDownloadFileConnection(requestParam);

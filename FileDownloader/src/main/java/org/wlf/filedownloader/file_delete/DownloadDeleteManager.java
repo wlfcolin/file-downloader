@@ -23,9 +23,6 @@ import java.util.concurrent.ExecutorService;
  */
 public class DownloadDeleteManager {
 
-    /**
-     * LOG TAG
-     */
     private static final String TAG = DownloadDeleteManager.class.getSimpleName();
 
     /**
@@ -129,7 +126,8 @@ public class DownloadDeleteManager {
                     Log.d(TAG, TAG + ".delete 暂停下载任务失败，无法删除，url:" + finalUrl);
 
                     // otherwise error occur, notify caller
-                    notifyDeleteDownloadFileFailed(getDownloadFile(finalUrl), new OnDeleteDownloadFileFailReason(finalUrl, failReason), onDeleteDownloadFileListener);
+                    notifyDeleteDownloadFileFailed(getDownloadFile(finalUrl), new OnDeleteDownloadFileFailReason
+                            (finalUrl, failReason), onDeleteDownloadFileListener);
                 }
             });
         }

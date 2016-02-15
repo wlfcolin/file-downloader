@@ -3,6 +3,7 @@ package org.wlf.filedownloader;
 import android.content.Context;
 import android.text.TextUtils;
 
+import org.wlf.filedownloader.base.BaseDownloadConfigBuilder;
 import org.wlf.filedownloader.base.Log;
 
 import java.io.File;
@@ -10,9 +11,9 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 /**
- * the Configuration of FileDownload
+ * the Configuration of FileDownloader
  * <br/>
- * 文件下载的配置类
+ * 文件下载的配置类（全局）
  *
  * @author wlf(Andy)
  * @email 411086563@qq.com
@@ -22,7 +23,7 @@ public class FileDownloadConfiguration {
     /**
      * Configuration Builder
      */
-    public static class Builder extends BaseBuilder {
+    public static class Builder extends BaseDownloadConfigBuilder {
 
         /**
          * max download task at the same time, max is 10
@@ -59,7 +60,7 @@ public class FileDownloadConfiguration {
         /**
          * configFileDownloadDir
          *
-         * @param fileDownloadDir FileDownloadDir,if use sdcard,please add permission:  android.permission
+         * @param fileDownloadDir FileDownloadDir, if use sdcard, please add permission:  android.permission
          *                        .WRITE_EXTERNAL_STORAGE
          * @return the builder
          */
@@ -131,6 +132,16 @@ public class FileDownloadConfiguration {
             return this;
         }
 
+        // ---------------------------getters---------------------------
+
+        private int getRetryDownloadTimes() {
+            return mRetryDownloadTimes;
+        }
+
+        private int getConnectTimeout() {
+            return mConnectTimeout;
+        }
+
         /**
          * build FileDownloadConfiguration
          *
@@ -141,9 +152,6 @@ public class FileDownloadConfiguration {
         }
     }
 
-    /**
-     * LOG TAG
-     */
     private static final String TAG = FileDownloadConfiguration.class.getSimpleName();
 
     /**
@@ -224,7 +232,7 @@ public class FileDownloadConfiguration {
      * @return retry download times
      */
     public int getRetryDownloadTimes() {
-        return mBuilder.mRetryDownloadTimes;
+        return mBuilder.getRetryDownloadTimes();
     }
 
     /**
@@ -233,7 +241,7 @@ public class FileDownloadConfiguration {
      * @return connect timeout
      */
     public int getConnectTimeout() {
-        return mBuilder.mConnectTimeout;
+        return mBuilder.getConnectTimeout();
     }
 
     /**

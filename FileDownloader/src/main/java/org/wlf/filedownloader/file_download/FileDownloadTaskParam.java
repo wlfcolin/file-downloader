@@ -12,6 +12,7 @@ import java.util.Map;
  * @email 411086563@qq.com
  */
 class FileDownloadTaskParam {
+
     /**
      * file url
      */
@@ -45,6 +46,8 @@ class FileDownloadTaskParam {
      */
     private String mFilePath;
 
+    private String mRequestMethod = "GET";
+
     private Map<String, String> mHeaders;// custom  headers
 
     public FileDownloadTaskParam(String url, long startPosInTotal, long fileTotalSize, String ETag, String 
@@ -59,8 +62,8 @@ class FileDownloadTaskParam {
         mFilePath = filePath;
     }
 
-    public static FileDownloadTaskParam createByDownloadFile(DownloadFileInfo downloadFileInfo, Map<String, String> 
-            headers) {
+    public static FileDownloadTaskParam createByDownloadFile(DownloadFileInfo downloadFileInfo, String requestMethod,
+                                                             Map<String, String> headers) {
 
         if (downloadFileInfo == null) {
             return null;
@@ -70,12 +73,17 @@ class FileDownloadTaskParam {
                 downloadFileInfo.getDownloadedSizeLong(), downloadFileInfo.getFileSizeLong(), downloadFileInfo
                 .getETag(), downloadFileInfo.getLastModified(), downloadFileInfo.getAcceptRangeType(), 
                 downloadFileInfo.getTempFilePath(), downloadFileInfo.getFilePath());
+        fileDownloadTaskParam.mRequestMethod = requestMethod;
         fileDownloadTaskParam.mHeaders = headers;
 
         return fileDownloadTaskParam;
     }
 
     // --------------------------------------setters--------------------------------------
+
+    public void setRequestMethod(String requestMethod) {
+        mRequestMethod = requestMethod;
+    }
 
     public void setHeaders(Map<String, String> headers) {
         mHeaders = headers;
@@ -113,6 +121,10 @@ class FileDownloadTaskParam {
 
     public String getFilePath() {
         return mFilePath;
+    }
+
+    public String getRequestMethod() {
+        return mRequestMethod;
     }
 
     public Map<String, String> getHeaders() {

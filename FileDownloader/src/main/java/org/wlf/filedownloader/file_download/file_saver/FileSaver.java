@@ -24,9 +24,6 @@ import java.io.RandomAccessFile;
  */
 public class FileSaver implements Save, Stoppable {
 
-    /**
-     * LOG TAG
-     */
     private static final String TAG = FileSaver.class.getSimpleName();
 
     private static final int BUFFER_SIZE_WRITE_TO_FILE = 32 * 1024; // 32 KB write to file

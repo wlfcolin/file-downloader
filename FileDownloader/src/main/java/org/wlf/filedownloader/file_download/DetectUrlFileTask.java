@@ -28,13 +28,15 @@ class DetectUrlFileTask implements Runnable {
     private static final String TAG = DetectUrlFileTask.class.getSimpleName();
 
     private static final int MAX_REDIRECT_TIMES = 5;
-    private static final int CONNECT_TIMEOUT = 15 * 1000;// 15s
+    private static final int DEFAULT_CONNECT_TIMEOUT = 15 * 1000;// 15s
     private static final String DEFAULT_CHARSET = "UTF-8";
+    private static final String DEFAULT_REQUEST_METHOD = "GET";// GET default
 
     private String mUrl;
     private String mDownloadSaveDir;
-    private int mConnectTimeout = CONNECT_TIMEOUT;// connect time out, millisecond
+    private int mConnectTimeout = DEFAULT_CONNECT_TIMEOUT;// connect time out, millisecond
     private String mCharset = DEFAULT_CHARSET;// FIXME now UTF-8 only
+    private String mRequestMethod = DEFAULT_REQUEST_METHOD;
     private Map<String, String> mHeaders;//custom  headers
 
     private DetectUrlFileCacher mDetectUrlFileCacher;
@@ -80,6 +82,15 @@ class DetectUrlFileTask implements Runnable {
      */
     public void setConnectTimeout(int connectTimeout) {
         mConnectTimeout = connectTimeout;
+    }
+
+    /**
+     * set request method
+     *
+     * @param requestMethod request method
+     */
+    public void setRequestMethod(String requestMethod) {
+        this.mRequestMethod = requestMethod;
     }
 
     /**
@@ -142,11 +153,12 @@ class DetectUrlFileTask implements Runnable {
             }
             // ------------end checking conditions------------
 
-            conn = HttpConnectionHelper.createDetectConnection(mUrl, mConnectTimeout, mCharset, mHeaders);
+            conn = HttpConnectionHelper.createDetectConnection(mUrl, mConnectTimeout, mCharset, mRequestMethod, 
+                    mHeaders);
 
             int redirectCount = 0;
             while (conn.getResponseCode() / 100 == 3 && redirectCount < MAX_REDIRECT_TIMES) {
-                conn = HttpConnectionHelper.createDetectConnection(mUrl, mConnectTimeout, mCharset, mHeaders);
+                conn = HttpConnectionHelper.createDetectConnection(mUrl, mConnectTimeout, mCharset, mRequestMethod, mHeaders);
                 redirectCount++;
             }
 

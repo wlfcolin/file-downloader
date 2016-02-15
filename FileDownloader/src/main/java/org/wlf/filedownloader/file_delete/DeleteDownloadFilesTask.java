@@ -21,9 +21,6 @@ import java.util.concurrent.ExecutorService;
  */
 class DeleteDownloadFilesTask implements Runnable, Stoppable {
 
-    /**
-     * LOG TAG
-     */
     private static final String TAG = DeleteDownloadFilesTask.class.getSimpleName();
 
     private List<String> mUrls;

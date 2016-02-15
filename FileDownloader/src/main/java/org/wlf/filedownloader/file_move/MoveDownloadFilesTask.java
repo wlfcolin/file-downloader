@@ -25,9 +25,6 @@ import java.util.concurrent.ExecutorService;
  */
 class MoveDownloadFilesTask implements Runnable, Stoppable {
 
-    /**
-     * LOG TAG
-     */
     private static final String TAG = MoveDownloadFilesTask.class.getSimpleName();
 
     private List<String> mUrls;

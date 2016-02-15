@@ -10,7 +10,7 @@ import org.wlf.filedownloader.FileDownloader;
 import org.wlf.filedownloader.listener.OnRetryableFileDownloadStatusListener;
 
 /**
- * OnSimpleFileDownloadStatusListener
+ * OnSimpleFileDownloadStatus Listener
  *
  * @author wlf(Andy)
  * @email 411086563@qq.com
@@ -34,7 +34,7 @@ public abstract class OnSimpleFileDownloadStatusListener implements OnRetryableF
     }
 
     @Override
-    public void onFileDownloadStatusDownloading(DownloadFileInfo downloadFileInfo, float downloadSpeed, long
+    public void onFileDownloadStatusDownloading(DownloadFileInfo downloadFileInfo, float downloadSpeed, long 
             remainingTime) {
     }
 
@@ -55,7 +55,7 @@ public abstract class OnSimpleFileDownloadStatusListener implements OnRetryableF
     }
 
     @Override
-    public void onFileDownloadStatusFailed(String url, DownloadFileInfo downloadFileInfo,
+    public void onFileDownloadStatusFailed(String url, DownloadFileInfo downloadFileInfo, 
                                            FileDownloadStatusFailReason failReason) {
         // child should override recommend, if not, it will make a toast below
         Context appContext = getAppContext();

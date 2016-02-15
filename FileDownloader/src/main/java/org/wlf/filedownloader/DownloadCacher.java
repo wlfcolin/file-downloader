@@ -34,7 +34,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 /**
- * a class to manage and record DownloadFile Cache
+ * a class to manage and record download files cache
  * <br/>
  * 下载文件缓存器
  *
@@ -45,12 +45,13 @@ public class DownloadCacher implements DownloadRecorder, DownloadFileMover, Down
 
     private static final String TAG = DownloadCacher.class.getSimpleName();
 
+    // db helper
     private DownloadFileDbHelper mDownloadFileDbHelper;
 
-    // download file memory cache
+    // download files memory cache
     private Map<String, DownloadFileInfo> mDownloadFileInfoMap = new HashMap<String, DownloadFileInfo>();
 
-    private Object mModifyLock = new Object();// lock
+    private Object mModifyLock = new Object();// modify lock
 
     // download file change observer
     private DownloadFileChangeObserver mDownloadFileChangeObserver;
@@ -78,6 +79,7 @@ public class DownloadCacher implements DownloadRecorder, DownloadFileMover, Down
             return;
         }
 
+        // query all
         Cursor cursor = dao.query(null, null, null, null);
         List<DownloadFileInfo> downloadFileInfos = getDownloadFilesFromCursor(cursor);
         // close the cursor
@@ -109,7 +111,7 @@ public class DownloadCacher implements DownloadRecorder, DownloadFileMover, Down
 
         try {
             if (!DownloadFileUtil.isLegal(downloadFileInfo) || downloadFileInfo.getDownloadedSizeLong() <= 0) {
-                return;
+                return;// not need to check
             }
 
             // check whether file exist
@@ -126,15 +128,15 @@ public class DownloadCacher implements DownloadRecorder, DownloadFileMover, Down
                 tempFile = new File(tempFilePath);
             }
 
-            // if not exist, may now is available
+            // if the status not exist, may be now available
             if (downloadFileInfo.getStatus() == Status.DOWNLOAD_STATUS_FILE_NOT_EXIST) {
                 boolean handled = false;
                 // try to recovery complete status
                 if (saveFile != null && saveFile.length() == downloadFileInfo.getDownloadedSizeLong() &&
                         downloadFileInfo.getDownloadedSizeLong() == downloadFileInfo.getFileSizeLong()) {
                     // file completed
-                    Log.d(TAG, TAG + ".checkDownloadFileStatus，文件已下载完，但当前状态为文件不存在，需要更改状态为已下载完成，url:" +
-                            downloadFileInfo.getUrl());
+                    Log.d(TAG, "checkDownloadFileStatus，文件已下载完，但当前状态为文件不存在，需要更改状态为已下载完成，url:" + downloadFileInfo
+                            .getUrl());
 
                     handled = updateDownloadFileWithStatus(downloadFileInfo, Status.DOWNLOAD_STATUS_COMPLETED);
                 }
@@ -159,7 +161,7 @@ public class DownloadCacher implements DownloadRecorder, DownloadFileMover, Down
                     if (saveFile != null) {
                         // save file not exists
                         if (!saveFile.exists()) {
-                            // check tempFile size equals total file size
+                            // check whether tempFile size equals total file size
                             if (tempFile != null && tempFile.exists() && tempFile.length() == downloadFileInfo
                                     .getDownloadedSizeLong() && downloadFileInfo.getDownloadedSizeLong() == 
                                     downloadFileInfo.getFileSizeLong()) {
@@ -335,7 +337,7 @@ public class DownloadCacher implements DownloadRecorder, DownloadFileMover, Down
             }
         }
 
-        // insert new one
+        // insert new one in db
         synchronized (mModifyLock) {// lock
             long id = dao.insert(values);
             if (id != -1) {
@@ -455,7 +457,7 @@ public class DownloadCacher implements DownloadRecorder, DownloadFileMover, Down
                 // try to delete by url
                 result = dao.delete(Table.COLUMN_NAME_OF_FIELD_URL + "= ?", new String[]{url + ""});
                 if (result == 1) {
-                    // succeed,update memory cache
+                    // succeed, update memory cache
                     mDownloadFileInfoMap.remove(url);
                     // notify caller
                     notifyDownloadFileDeleted(downloadFileInfo);

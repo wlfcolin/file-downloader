@@ -15,6 +15,7 @@ import java.net.UnknownHostException;
  * @email 411086563@qq.com
  */
 public class HttpFailReason extends UrlFailReason {
+
     /**
      * network denied
      */
