@@ -153,12 +153,16 @@ class DetectUrlFileTask implements Runnable {
             }
             // ------------end checking conditions------------
 
-            conn = HttpConnectionHelper.createDetectConnection(mUrl, mConnectTimeout, mCharset, mRequestMethod, 
+            String connectUrl = mUrl;
+
+            conn = HttpConnectionHelper.createDetectConnection(connectUrl, mConnectTimeout, mCharset, mRequestMethod,
                     mHeaders);
 
             int redirectCount = 0;
             while (conn.getResponseCode() / 100 == 3 && redirectCount < MAX_REDIRECT_TIMES) {
-                conn = HttpConnectionHelper.createDetectConnection(mUrl, mConnectTimeout, mCharset, mRequestMethod, mHeaders);
+                connectUrl = conn.getHeaderField("Location");
+                conn = HttpConnectionHelper.createDetectConnection(connectUrl, mConnectTimeout, mCharset,
+                        mRequestMethod, mHeaders);
                 redirectCount++;
             }
 
@@ -183,7 +187,7 @@ class DetectUrlFileTask implements Runnable {
                     String fileName = HttpConnectionHelper.getFileNameFromResponseHeader(conn.getHeaderFields());
                     if (TextUtils.isEmpty(fileName)) {
                         // get from url
-                        fileName = UrlUtil.getFileNameByUrl(mUrl);
+                        fileName = UrlUtil.getFileNameByUrl(connectUrl);
                     }
 
                     // get eTag

@@ -152,7 +152,9 @@ public class MainActivity extends Activity implements OnItemSelectListener {
         // etUrl.setText("  http://182.254.149.157/ftp/image/shop/product/Kids Addition & Subtraction 1.0.apk ");
         // etUrl.setText("http://yjh.t4s.cn/Uploads/Download/2016-01-13/56962102baf32.apk");
         // etUrl.setText("http://yjh.t4s.cn/Home/new/downloadFile/id/31");
-        etUrl.setText("http://yjh.t4s.cn/Home/new/downloadFile/id/31");
+        etUrl.setText("http://openapi.shafa.com/v1/redirect?a=download&app_key=NVdVOkqg49GR090O&l=com.gitvdemo" +
+                ".video&to=http%3A%2F%2Fapps.sfcdn.org%2Fapk%2Fcom.gitvdemo.video.7e9b0a7643b0c5bfbc5ddd05f41f783c" +
+                ".apk&sign=c2046ccd3928abf6cee0d6f5d06ba6e5");
 
         etUrl.setFocusable(true);
 

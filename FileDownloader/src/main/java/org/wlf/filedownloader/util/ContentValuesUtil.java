@@ -12,10 +12,10 @@ import android.content.ContentValues;
 public class ContentValuesUtil {
 
     /**
-     * Returns true if the collection is null or 0-length.
+     * Returns true if the values is null or 0-length.
      *
      * @param values the values to be examined
-     * @return true if str is null or zero length
+     * @return true if values is null or zero length
      */
     public static boolean isEmpty(ContentValues values) {
         if (values == null || values.size() == 0) {

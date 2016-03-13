@@ -15,7 +15,7 @@ public class UrlUtil {
 
     private static final EncodeInfo[] SPECIAL_CHARACTER_ENCODER_MAP = new EncodeInfo[]{
             // % need first
-            new EncodeInfo("%", URLEncoder.encode("%")),
+            // new EncodeInfo("%", URLEncoder.encode("%")),
             //
             new EncodeInfo(" ", "%20"),
             //

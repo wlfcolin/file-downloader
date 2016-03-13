@@ -14,7 +14,7 @@ public class CollectionUtil {
      * Returns true if the collection is null or 0-length.
      *
      * @param collection the collection to be examined
-     * @return true if str is null or zero length
+     * @return true if str collection null or zero length
      */
     public static boolean isEmpty(Collection<?> collection) {
         if (collection == null || collection.isEmpty() || collection.size() == 0) {

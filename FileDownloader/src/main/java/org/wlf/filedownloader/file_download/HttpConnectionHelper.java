@@ -138,6 +138,7 @@ public class HttpConnectionHelper {
         conn.setConnectTimeout(requestParam.mConnectTimeout);
         conn.setReadTimeout(requestParam.mConnectTimeout);// FIXME read timeout equals to connect timeout
         conn.setRequestMethod(requestParam.mRequestMethod);
+        conn.setInstanceFollowRedirects(false);
 
         // -----------------------------headers-----------------------------------------
 
