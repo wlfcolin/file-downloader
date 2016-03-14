@@ -4,6 +4,10 @@ import android.text.TextUtils;
 
 import java.net.URI;
 import java.net.URLEncoder;
+import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
+import java.nio.charset.Charset;
+import java.util.BitSet;
 
 /**
  * URL Util
@@ -26,6 +30,100 @@ public class UrlUtil {
             new EncodeInfo("#", URLEncoder.encode("#"))
             //
     };
+
+    /**
+     * Emcode/escape a portion of a URL, to use with the query part ensure {@code plusAsBlank} is true.{@see
+     * http://www.boyunjian.com/javasrc/org.apache.httpcomponents/httpclient/4.2
+     * .2/_/org/apache/http/client/utils/URLEncodedUtils.java}
+     *
+     * @param content     the portion to decode
+     * @param charset     the charset to use
+     * @param blankAsPlus if {@code true}, then convert space to '+', otherwise leave as is.
+     * @return
+     */
+    private static String urlEncode(String content, Charset charset, BitSet safeChars, boolean blankAsPlus) {
+        if (content == null) {
+            return null;
+        }
+        StringBuilder buf = new StringBuilder();
+        ByteBuffer bb = charset.encode(content);
+        while (bb.hasRemaining()) {
+            int b = bb.get() & 0xff;
+            if (safeChars.get(b)) {
+                buf.append((char) b);
+            } else if (blankAsPlus && b == ' ') {
+                buf.append('+');
+            } else {
+                buf.append("%");
+                char hex1 = Character.toUpperCase(Character.forDigit((b >> 4) & 0xF, 16));
+                char hex2 = Character.toUpperCase(Character.forDigit(b & 0xF, 16));
+                buf.append(hex1);
+                buf.append(hex2);
+            }
+        }
+        return buf.toString();
+    }
+
+    /**
+     * Decode/unescape a portion of a URL, to use with the query part ensure {@code plusAsBlank} is true.{@see
+     * http://www.boyunjian.com/javasrc/org.apache.httpcomponents/httpclient/4.2
+     * .2/_/org/apache/http/client/utils/URLEncodedUtils.java}
+     *
+     * @param content     the portion to decode
+     * @param charset     the charset to use
+     * @param plusAsBlank if {@code true}, then convert '+' to space, otherwise leave as is.
+     * @return
+     */
+    private static String urlDecode(String content, Charset charset, boolean plusAsBlank) {
+        if (content == null) {
+            return null;
+        }
+        ByteBuffer bb = ByteBuffer.allocate(content.length());
+        CharBuffer cb = CharBuffer.wrap(content);
+        while (cb.hasRemaining()) {
+            char c = cb.get();
+            if (c == '%' && cb.remaining() >= 2) {
+                char uc = cb.get();
+                char lc = cb.get();
+                int u = Character.digit(uc, 16);
+                int l = Character.digit(lc, 16);
+                if (u != -1 && l != -1) {
+                    bb.put((byte) ((u << 4) + l));
+                } else {
+                    bb.put((byte) '%');
+                    bb.put((byte) uc);
+                    bb.put((byte) lc);
+                }
+            } else if (plusAsBlank && c == '+') {
+                bb.put((byte) ' ');
+            } else {
+                bb.put((byte) c);
+            }
+        }
+        bb.flip();
+        return charset.decode(bb).toString();
+    }
+
+    /**
+     * whether is the url encoded
+     *
+     * @param content the content
+     * @return true means encoded
+     */
+    private boolean isUrlEncoded(String content, Charset charset, boolean plusAsBlank) {
+
+        if (TextUtils.isEmpty(content)) {
+            return false;
+        }
+
+        String decodedContent = urlDecode(content, charset, plusAsBlank);
+
+        if (decodedContent != null && decodedContent.equalsIgnoreCase(content)) {
+            return false;// the decodedContent is the same with the content,so it is not encoded
+        }
+
+        return true;
+    }
 
     /**
      * whether the file url is http url
