@@ -57,7 +57,7 @@ private OnFileDownloadStatusListener mOnFileDownloadStatusListener = new OnSimpl
     }
     @Override
     public void onFileDownloadStatusWaiting(DownloadFileInfo downloadFileInfo) {
-        // waiting for download(wait for other task paused, or FileDownloader is busy for other operations)
+        // waiting for download(wait for other tasks paused, or FileDownloader is busy for other operations)
     }
     @Override
     public void onFileDownloadStatusPreparing(DownloadFileInfo downloadFileInfo) {
