@@ -2,12 +2,12 @@ package org.wlf.filedownloader.util;
 
 import android.text.TextUtils;
 
-import java.net.URI;
+import org.wlf.filedownloader.base.Log;
+
+import java.io.UnsupportedEncodingException;
+import java.net.URL;
+import java.net.URLDecoder;
 import java.net.URLEncoder;
-import java.nio.ByteBuffer;
-import java.nio.CharBuffer;
-import java.nio.charset.Charset;
-import java.util.BitSet;
 
 /**
  * URL Util
@@ -17,112 +17,473 @@ import java.util.BitSet;
  */
 public class UrlUtil {
 
+    private static final EncodeInfo FRAGMENT_SPLIT = new EncodeInfo("#", "%23");
+
+    private static final EncodeInfo SPACE_SPLIT = new EncodeInfo("+", "%20");
+
     private static final EncodeInfo[] SPECIAL_CHARACTER_ENCODER_MAP = new EncodeInfo[]{
-            // % need first
-            // new EncodeInfo("%", URLEncoder.encode("%")),
             //
-            new EncodeInfo(" ", "%20"),
+            SPACE_SPLIT,
             //
-            new EncodeInfo("[", URLEncoder.encode("[")),
+            FRAGMENT_SPLIT,
             //
-            new EncodeInfo("]", URLEncoder.encode("]")),
+            // new EncodeInfo("+", "%2B"), // FIXME
             //
-            new EncodeInfo("#", URLEncoder.encode("#"))
+            new EncodeInfo("/", "%2F"),
+            //
+            new EncodeInfo("?", "%3F"),
+            //
+            new EncodeInfo("%", "%25"),
+            //
+            new EncodeInfo("&", "%26"),
+            //
+            new EncodeInfo("=", "%3D"),
             //
     };
 
-    /**
-     * Emcode/escape a portion of a URL, to use with the query part ensure {@code plusAsBlank} is true.{@see
-     * http://www.boyunjian.com/javasrc/org.apache.httpcomponents/httpclient/4.2
-     * .2/_/org/apache/http/client/utils/URLEncodedUtils.java}
-     *
-     * @param content     the portion to decode
-     * @param charset     the charset to use
-     * @param blankAsPlus if {@code true}, then convert space to '+', otherwise leave as is.
-     * @return
-     */
-    private static String urlEncode(String content, Charset charset, BitSet safeChars, boolean blankAsPlus) {
-        if (content == null) {
-            return null;
-        }
-        StringBuilder buf = new StringBuilder();
-        ByteBuffer bb = charset.encode(content);
-        while (bb.hasRemaining()) {
-            int b = bb.get() & 0xff;
-            if (safeChars.get(b)) {
-                buf.append((char) b);
-            } else if (blankAsPlus && b == ' ') {
-                buf.append('+');
-            } else {
-                buf.append("%");
-                char hex1 = Character.toUpperCase(Character.forDigit((b >> 4) & 0xF, 16));
-                char hex2 = Character.toUpperCase(Character.forDigit(b & 0xF, 16));
-                buf.append(hex1);
-                buf.append(hex2);
-            }
-        }
-        return buf.toString();
-    }
+    private static String getEncodedHost(String host, String userInfo, String charset, EncodeInfo[] specials) {
 
-    /**
-     * Decode/unescape a portion of a URL, to use with the query part ensure {@code plusAsBlank} is true.{@see
-     * http://www.boyunjian.com/javasrc/org.apache.httpcomponents/httpclient/4.2
-     * .2/_/org/apache/http/client/utils/URLEncodedUtils.java}
-     *
-     * @param content     the portion to decode
-     * @param charset     the charset to use
-     * @param plusAsBlank if {@code true}, then convert '+' to space, otherwise leave as is.
-     * @return
-     */
-    private static String urlDecode(String content, Charset charset, boolean plusAsBlank) {
-        if (content == null) {
+        if (TextUtils.isEmpty(host)) {
             return null;
         }
-        ByteBuffer bb = ByteBuffer.allocate(content.length());
-        CharBuffer cb = CharBuffer.wrap(content);
-        while (cb.hasRemaining()) {
-            char c = cb.get();
-            if (c == '%' && cb.remaining() >= 2) {
-                char uc = cb.get();
-                char lc = cb.get();
-                int u = Character.digit(uc, 16);
-                int l = Character.digit(lc, 16);
-                if (u != -1 && l != -1) {
-                    bb.put((byte) ((u << 4) + l));
-                } else {
-                    bb.put((byte) '%');
-                    bb.put((byte) uc);
-                    bb.put((byte) lc);
+
+        StringBuffer bufferEncodedHost = new StringBuffer();
+
+        try {
+
+            // ----------------------host----------------------
+
+            String[] splitHost = host.split(".");
+
+            // included '.'
+            if (!ArrayUtil.isEmpty(splitHost)) {
+                for (int i = 0; i < splitHost.length; i++) {
+                    String hostSegment = splitHost[i];
+                    if (i != 0) {
+                        bufferEncodedHost.append(".");
+                    }
+                    if (TextUtils.isEmpty(hostSegment)) {
+                        continue;
+                    }
+                    // not encode
+                    if (!isEncoded(hostSegment, charset)) {
+                        // encode
+                        String encodedHostSegment = URLEncoder.encode(hostSegment, charset);
+                        if (TextUtils.isEmpty(encodedHostSegment)) {
+                            continue;
+                        }
+                        // check specials
+                        if (!ArrayUtil.isEmpty(specials)) {
+                            for (EncodeInfo encodeInfo : specials) {
+                                if (encodeInfo == null || TextUtils.isEmpty(encodeInfo.needEncode) ||
+                                        TextUtils.isEmpty(encodeInfo.encoded)) {
+                                    continue;
+                                }
+                                if (!TextUtils.isEmpty(encodedHostSegment) && encodedHostSegment.contains(encodeInfo
+                                        .encoded)) {
+                                    // replace means undo encoded
+                                    encodedHostSegment = encodedHostSegment.replace(encodeInfo.encoded, encodeInfo
+                                            .needEncode);
+                                }
+                            }
+                        }
+                        bufferEncodedHost.append(encodedHostSegment);
+
+                    }
+                    // encoded
+                    else {
+                        bufferEncodedHost.append(hostSegment);
+                    }
+
                 }
-            } else if (plusAsBlank && c == '+') {
-                bb.put((byte) ' ');
-            } else {
-                bb.put((byte) c);
             }
+            // do not included '.'
+            else {
+                // not encode
+                if (!isEncoded(host, charset)) {
+                    // encode
+                    String encodedHost = URLEncoder.encode(host, charset);
+                    if (!TextUtils.isEmpty(encodedHost)) {
+                        // check specials
+                        if (!ArrayUtil.isEmpty(specials)) {
+                            for (EncodeInfo encodeInfo : specials) {
+                                if (encodeInfo == null || TextUtils.isEmpty(encodeInfo.needEncode) ||
+                                        TextUtils.isEmpty(encodeInfo.encoded)) {
+                                    continue;
+                                }
+                                if (!TextUtils.isEmpty(encodedHost) && encodedHost.contains(encodeInfo.encoded)) {
+                                    // replace means undo encoded
+                                    encodedHost = encodedHost.replace(encodeInfo.encoded, encodeInfo.needEncode);
+                                }
+                            }
+                        }
+                        bufferEncodedHost.append(encodedHost);
+                    }
+                }
+                // encoded
+                else {
+                    bufferEncodedHost.append(host);
+                }
+            }
+
+            // ----------------------userInfo----------------------
+
+            if (!TextUtils.isEmpty(userInfo)) {
+                bufferEncodedHost.append("@");
+                bufferEncodedHost.append(userInfo);// FIXME here not encode
+            }
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
         }
-        bb.flip();
-        return charset.decode(bb).toString();
+        return bufferEncodedHost.toString();
     }
 
-    /**
-     * whether is the url encoded
-     *
-     * @param content the content
-     * @return true means encoded
-     */
-    private boolean isUrlEncoded(String content, Charset charset, boolean plusAsBlank) {
+    private static String getEncodedFile(String path, String query, String ref, String charset, EncodeInfo[] specials) {
+
+        if (TextUtils.isEmpty(path)) {
+            return null;
+        }
+
+        StringBuffer bufferEncodedFile = new StringBuffer();
+
+        try {
+
+            // ----------------------path----------------------
+
+            String[] splitPath = path.split("/");
+
+            // included '/'
+            if (!ArrayUtil.isEmpty(splitPath)) {
+                for (int i = 0; i < splitPath.length; i++) {
+                    String pathSegment = splitPath[i];
+                    if (i != 0) {
+                        bufferEncodedFile.append("/");
+                    }
+                    if (TextUtils.isEmpty(pathSegment)) {
+                        continue;
+                    }
+                    // not encode
+                    if (!isEncoded(pathSegment, charset)) {
+                        // encode
+                        String encodedPathSegment = URLEncoder.encode(pathSegment, charset);
+                        if (TextUtils.isEmpty(encodedPathSegment)) {
+                            continue;
+                        }
+                        // check specials
+                        if (!ArrayUtil.isEmpty(specials)) {
+                            for (EncodeInfo encodeInfo : specials) {
+                                if (encodeInfo == null || TextUtils.isEmpty(encodeInfo.needEncode) ||
+                                        TextUtils.isEmpty(encodeInfo.encoded)) {
+                                    continue;
+                                }
+                                if (!TextUtils.isEmpty(encodedPathSegment) && encodedPathSegment.contains(encodeInfo
+                                        .encoded)) {
+                                    // replace means undo encoded
+                                    encodedPathSegment = encodedPathSegment.replace(encodeInfo.encoded, encodeInfo
+                                            .needEncode);
+                                }
+                            }
+                        }
+                        bufferEncodedFile.append(encodedPathSegment);
+                    }
+                    // encoded
+                    else {
+                        bufferEncodedFile.append(pathSegment);
+                    }
+                }
+            }
+            // do not included '/'
+            else {
+                // not encode
+                if (!isEncoded(path, charset)) {
+                    // encode
+                    String encodedPath = URLEncoder.encode(path, charset);
+                    if (!TextUtils.isEmpty(encodedPath)) {
+                        // check specials
+                        if (!ArrayUtil.isEmpty(specials)) {
+                            for (EncodeInfo encodeInfo : specials) {
+                                if (encodeInfo == null || TextUtils.isEmpty(encodeInfo.needEncode) ||
+                                        TextUtils.isEmpty(encodeInfo.encoded)) {
+                                    continue;
+                                }
+                                if (!TextUtils.isEmpty(encodedPath) && encodedPath.contains(encodeInfo.encoded)) {
+                                    // replace means undo encoded
+                                    encodedPath = encodedPath.replace(encodeInfo.encoded, encodeInfo.needEncode);
+                                }
+                            }
+                        }
+                        bufferEncodedFile.append(encodedPath);
+                    }
+                }
+                // encoded
+                else {
+                    bufferEncodedFile.append(path);
+                }
+            }
+
+            // ----------------------query----------------------
+
+            if (!TextUtils.isEmpty(query)) {
+
+                if (query.contains("\\?") || query.contains("&")) {
+                    bufferEncodedFile.append("?");
+                }
+
+                String[] splitQuery = query.split("&");
+
+                // included '&'
+                if (!ArrayUtil.isEmpty(splitQuery)) {
+                    for (int i = 0; i < splitQuery.length; i++) {
+                        String querySegment = splitQuery[i];
+                        if (i != 0) {
+                            bufferEncodedFile.append("&");
+                        }
+                        if (TextUtils.isEmpty(querySegment)) {
+                            continue;
+                        }
+                        // check '='
+                        String[] keyValue = querySegment.split("=");
+                        // included '='
+                        if (!ArrayUtil.isEmpty(keyValue) && keyValue.length >= 2) {
+                            String key = keyValue[0];
+                            String value = keyValue[1];
+                            if (TextUtils.isEmpty(key) || TextUtils.isEmpty(value)) {
+                                continue;
+                            }
+                            // not encode
+                            if (!isEncoded(key, charset)) {
+                                // encode
+                                key = URLEncoder.encode(key, charset);
+                                // check specials
+                                if (!ArrayUtil.isEmpty(specials)) {
+                                    for (EncodeInfo encodeInfo : specials) {
+                                        if (encodeInfo == null || TextUtils.isEmpty(encodeInfo.needEncode) ||
+                                                TextUtils.isEmpty(encodeInfo.encoded)) {
+                                            continue;
+                                        }
+                                        if (!TextUtils.isEmpty(key) && key.contains(encodeInfo.encoded)) {
+                                            // replace means undo encoded
+                                            key = key.replace(encodeInfo.encoded, encodeInfo.needEncode);
+                                        }
+                                    }
+                                }
+                            }
+                            // encoded
+                            else {
+                            }
+
+                            // not encode
+                            if (!isEncoded(value, charset)) {
+                                // encode
+                                value = URLEncoder.encode(value, charset);
+                                // check specials
+                                if (!ArrayUtil.isEmpty(specials)) {
+                                    for (EncodeInfo encodeInfo : specials) {
+                                        if (encodeInfo == null || TextUtils.isEmpty(encodeInfo.needEncode) ||
+                                                TextUtils.isEmpty(encodeInfo.encoded)) {
+                                            continue;
+                                        }
+                                        if (!TextUtils.isEmpty(value) && value.contains(encodeInfo.encoded)) {
+                                            // replace means undo encoded
+                                            value = value.replace(encodeInfo.encoded, encodeInfo.needEncode);
+                                        }
+                                    }
+                                }
+                            }
+                            // encoded
+                            else {
+                            }
+
+                            bufferEncodedFile.append(key);
+                            bufferEncodedFile.append("=");
+                            bufferEncodedFile.append(value);
+                        }
+                        // do not included '='
+                        else {
+                            // not encode
+                            if (!isEncoded(querySegment, charset)) {
+                                // encode
+                                String encodedQuerySegment = URLEncoder.encode(querySegment, charset);
+                                if (!TextUtils.isEmpty(encodedQuerySegment)) {
+                                    // check specials
+                                    if (!ArrayUtil.isEmpty(specials)) {
+                                        for (EncodeInfo encodeInfo : specials) {
+                                            if (encodeInfo == null || TextUtils.isEmpty(encodeInfo.needEncode) ||
+                                                    TextUtils.isEmpty(encodeInfo.encoded)) {
+                                                continue;
+                                            }
+                                            if (!TextUtils.isEmpty(encodedQuerySegment) && encodedQuerySegment
+                                                    .contains(encodeInfo.encoded)) {
+                                                // replace means undo encoded
+                                                encodedQuerySegment = encodedQuerySegment.replace(encodeInfo.encoded,
+                                                        encodeInfo.needEncode);
+                                            }
+                                        }
+                                    }
+                                    bufferEncodedFile.append(encodedQuerySegment);
+                                }
+                            }
+                            // encoded
+                            else {
+                                bufferEncodedFile.append(querySegment);
+                            }
+                        }
+                    }
+                }
+                // do not included '&'
+                else {
+                    // not encode
+                    if (!isEncoded(query, charset)) {
+                        // encode
+                        String encodedQuery = URLEncoder.encode(query, charset);
+                        if (!TextUtils.isEmpty(encodedQuery)) {
+                            // check specials
+                            if (!ArrayUtil.isEmpty(specials)) {
+                                for (EncodeInfo encodeInfo : specials) {
+                                    if (encodeInfo == null || TextUtils.isEmpty(encodeInfo.needEncode) ||
+                                            TextUtils.isEmpty(encodeInfo.encoded)) {
+                                        continue;
+                                    }
+                                    if (!TextUtils.isEmpty(encodedQuery) && encodedQuery.contains(encodeInfo.encoded)) {
+                                        // replace means undo encoded
+                                        encodedQuery = encodedQuery.replace(encodeInfo.encoded, encodeInfo.needEncode);
+                                    }
+                                }
+                            }
+                            bufferEncodedFile.append(encodedQuery);
+                        }
+                    }
+                    // encoded
+                    else {
+                        bufferEncodedFile.append(query);
+                    }
+                }
+            }
+
+            // ----------------------ref----------------------
+
+            if (!TextUtils.isEmpty(ref)) {
+                // not encode
+                if (!isEncoded(query, charset)) {
+                    // encode
+                    String encodedRef = URLEncoder.encode(ref, charset);
+                    if (!TextUtils.isEmpty(encodedRef)) {
+                        bufferEncodedFile.append("#");
+                        bufferEncodedFile.append(encodedRef);
+                    }
+                }
+                // encoded
+                else {
+                    bufferEncodedFile.append("#");
+                    bufferEncodedFile.append(ref);
+                }
+            }
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+        return bufferEncodedFile.toString();
+    }
+
+    private static boolean isEncoded(String content, String charset) {
 
         if (TextUtils.isEmpty(content)) {
             return false;
         }
 
-        String decodedContent = urlDecode(content, charset, plusAsBlank);
+
+        String decodedContent = null;
+        try {
+            decodedContent = URLDecoder.decode(content, charset);
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
 
         if (decodedContent != null && decodedContent.equalsIgnoreCase(content)) {
             return false;// the decodedContent is the same with the content,so it is not encoded
         }
 
         return true;
+    }
+
+    public static String getEncodedUrl(String url, String charset, boolean useFragment, boolean blankAsPlus) {
+
+        Log.d("wlf", "getEncodedUrl，--------------------");
+
+        Log.d("wlf", "getEncodedUrl，准备编码URL，url：" + url);
+
+        if (TextUtils.isEmpty(url)) {
+            return null;
+        }
+
+        // trim url
+        if (url != null) {
+            url = url.trim();
+        }
+
+        String encodedUrl = null;
+
+        try {
+
+            // encoded url
+
+            URL unEncodeUrl = new URL(url);
+
+            Log.d("wlf", "getEncodedUrl，开始编码URL，unEncodeUrl：" + unEncodeUrl);
+
+            Log.d("wlf", "getEncodedUrl，开始编码URL，getProtocol：" + unEncodeUrl.getProtocol());
+
+            Log.d("wlf", "getEncodedUrl，开始编码URL，getHost：" + unEncodeUrl.getHost());
+            Log.d("wlf", "getEncodedUrl，开始编码URL，getUserInfo：" + unEncodeUrl.getUserInfo());
+
+            Log.d("wlf", "getEncodedUrl，开始编码URL，getPort：" + unEncodeUrl.getPort());
+
+            Log.d("wlf", "getEncodedUrl，开始编码URL，getFile：" + unEncodeUrl.getFile());
+            Log.d("wlf", "getEncodedUrl，开始编码URL，getPath：" + unEncodeUrl.getPath());
+            Log.d("wlf", "getEncodedUrl，开始编码URL，getQuery：" + unEncodeUrl.getQuery());
+            Log.d("wlf", "getEncodedUrl，开始编码URL，getRef：" + unEncodeUrl.getRef());
+
+            //  protocol  ://  host  @  userInfo  :  port  /  path  ?  query  #  ref
+            //|-protocol-|    |-------host------|  |-port-|   |--------file--------|
+            // new URL(String protocol, String host, int port, String file);
+
+            String protocol = unEncodeUrl.getProtocol();
+
+            String host = unEncodeUrl.getHost();// may need encode
+            String userInfo = unEncodeUrl.getUserInfo();// may need encode
+
+            host = getEncodedHost(host, userInfo, charset, SPECIAL_CHARACTER_ENCODER_MAP);
+
+            int port = unEncodeUrl.getPort();
+
+            String file = unEncodeUrl.getFile();// may need encode
+            String path = unEncodeUrl.getPath();// may need encode
+            String query = unEncodeUrl.getQuery();// may need encode
+            String ref = unEncodeUrl.getRef();// may need encode
+
+            file = getEncodedFile(path, query, ref, charset, SPECIAL_CHARACTER_ENCODER_MAP);
+
+            URL tempEncodedUrl = new URL(protocol, host, port, file);
+
+            encodedUrl = tempEncodedUrl.toString();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        // check space
+        if (encodedUrl != null && encodedUrl.contains(SPACE_SPLIT.needEncode) && !blankAsPlus) {
+            encodedUrl = encodedUrl.replaceAll("\\" + SPACE_SPLIT.needEncode, SPACE_SPLIT.encoded);
+        }
+
+        // check fragment
+        if (encodedUrl != null && encodedUrl.contains(FRAGMENT_SPLIT.needEncode) && !useFragment) {
+            encodedUrl = encodedUrl.replaceAll(FRAGMENT_SPLIT.needEncode, FRAGMENT_SPLIT.encoded);
+        }
+
+        Log.e("wlf", "getEncodedUrl，编码后URL，encodedUrl：" + encodedUrl);
+
+        return encodedUrl;
+
     }
 
     /**
@@ -159,38 +520,7 @@ public class UrlUtil {
      * @return encoded url
      */
     public static String getASCIIEncodedUrl(String url) {
-
-        // trim url
-        if (url != null) {
-            url = url.trim();
-        }
-
-        String encodedUrl = null;
-
-        if (TextUtils.isEmpty(url)) {
-            return null;
-        }
-
-        String replacedUrl = getReplacedUrl(url);
-
-        try {
-            URI uri = URI.create(replacedUrl);
-            encodedUrl = uri.toASCIIString();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        if (TextUtils.isEmpty(encodedUrl)) {
-            if (!TextUtils.isEmpty(replacedUrl)) {
-                encodedUrl = replacedUrl;
-            } else {
-                encodedUrl = url;
-            }
-        }
-
-        // Log.e("wlf", "encodedUrl:" + encodedUrl);
-
-        return encodedUrl;
+        return getEncodedUrl(url, "UTF-8", false, false);
     }
 
     /**
@@ -207,17 +537,13 @@ public class UrlUtil {
             return null;
         }
 
-        String replacedUrl = getReplacedUrl(url);
+        // trim url
+        if (url != null) {
+            url = url.trim();
+        }
 
         try {
-            URI uri = URI.create(replacedUrl);
-            String path = uri.getPath();
-            if (TextUtils.isEmpty(path)) {
-                path = uri.getRawPath();
-            }
-            if (!TextUtils.isEmpty(path)) {
-                fileName = path.substring(path.lastIndexOf('/') + 1);
-            }
+            fileName = url.substring(url.lastIndexOf('/') + 1);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -226,67 +552,16 @@ public class UrlUtil {
             return fileName;
         }
 
-        return getUndoReplacedUrl(url);
-    }
-
-    private static String getReplacedUrl(String originalUrl) {
-
-        if (originalUrl == null) {
-            return null;
-        }
-
-        String replacedUrl = originalUrl;
-
-        for (EncodeInfo encodeInfo : SPECIAL_CHARACTER_ENCODER_MAP) {
-            if (encodeInfo == null) {
-                continue;
-            }
-            if (replacedUrl.contains(encodeInfo.unEncode)) {
-                // replace
-                replacedUrl = replacedUrl.replace(encodeInfo.unEncode, encodeInfo.encoded);
-            }
-        }
-
-        if (TextUtils.isEmpty(replacedUrl)) {
-            replacedUrl = originalUrl;
-        }
-
-        return replacedUrl;
-    }
-
-    private static String getUndoReplacedUrl(String replacedUrl) {
-
-        if (replacedUrl == null) {
-            return null;
-        }
-
-        String originalUrl = replacedUrl;
-
-        for (int i = SPECIAL_CHARACTER_ENCODER_MAP.length - 1; i > 0; i--) {
-            EncodeInfo encodeInfo = SPECIAL_CHARACTER_ENCODER_MAP[i];
-            if (encodeInfo == null) {
-                continue;
-            }
-            if (originalUrl.contains(encodeInfo.encoded)) {
-                // replace
-                originalUrl = originalUrl.replace(encodeInfo.encoded, encodeInfo.unEncode);
-            }
-        }
-
-        if (TextUtils.isEmpty(originalUrl)) {
-            originalUrl = replacedUrl;
-        }
-
-        return originalUrl;
+        return url;
     }
 
     private static class EncodeInfo {
 
-        public final String unEncode;
+        public final String needEncode;
         public final String encoded;
 
-        public EncodeInfo(String unEncode, String encoded) {
-            this.unEncode = unEncode;
+        public EncodeInfo(String needEncode, String encoded) {
+            this.needEncode = needEncode;
             this.encoded = encoded;
         }
     }
