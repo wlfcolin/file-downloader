@@ -155,6 +155,7 @@ public class MainActivity extends Activity implements OnItemSelectListener {
         etUrl.setText("http://openapi.shafa.com/v1/redirect?a=download&app_key=NVdVOkqg49GR090O&l=com.gitvdemo" +
                 ".video&to=http%3A%2F%2Fapps.sfcdn.org%2Fapk%2Fcom.gitvdemo.video.7e9b0a7643b0c5bfbc5ddd05f41f783c" +
                 ".apk&sign=c2046ccd3928abf6cee0d6f5d06ba6e5");
+        etUrl.setText("http://m.25az.com/upload/ad/uc/m/%e6%a2%a6%e5%b9%bb%e9%a9%af%e9%be%99%e8%ae%b0/uc-3_5011991_163309b77bf2.apk");
 
         etUrl.setFocusable(true);
 
