@@ -150,12 +150,33 @@ public class MainActivity extends Activity implements OnItemSelectListener {
         final EditText etUrl = new EditText(this);
         // apk file, the url with special character
         // etUrl.setText("  http://182.254.149.157/ftp/image/shop/product/Kids Addition & Subtraction 1.0.apk ");
+
         // etUrl.setText("http://yjh.t4s.cn/Uploads/Download/2016-01-13/56962102baf32.apk");
+
         // etUrl.setText("http://yjh.t4s.cn/Home/new/downloadFile/id/31");
-        etUrl.setText("http://openapi.shafa.com/v1/redirect?a=download&app_key=NVdVOkqg49GR090O&l=com.gitvdemo" +
-                ".video&to=http%3A%2F%2Fapps.sfcdn.org%2Fapk%2Fcom.gitvdemo.video.7e9b0a7643b0c5bfbc5ddd05f41f783c" +
-                ".apk&sign=c2046ccd3928abf6cee0d6f5d06ba6e5");
-        etUrl.setText("http://m.25az.com/upload/ad/uc/m/%e6%a2%a6%e5%b9%bb%e9%a9%af%e9%be%99%e8%ae%b0/uc-3_5011991_163309b77bf2.apk");
+        //        etUrl.setText("http://openapi.shafa.com/v1/redirect?a=download&app_key=NVdVOkqg49GR090O&l=com
+        // .gitvdemo" +
+        //                ".video&to=http%3A%2F%2Fapps.sfcdn.org%2Fapk%2Fcom.gitvdemo.video
+        // .7e9b0a7643b0c5bfbc5ddd05f41f783c" +
+        //                ".apk&sign=c2046ccd3928abf6cee0d6f5d06ba6e5");
+        //        etUrl.setText("http://m.25az
+        // .com/upload/ad/uc/m/%e6%a2%a6%e5%b9%bb%e9%a9%af%e9%be%99%e8%ae%b0/uc-3_5011991_163309b77bf2.apk");
+
+        // etUrl.setText(" http://cdn.saofu.cn/appss/74b6a96f-e056-4fbf-8b36-579a7d4f2ad8.apk");// only for testing 
+        // error url
+
+        // test Baidu SkyDrive 
+        etUrl.setText("https://pcscdns.baidu" +
+                ".com/file/9d2525e48beae74df9839bfd53ea0659?bkt=p3" +
+                "-14009d2525e48beae74df9839bfd53ea0659120c4aed0000003439bb&xcode" +
+                "=b55811de01cef039a63384887845d600365bdbc88d13f3a00b2977702d3e6764&fid=4080794744-250528" +
+                "-405950091149355&time=1458524792&sign=FDTAXGERLBH-DCb740ccc5511e5e8fedcff06b081203-6HU2GtKiI5uAmRbD" +
+                "%2BxWDQ0Ue54I%3D&to=se&fm=Yan,B,T,t&sta_dx=3&sta_cs=8&sta_ft=apk&sta_ct=1&fm2=Yangquan,B,T," +
+                "t&newver=1&newfm=1&secfm=1&flow_ver=3&pkey=14009d2525e48beae74df9839bfd53ea0659120c4aed0000003439bb" +
+                "&sl=69402703&expires=8h&rt=sh&r=888204069&mlogid=1864872734416013050&vuk=3339143945&vbdid=1177775768" +
+                "&fin=%E5%BE%AE%E4%BF%A1QQ%E5%8F%8C%E5%BC%80%E5%8A%A9%E6%89%8B" +
+                ".apk&fn=%E5%BE%AE%E4%BF%A1QQ%E5%8F%8C%E5%BC%80%E5%8A%A9%E6%89%8B" +
+                ".apk&slt=pm&uta=0&rtype=1&iv=0&isw=0&dp-logid=1864872734416013050&dp-callid=0.1.1");
 
         etUrl.setFocusable(true);
 

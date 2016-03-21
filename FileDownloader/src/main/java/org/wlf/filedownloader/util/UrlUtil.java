@@ -384,12 +384,11 @@ public class UrlUtil {
         return bufferEncodedFile.toString();
     }
 
-    private static boolean isEncoded(String content, String charset) {
+    public static boolean isEncoded(String content, String charset) {
 
         if (TextUtils.isEmpty(content)) {
             return false;
         }
-
 
         String decodedContent = null;
         try {
@@ -403,6 +402,16 @@ public class UrlUtil {
         }
 
         return true;
+    }
+
+    public static String decode(String content, String charset) {
+        try {
+            String decodedContent = URLDecoder.decode(content, charset);
+            return decodedContent;
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     public static String getEncodedUrl(String url, String charset, boolean useFragment, boolean blankAsPlus) {
@@ -483,7 +492,6 @@ public class UrlUtil {
         Log.e("wlf", "getEncodedUrl，编码后URL，encodedUrl：" + encodedUrl);
 
         return encodedUrl;
-
     }
 
     /**
@@ -497,7 +505,7 @@ public class UrlUtil {
             return false;
         }
 
-        String encodedUrl = getASCIIEncodedUrl(url);
+        String encodedUrl = getASCIIEncodedUrl(url, "UTF-8");
         if (TextUtils.isEmpty(encodedUrl)) {
             return false;
         }
@@ -519,8 +527,8 @@ public class UrlUtil {
      * @param url file url
      * @return encoded url
      */
-    public static String getASCIIEncodedUrl(String url) {
-        return getEncodedUrl(url, "UTF-8", false, false);
+    public static String getASCIIEncodedUrl(String url, String charset) {
+        return getEncodedUrl(url, charset, false, false);
     }
 
     /**
@@ -529,7 +537,7 @@ public class UrlUtil {
      * @param url file url
      * @return File Name
      */
-    public static String getFileNameByUrl(String url) {
+    public static String getFileNameByUrl(String url, String charset) {
 
         String fileName = null;
 
@@ -546,6 +554,16 @@ public class UrlUtil {
             fileName = url.substring(url.lastIndexOf('/') + 1);
         } catch (Exception e) {
             e.printStackTrace();
+        }
+
+        if (!TextUtils.isEmpty(fileName)) {
+            if (isEncoded(fileName, charset)) {
+                // decode
+                String decodedContent = decode(fileName, charset);
+                if (!TextUtils.isEmpty(decodedContent)) {
+                    fileName = decodedContent;
+                }
+            }
         }
 
         if (!TextUtils.isEmpty(fileName)) {

@@ -118,7 +118,7 @@ public class HttpConnectionHelper {
 
         Log.d(TAG, "headBuffer，createHttpUrlConnection，发送的请求参数：" + requestParam.toString());
 
-        String encodedUrl = UrlUtil.getASCIIEncodedUrl(requestParam.mUrl);
+        String encodedUrl = UrlUtil.getASCIIEncodedUrl(requestParam.mUrl, requestParam.mCharset);
         if (TextUtils.isEmpty(encodedUrl)) {
             throw new IllegalAccessException("URL Illegal !");
         }

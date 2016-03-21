@@ -161,8 +161,7 @@ class DetectUrlFileTask implements Runnable {
             int redirectCount = 0;
             while (conn.getResponseCode() / 100 == 3 && redirectCount < MAX_REDIRECT_TIMES) {
                 connectUrl = conn.getHeaderField("Location");
-                conn = HttpConnectionHelper.createDetectConnection(connectUrl, mConnectTimeout, mCharset,
-                        mRequestMethod, mHeaders);
+                conn = HttpConnectionHelper.createDetectConnection(connectUrl, mConnectTimeout, mCharset, mRequestMethod, mHeaders);
                 redirectCount++;
             }
 
@@ -187,7 +186,12 @@ class DetectUrlFileTask implements Runnable {
                     String fileName = HttpConnectionHelper.getFileNameFromResponseHeader(conn.getHeaderFields());
                     if (TextUtils.isEmpty(fileName)) {
                         // get from url
-                        fileName = UrlUtil.getFileNameByUrl(connectUrl);
+                        fileName = UrlUtil.getFileNameByUrl(connectUrl, mCharset);
+                    } else {
+                        // check is decoded
+                        if (UrlUtil.isEncoded(fileName, mCharset)) {
+                            fileName = UrlUtil.decode(fileName, mCharset);
+                        }
                     }
 
                     // get eTag
