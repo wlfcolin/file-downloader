@@ -7,8 +7,10 @@ import org.wlf.filedownloader.DownloadFileInfo;
 import org.wlf.filedownloader.base.Log;
 import org.wlf.filedownloader.base.Status;
 import org.wlf.filedownloader.file_download.DownloadTaskImpl.FinishState;
-import org.wlf.filedownloader.file_download.OnStopFileDownloadTaskListener.StopDownloadFileTaskFailReason;
 import org.wlf.filedownloader.file_download.base.DownloadRecorder;
+import org.wlf.filedownloader.file_download.base.OnStopFileDownloadTaskListener;
+import org.wlf.filedownloader.file_download.base.OnStopFileDownloadTaskListener.StopDownloadFileTaskFailReason;
+import org.wlf.filedownloader.file_download.base.OnTaskRunFinishListener;
 import org.wlf.filedownloader.file_download.base.RetryableDownloadTask;
 import org.wlf.filedownloader.file_download.http_downloader.Range;
 import org.wlf.filedownloader.listener.OnFileDownloadStatusListener;
@@ -47,6 +49,7 @@ class RetryableDownloadTaskImpl implements RetryableDownloadTask, OnFileDownload
 
     private OnFileDownloadStatusListener mOnFileDownloadStatusListener;
     private OnStopFileDownloadTaskListener mOnStopFileDownloadTaskListener;
+    private OnTaskRunFinishListener mOnTaskRunFinishListener;
 
     private FinishState mFinishState;
 
@@ -100,7 +103,8 @@ class RetryableDownloadTaskImpl implements RetryableDownloadTask, OnFileDownload
                     .getStartPosInTotal());
         }
         // init
-        FileDownloadTaskParam taskParamInfo = new FileDownloadTaskParam(getUrl(), mOriginalTaskParamInfo.getStartPosInTotal() + mRecordedRange.getLength(), mOriginalTaskParamInfo.getFileTotalSize(),
+        FileDownloadTaskParam taskParamInfo = new FileDownloadTaskParam(getUrl(), mOriginalTaskParamInfo
+                .getStartPosInTotal() + mRecordedRange.getLength(), mOriginalTaskParamInfo.getFileTotalSize(),
                 mOriginalTaskParamInfo.getETag(), mOriginalTaskParamInfo.getLastModified(), mOriginalTaskParamInfo.
                 getAcceptRangeType(), mOriginalTaskParamInfo.getTempFilePath(), mOriginalTaskParamInfo.getFilePath());
         taskParamInfo.setRequestMethod(mOriginalTaskParamInfo.getRequestMethod());
@@ -116,6 +120,11 @@ class RetryableDownloadTaskImpl implements RetryableDownloadTask, OnFileDownload
     @Override
     public void setOnStopFileDownloadTaskListener(OnStopFileDownloadTaskListener onStopFileDownloadTaskListener) {
         mOnStopFileDownloadTaskListener = onStopFileDownloadTaskListener;
+    }
+
+    @Override
+    public void setOnTaskRunFinishListener(OnTaskRunFinishListener onTaskRunFinishListener) {
+        this.mOnTaskRunFinishListener = onTaskRunFinishListener;
     }
 
     /**
@@ -462,15 +471,20 @@ class RetryableDownloadTaskImpl implements RetryableDownloadTask, OnFileDownload
             mFinishState = new FinishState(Status.DOWNLOAD_STATUS_ERROR, new OnFileDownloadStatusFailReason(getUrl(),
                     e));
         } finally {
+            // stop internal impl
+            stopInternalImpl();
+
             // identify cur task stop
             mIsTaskStop = true;
             mIsRunning = false;
-            // stop internal impl
-            stopInternalImpl();
 
             // make sure to notify caller
             notifyTaskFinish();
             notifyStopTaskSucceedIfNecessary();
+
+            if (mOnTaskRunFinishListener != null) {
+                mOnTaskRunFinishListener.onTaskRunFinish();
+            }
 
             boolean hasException = (mFinishState != null && mFinishState.failReason != null && DownloadFileUtil
                     .hasException(mFinishState.status)) ? true : false;

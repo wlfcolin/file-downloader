@@ -9,9 +9,11 @@ import org.wlf.filedownloader.DownloadStatusConfiguration;
 import org.wlf.filedownloader.FileDownloadConfiguration;
 import org.wlf.filedownloader.base.Log;
 import org.wlf.filedownloader.base.Status;
-import org.wlf.filedownloader.file_download.OnStopFileDownloadTaskListener.StopDownloadFileTaskFailReason;
 import org.wlf.filedownloader.file_download.base.DownloadRecorder;
 import org.wlf.filedownloader.file_download.base.DownloadTask;
+import org.wlf.filedownloader.file_download.base.OnStopFileDownloadTaskListener;
+import org.wlf.filedownloader.file_download.base.OnStopFileDownloadTaskListener.StopDownloadFileTaskFailReason;
+import org.wlf.filedownloader.file_download.base.OnTaskRunFinishListener;
 import org.wlf.filedownloader.file_download.base.Pauseable;
 import org.wlf.filedownloader.listener.OnDetectBigUrlFileListener;
 import org.wlf.filedownloader.listener.OnDetectBigUrlFileListener.DetectBigUrlFileFailReason;
@@ -66,6 +68,8 @@ public class DownloadTaskManager implements Pauseable {
      * all download tasks those are running
      */
     private Map<String, DownloadTask> mRunningDownloadTaskMap = new ConcurrentHashMap<String, DownloadTask>();
+
+    private Object mDownloadTaskLock = new Object();
 
     // --------------------------------------lifecycle--------------------------------------
 
@@ -193,11 +197,6 @@ public class DownloadTaskManager implements Pauseable {
                 }
             }
         }
-
-        //        // remove the task when status is not allowed
-        //        if (mRunningDownloadTaskMap.containsKey(url)) {
-        //            mRunningDownloadTaskMap.remove(url);
-        //        }
         return null;
     }
 
@@ -284,8 +283,8 @@ public class DownloadTaskManager implements Pauseable {
     /**
      * start a download task
      */
-    private void addAndRunDownloadTask(String callerUrl, DownloadFileInfo downloadFileInfo, DownloadConfiguration
-            downloadConfiguration) {
+    private void addAndRunDownloadTask(final String callerUrl, DownloadFileInfo downloadFileInfo,
+                                       DownloadConfiguration downloadConfiguration) {
 
         FileDownloadStatusFailReason failReason = null;// null means there are not errors
 
@@ -329,9 +328,16 @@ public class DownloadTaskManager implements Pauseable {
             return;
         }
 
-        // downloading, ignore
-        if (isDownloading(callerUrl)) {
-            return;
+        synchronized (mDownloadTaskLock) {
+            // check the old task
+            DownloadTask taskInMap = mRunningDownloadTaskMap.get(callerUrl);
+            if (taskInMap != null) {
+                // running, ignore
+                Map<Thread, StackTraceElement[]> threads = Thread.getAllStackTraces();
+                Log.d(TAG, "mRunningDownloadTaskMap，忽略1：" + callerUrl + "，old task：" + taskInMap.hashCode() +
+                        "，线程数：" + threads.size());
+                return;
+            }
         }
 
         // use global configuration first
@@ -360,26 +366,46 @@ public class DownloadTaskManager implements Pauseable {
         }
 
         // create retryable download task
-        RetryableDownloadTaskImpl downloadTask = new RetryableDownloadTaskImpl(FileDownloadTaskParam.createByDownloadFile(downloadFileInfo, requestMethod, headers), mDownloadRecorder,
+        final RetryableDownloadTaskImpl downloadTask = new RetryableDownloadTaskImpl(FileDownloadTaskParam
+                .createByDownloadFile(downloadFileInfo, requestMethod, headers), mDownloadRecorder,
                 mDownloadStatusObserver);
         downloadTask.setCloseConnectionEngine(mConfiguration.getFileOperationEngine());
         // set RetryDownloadTimes
         downloadTask.setRetryDownloadTimes(retryDownloadTimes);
         downloadTask.setConnectTimeout(connectTimeout);
-        // remove the task when it is illegal first
-        DownloadTask taskInMap = getRunningDownloadTask(downloadTask.getUrl());
-        if (taskInMap != null) {
-            if (!taskInMap.isStopped()) {
-                // running, ignore
-                return;
-            } else {
-                // remove
-                mRunningDownloadTaskMap.remove(downloadTask.getUrl());
-            }
-        }
+        downloadTask.setOnTaskRunFinishListener(new OnTaskRunFinishListener() {
+            @Override
+            public void onTaskRunFinish() {
 
-        // record in the task map
-        mRunningDownloadTaskMap.put(downloadTask.getUrl(), downloadTask);
+                synchronized (mDownloadTaskLock) {
+                    mRunningDownloadTaskMap.remove(downloadTask.getUrl());
+
+                    Map<Thread, StackTraceElement[]> threads = Thread.getAllStackTraces();
+                    Log.e(TAG, "mRunningDownloadTaskMap，--移除--：" + downloadTask.getUrl() + "，task：" + downloadTask
+                            .hashCode() + "，线程数：" + threads.size());
+                }
+            }
+        });
+
+        synchronized (mDownloadTaskLock) {
+
+            // check the old task again
+            DownloadTask taskInMap = mRunningDownloadTaskMap.get(downloadTask.getUrl());
+            if (taskInMap != null) {
+                // running, ignore
+                Map<Thread, StackTraceElement[]> threads = Thread.getAllStackTraces();
+                Log.d(TAG, "mRunningDownloadTaskMap，忽略2：" + downloadTask.getUrl() + "，old task：" + taskInMap.hashCode
+                        () + "，线程数：" + threads.size());
+                return;
+            }
+
+            // record in the task map
+            mRunningDownloadTaskMap.put(downloadTask.getUrl(), downloadTask);
+
+            Map<Thread, StackTraceElement[]> threads = Thread.getAllStackTraces();
+            Log.d(TAG, "mRunningDownloadTaskMap，--增加--：" + downloadTask.getUrl() + "，task：" + downloadTask.hashCode()
+                    + "，线程数：" + threads.size());
+        }
         // exec the task
         mConfiguration.getFileDownloadEngine().execute(downloadTask);
     }
@@ -457,10 +483,6 @@ public class DownloadTaskManager implements Pauseable {
      */
     private void notifyStopDownloadTaskSucceed(String url, OnStopFileDownloadTaskListener
             onStopFileDownloadTaskListener) {
-        // if task stopped, remove the task of the url from download map
-        if (mRunningDownloadTaskMap.containsKey(url)) {
-            mRunningDownloadTaskMap.remove(url);
-        }
         // notify caller
         if (onStopFileDownloadTaskListener != null) {
             onStopFileDownloadTaskListener.onStopFileDownloadTaskSucceed(url);
@@ -472,14 +494,6 @@ public class DownloadTaskManager implements Pauseable {
      */
     private void notifyStopDownloadTaskFailed(String url, StopDownloadFileTaskFailReason failReason,
                                               OnStopFileDownloadTaskListener onStopFileDownloadTaskListener) {
-        // if task stopped, remove the task of the url from download map
-        DownloadTask downloadTask = getRunningDownloadTask(url);
-        if (downloadTask != null && downloadTask.isStopped()) {
-            if (mRunningDownloadTaskMap.containsKey(url)) {
-                mRunningDownloadTaskMap.remove(url);
-            }
-        }
-
         // notify caller
         if (onStopFileDownloadTaskListener != null) {
             onStopFileDownloadTaskListener.onStopFileDownloadTaskFailed(url, failReason);
@@ -697,12 +711,6 @@ public class DownloadTaskManager implements Pauseable {
      * @param downloadConfiguration download configuration
      */
     public void start(String url, final DownloadConfiguration downloadConfiguration) {
-        //        // check whether need stop pre task that downloaded the url
-        //        DownloadTask task = getRunningDownloadTask(url, true);
-        //        if (task != null && task.isStopped()) {
-        //            task.setIsNotify(false);// 停止所有通知
-        //        }
-
         DownloadFileInfo downloadFileInfo = getDownloadFile(url);
         // has been downloaded
         if (downloadFileInfo != null) {

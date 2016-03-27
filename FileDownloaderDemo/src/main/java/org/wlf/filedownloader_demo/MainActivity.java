@@ -21,6 +21,7 @@ import android.widget.Toast;
 
 import org.wlf.filedownloader.DownloadConfiguration;
 import org.wlf.filedownloader.DownloadFileInfo;
+import org.wlf.filedownloader.DownloadStatusConfiguration;
 import org.wlf.filedownloader.FileDownloader;
 import org.wlf.filedownloader.listener.OnDeleteDownloadFileListener;
 import org.wlf.filedownloader.listener.OnDeleteDownloadFilesListener;
@@ -74,19 +75,17 @@ public class MainActivity extends Activity implements OnItemSelectListener {
 
         // registerDownloadStatusListener 
 
-        // listen special url
-        //        DownloadStatusConfiguration.Builder builder = new Builder();
-        //        builder.addListenUrl("http://182.254.149.157/ftp/image/shop/product/Kids Addition & Subtraction 1.0
-        // .apk");
-        //        FileDownloader.registerDownloadStatusListener(mDownloadFileListAdapter, builder.build());
+        boolean isDownloadStatusConfigurationTest = false;// TEST
 
-        // listen all
-        FileDownloader.registerDownloadStatusListener(mDownloadFileListAdapter);
-
-        // TEST DownloadConfiguration
-        // DownloadStatusConfiguration.Builder builder = new DownloadStatusConfiguration.Builder();
-        // builder.addListenUrl("http://yjh.t4s.cn/Home/new/downloadFile/id/31");
-        // FileDownloader.registerDownloadStatusListener(mDownloadFileListAdapter,builder.build());
+        if (!isDownloadStatusConfigurationTest) {
+            // register to listen all
+            FileDownloader.registerDownloadStatusListener(mDownloadFileListAdapter);
+        } else {
+            // register to only listen special url
+            DownloadStatusConfiguration.Builder builder = new DownloadStatusConfiguration.Builder();
+            builder.addListenUrl("http://182.254.149.157/ftp/image/shop/product/Kids Addition & Subtraction 1.0.apk");
+            FileDownloader.registerDownloadStatusListener(mDownloadFileListAdapter, builder.build());
+        }
     }
 
     @Override
@@ -149,11 +148,12 @@ public class MainActivity extends Activity implements OnItemSelectListener {
 
         final EditText etUrl = new EditText(this);
         // apk file, the url with special character
-        // etUrl.setText("  http://182.254.149.157/ftp/image/shop/product/Kids Addition & Subtraction 1.0.apk ");
+        etUrl.setText("  http://182.254.149.157/ftp/image/shop/product/Kids Addition & Subtraction 1.0.apk ");
 
         // etUrl.setText("http://yjh.t4s.cn/Uploads/Download/2016-01-13/56962102baf32.apk");
 
-        etUrl.setText("http://yjh.t4s.cn/Home/new/downloadFile/id/31");
+        // etUrl.setText("http://yjh.t4s.cn/Home/new/downloadFile/id/31");
+
         //        etUrl.setText("http://openapi.shafa.com/v1/redirect?a=download&app_key=NVdVOkqg49GR090O&l=com
         // .gitvdemo" +
         //                ".video&to=http%3A%2F%2Fapps.sfcdn.org%2Fapk%2Fcom.gitvdemo.video
@@ -192,18 +192,23 @@ public class MainActivity extends Activity implements OnItemSelectListener {
                 // file url
                 String url = etUrl.getText().toString().trim();
 
-                // FileDownloader.start(url);
+                boolean isDownloadConfigurationTest = false;// TEST
 
-                // TEST DownloadConfiguration
-                DownloadConfiguration.Builder builder1 = new DownloadConfiguration.Builder();
-                builder1.addHeader("Accept", "*/*");
-                FileDownloader.start(url, builder1.build());
+                if (!isDownloadConfigurationTest) {
+                    FileDownloader.start(url);
+                } else {
+                    // TEST DownloadConfiguration
+                    DownloadConfiguration.Builder builder1 = new DownloadConfiguration.Builder();
+                    builder1.addHeader("Accept", "*/*");
+                    FileDownloader.start(url, builder1.build());
+                }
             }
         });
         builder.show();
     }
 
     // show new multi download dialog
+
     private void showMultiNewDownloadDialog() {
 
         final EditText etUrl1 = new EditText(this);
@@ -256,18 +261,22 @@ public class MainActivity extends Activity implements OnItemSelectListener {
                 urls.add(url4);
                 urls.add(url5);
 
-                // FileDownloader.start(urls);
+                boolean isDownloadConfigurationTest = false;// TEST
 
-                // TEST DownloadConfiguration
-                DownloadConfiguration.Builder builder1 = new DownloadConfiguration.Builder();
-                builder1.addHeaderWithUrl(url1, "Accept", "*/*");
-                builder1.addHeaderWithUrl(url2, "Date", "Tue, 15 Nov 2015 08:12:31 GMT");
-                builder1.addHeaderWithUrl(url3, "Pragma", "no-cache");
-                builder1.addHeader("Pragma", "no-cache-common");
-                builder1.replaceHeaderWithUrl(url2, "Date", "Tue, 15 Nov 2016 08:12:31 GMT");
-                // builder1.configRequestMethod("GET");
-                builder1.configRequestMethodWithUrl(url2, "POST");
-                FileDownloader.start(urls, builder1.build());
+                if (!isDownloadConfigurationTest) {
+                    FileDownloader.start(urls);
+                } else {
+                    // TEST DownloadConfiguration
+                    DownloadConfiguration.MultiBuilder builder1 = new DownloadConfiguration.MultiBuilder();
+                    builder1.addHeaderWithUrl(url1, "Accept", "*/*");
+                    builder1.addHeaderWithUrl(url2, "Date", "Tue, 15 Nov 2015 08:12:31 GMT");
+                    builder1.addHeaderWithUrl(url3, "Pragma", "no-cache");
+                    builder1.addHeader("Pragma", "no-cache-common");
+                    builder1.replaceHeaderWithUrl(url2, "Date", "Tue, 15 Nov 2016 08:12:31 GMT");
+                    // builder1.configRequestMethod("GET");
+                    builder1.configRequestMethodWithUrl(url2, "POST");
+                    FileDownloader.start(urls, builder1.build());
+                }
             }
         });
         builder.show();

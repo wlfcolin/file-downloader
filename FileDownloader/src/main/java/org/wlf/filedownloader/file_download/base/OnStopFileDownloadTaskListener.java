@@ -1,4 +1,4 @@
-package org.wlf.filedownloader.file_download;
+package org.wlf.filedownloader.file_download.base;
 
 import org.wlf.filedownloader.base.FailReason;
 import org.wlf.filedownloader.listener.OnFileDownloadStatusListener.FileDownloadStatusFailReason;

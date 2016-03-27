@@ -7,9 +7,11 @@ import android.os.SystemClock;
 import org.wlf.filedownloader.DownloadFileInfo;
 import org.wlf.filedownloader.base.Log;
 import org.wlf.filedownloader.base.Status;
-import org.wlf.filedownloader.file_download.OnStopFileDownloadTaskListener.StopDownloadFileTaskFailReason;
 import org.wlf.filedownloader.file_download.base.DownloadRecorder;
 import org.wlf.filedownloader.file_download.base.DownloadTask;
+import org.wlf.filedownloader.file_download.base.OnStopFileDownloadTaskListener;
+import org.wlf.filedownloader.file_download.base.OnStopFileDownloadTaskListener.StopDownloadFileTaskFailReason;
+import org.wlf.filedownloader.file_download.base.OnTaskRunFinishListener;
 import org.wlf.filedownloader.file_download.file_saver.FileSaver;
 import org.wlf.filedownloader.file_download.file_saver.FileSaver.FileSaveException;
 import org.wlf.filedownloader.file_download.file_saver.FileSaver.OnFileSaveListener;
@@ -52,6 +54,7 @@ class DownloadTaskImpl implements DownloadTask, OnHttpDownloadListener, OnFileSa
 
     private OnFileDownloadStatusListener mOnFileDownloadStatusListener;
     private OnStopFileDownloadTaskListener mOnStopFileDownloadTaskListener;
+    private OnTaskRunFinishListener mOnTaskRunFinishListener;
 
     private FinishState mFinishState;
 
@@ -246,6 +249,11 @@ class DownloadTaskImpl implements DownloadTask, OnHttpDownloadListener, OnFileSa
         this.mOnStopFileDownloadTaskListener = onStopFileDownloadTaskListener;
     }
 
+    @Override
+    public void setOnTaskRunFinishListener(OnTaskRunFinishListener onTaskRunFinishListener) {
+        this.mOnTaskRunFinishListener = onTaskRunFinishListener;
+    }
+
     /**
      * set CloseConnectionEngine
      *
@@ -413,11 +421,12 @@ class DownloadTaskImpl implements DownloadTask, OnHttpDownloadListener, OnFileSa
             }
             // ------------end checking mFinishState------------
 
+            // stop internal impl
+            stopInternalImpl();
+
             // identify cur task stopped
             mIsTaskStop = true;
             mIsRunning = false;
-            // stop internal impl
-            stopInternalImpl();
 
             // ------------start notifying caller------------
             {
@@ -426,6 +435,10 @@ class DownloadTaskImpl implements DownloadTask, OnHttpDownloadListener, OnFileSa
                 notifyStopTaskSucceedIfNecessary();
             }
             // ------------end notifying caller------------
+
+            if (mOnTaskRunFinishListener != null) {
+                mOnTaskRunFinishListener.onTaskRunFinish();
+            }
 
             boolean hasException = (mFinishState != null && mFinishState.failReason != null && DownloadFileUtil
                     .hasException(mFinishState.status)) ? true : false;

@@ -1,7 +1,6 @@
 package org.wlf.filedownloader.file_download.base;
 
 import org.wlf.filedownloader.base.Stoppable;
-import org.wlf.filedownloader.file_download.OnStopFileDownloadTaskListener;
 
 /**
  * DownloadTask interface
@@ -26,4 +25,11 @@ public interface DownloadTask extends Runnable, Stoppable {
      * @param onStopFileDownloadTaskListener OnStopFileDownloadTaskListener
      */
      void setOnStopFileDownloadTaskListener(OnStopFileDownloadTaskListener onStopFileDownloadTaskListener);
+
+    /**
+     * set TaskRunFinishListener
+     *
+     * @param onTaskRunFinishListener
+     */
+    void setOnTaskRunFinishListener(OnTaskRunFinishListener onTaskRunFinishListener);
 }

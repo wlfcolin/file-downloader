@@ -1,7 +1,5 @@
 package org.wlf.filedownloader.file_download.base;
 
-import org.wlf.filedownloader.file_download.OnStopFileDownloadTaskListener;
-
 /**
  * Pauseable interface
  * <br/>
