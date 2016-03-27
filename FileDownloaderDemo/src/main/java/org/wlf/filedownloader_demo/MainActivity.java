@@ -153,7 +153,7 @@ public class MainActivity extends Activity implements OnItemSelectListener {
 
         // etUrl.setText("http://yjh.t4s.cn/Uploads/Download/2016-01-13/56962102baf32.apk");
 
-        // etUrl.setText("http://yjh.t4s.cn/Home/new/downloadFile/id/31");
+        etUrl.setText("http://yjh.t4s.cn/Home/new/downloadFile/id/31");
         //        etUrl.setText("http://openapi.shafa.com/v1/redirect?a=download&app_key=NVdVOkqg49GR090O&l=com
         // .gitvdemo" +
         //                ".video&to=http%3A%2F%2Fapps.sfcdn.org%2Fapk%2Fcom.gitvdemo.video
@@ -162,21 +162,25 @@ public class MainActivity extends Activity implements OnItemSelectListener {
         //        etUrl.setText("http://m.25az
         // .com/upload/ad/uc/m/%e6%a2%a6%e5%b9%bb%e9%a9%af%e9%be%99%e8%ae%b0/uc-3_5011991_163309b77bf2.apk");
 
-        // etUrl.setText(" http://cdn.saofu.cn/appss/74b6a96f-e056-4fbf-8b36-579a7d4f2ad8.apk");// only for testing 
+        // etUrl.setText(" http://cdn.saofu.cn/appss/74b6a96f-e056-4fbf-8b36-579a7d4f2ad8.apk");// only for testing
         // error url
 
         // test Baidu SkyDrive 
-        etUrl.setText("https://pcscdns.baidu" +
-                ".com/file/9d2525e48beae74df9839bfd53ea0659?bkt=p3" +
-                "-14009d2525e48beae74df9839bfd53ea0659120c4aed0000003439bb&xcode" +
-                "=b55811de01cef039a63384887845d600365bdbc88d13f3a00b2977702d3e6764&fid=4080794744-250528" +
-                "-405950091149355&time=1458524792&sign=FDTAXGERLBH-DCb740ccc5511e5e8fedcff06b081203-6HU2GtKiI5uAmRbD" +
-                "%2BxWDQ0Ue54I%3D&to=se&fm=Yan,B,T,t&sta_dx=3&sta_cs=8&sta_ft=apk&sta_ct=1&fm2=Yangquan,B,T," +
-                "t&newver=1&newfm=1&secfm=1&flow_ver=3&pkey=14009d2525e48beae74df9839bfd53ea0659120c4aed0000003439bb" +
-                "&sl=69402703&expires=8h&rt=sh&r=888204069&mlogid=1864872734416013050&vuk=3339143945&vbdid=1177775768" +
-                "&fin=%E5%BE%AE%E4%BF%A1QQ%E5%8F%8C%E5%BC%80%E5%8A%A9%E6%89%8B" +
-                ".apk&fn=%E5%BE%AE%E4%BF%A1QQ%E5%8F%8C%E5%BC%80%E5%8A%A9%E6%89%8B" +
-                ".apk&slt=pm&uta=0&rtype=1&iv=0&isw=0&dp-logid=1864872734416013050&dp-callid=0.1.1");
+        //        etUrl.setText("https://pcscdns.baidu" +
+        //                ".com/file/9d2525e48beae74df9839bfd53ea0659?bkt=p3" +
+        //                "-14009d2525e48beae74df9839bfd53ea0659120c4aed0000003439bb&xcode" +
+        //                "=b55811de01cef039a63384887845d600365bdbc88d13f3a00b2977702d3e6764&fid=4080794744-250528" +
+        //                "-405950091149355&time=1458524792&sign=FDTAXGERLBH-DCb740ccc5511e5e8fedcff06b081203
+        // -6HU2GtKiI5uAmRbD" +
+        //                "%2BxWDQ0Ue54I%3D&to=se&fm=Yan,B,T,t&sta_dx=3&sta_cs=8&sta_ft=apk&sta_ct=1&fm2=Yangquan,B,
+        // T," +
+        //                "t&newver=1&newfm=1&secfm=1&flow_ver=3&pkey
+        // =14009d2525e48beae74df9839bfd53ea0659120c4aed0000003439bb" +
+        //                "&sl=69402703&expires=8h&rt=sh&r=888204069&mlogid=1864872734416013050&vuk=3339143945&vbdid
+        // =1177775768" +
+        //                "&fin=%E5%BE%AE%E4%BF%A1QQ%E5%8F%8C%E5%BC%80%E5%8A%A9%E6%89%8B" +
+        //                ".apk&fn=%E5%BE%AE%E4%BF%A1QQ%E5%8F%8C%E5%BC%80%E5%8A%A9%E6%89%8B" +
+        //                ".apk&slt=pm&uta=0&rtype=1&iv=0&isw=0&dp-logid=1864872734416013050&dp-callid=0.1.1");
 
         etUrl.setFocusable(true);
 
@@ -225,7 +229,7 @@ public class MainActivity extends Activity implements OnItemSelectListener {
 
         LinearLayout linearLayout = new LinearLayout(this);
         linearLayout.setOrientation(LinearLayout.VERTICAL);
-        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 
+        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,
                 LinearLayout.LayoutParams.WRAP_CONTENT);
         linearLayout.addView(etUrl1, params);
         linearLayout.addView(etUrl2, params);
@@ -308,7 +312,7 @@ public class MainActivity extends Activity implements OnItemSelectListener {
 
                         final TextView tvFileSize = new TextView(MainActivity.this);
                         float size = fileSize / 1024f / 1024f;
-                        tvFileSize.setText(getString(R.string.main__file_size) + ((float) (Math.round(size * 100)) / 
+                        tvFileSize.setText(getString(R.string.main__file_size) + ((float) (Math.round(size * 100)) /
                                 100) + "M");
 
                         LinearLayout linearLayout = new LinearLayout(MainActivity.this);
@@ -405,7 +409,7 @@ public class MainActivity extends Activity implements OnItemSelectListener {
 
                         final TextView tvFileSize = new TextView(MainActivity.this);
                         float size = fileSize / 1024f / 1024f;
-                        tvFileSize.setText(getString(R.string.main__file_size) + ((float) (Math.round(size * 100)) / 
+                        tvFileSize.setText(getString(R.string.main__file_size) + ((float) (Math.round(size * 100)) /
                                 100) + "M");
 
                         LinearLayout linearLayout = new LinearLayout(MainActivity.this);
@@ -503,7 +507,7 @@ public class MainActivity extends Activity implements OnItemSelectListener {
 
                         final TextView tvFileSize = new TextView(MainActivity.this);
                         float size = fileSize / 1024f / 1024f;
-                        tvFileSize.setText(getString(R.string.main__file_size) + ((float) (Math.round(size * 100)) / 
+                        tvFileSize.setText(getString(R.string.main__file_size) + ((float) (Math.round(size * 100)) /
                                 100) + "M");
 
                         LinearLayout linearLayout = new LinearLayout(MainActivity.this);
@@ -607,7 +611,7 @@ public class MainActivity extends Activity implements OnItemSelectListener {
                 builder.show();
             }
 
-            private void deleteDownloadFiles(boolean deleteDownloadedFile, List<DownloadFileInfo> 
+            private void deleteDownloadFiles(boolean deleteDownloadedFile, List<DownloadFileInfo>
                     selectDownloadFileInfos) {
 
                 List<String> urls = new ArrayList<String>();
@@ -626,6 +630,9 @@ public class MainActivity extends Activity implements OnItemSelectListener {
                         public void onDeleteDownloadFileSuccess(DownloadFileInfo downloadFileDeleted) {
                             showToast(getString(R.string.main__delete_succeed));
                             updateAdapter();
+
+                            Log.e("wlf", "onDeleteDownloadFileSuccess 成功回调，单个删除" + downloadFileDeleted.getFileName()
+                                    + "成功");
                         }
 
                         @Override
@@ -636,11 +643,13 @@ public class MainActivity extends Activity implements OnItemSelectListener {
                         }
 
                         @Override
-                        public void onDeleteDownloadFileFailed(DownloadFileInfo downloadFileInfo, 
+                        public void onDeleteDownloadFileFailed(DownloadFileInfo downloadFileInfo,
                                                                DeleteDownloadFileFailReason failReason) {
                             showToast(getString(R.string.main__delete) + downloadFileInfo.getFileName() + getString(R
                                     .string.main__failed));
-                            Log.e("wlf", "出错回调，删除" + downloadFileInfo.getFileName() + "失败");
+
+                            Log.e("wlf", "onDeleteDownloadFileFailed 出错回调，单个删除" + downloadFileInfo.getFileName() +
+                                    "失败");
                         }
                     });
                 }
@@ -650,13 +659,13 @@ public class MainActivity extends Activity implements OnItemSelectListener {
                     FileDownloader.delete(urls, deleteDownloadedFile, new OnDeleteDownloadFilesListener() {
 
                         @Override
-                        public void onDeletingDownloadFiles(List<DownloadFileInfo> downloadFilesNeedDelete, 
-                                                            List<DownloadFileInfo> downloadFilesDeleted, 
-                                                            List<DownloadFileInfo> downloadFilesSkip, 
+                        public void onDeletingDownloadFiles(List<DownloadFileInfo> downloadFilesNeedDelete,
+                                                            List<DownloadFileInfo> downloadFilesDeleted,
+                                                            List<DownloadFileInfo> downloadFilesSkip,
                                                             DownloadFileInfo downloadFileDeleting) {
                             if (downloadFileDeleting != null) {
                                 showToast(getString(R.string.main__deleting) + downloadFileDeleting.getFileName() +
-                                        getString(R.string.main__progress) + (downloadFilesDeleted.size() + 
+                                        getString(R.string.main__progress) + (downloadFilesDeleted.size() +
                                         downloadFilesSkip.size()) + getString(R.string.main__failed2) +
                                         downloadFilesSkip.size() + getString(R.string
                                         .main__skip_and_total_delete_division) +
@@ -671,12 +680,18 @@ public class MainActivity extends Activity implements OnItemSelectListener {
                         }
 
                         @Override
-                        public void onDeleteDownloadFilesCompleted(List<DownloadFileInfo> downloadFilesNeedDelete, 
+                        public void onDeleteDownloadFilesCompleted(List<DownloadFileInfo> downloadFilesNeedDelete,
                                                                    List<DownloadFileInfo> downloadFilesDeleted) {
-                            showToast(getString(R.string.main__delete_finish) + downloadFilesDeleted.size() +
-                                    getString(R.string.main__failed3) + (downloadFilesNeedDelete.size() - 
-                                    downloadFilesDeleted.size()));
+
+                            String text = getString(R.string.main__delete_finish) + downloadFilesDeleted.size() +
+                                    getString(R.string.main__failed3) + (downloadFilesNeedDelete.size() -
+                                    downloadFilesDeleted.size());
+
+                            showToast(text);
+
                             updateAdapter();
+
+                            Log.e("wlf", "onDeleteDownloadFilesCompleted 完成回调，" + text);
                         }
                     });
                 }
@@ -737,7 +752,7 @@ public class MainActivity extends Activity implements OnItemSelectListener {
                                 }
 
                                 @Override
-                                public void onMoveDownloadFileFailed(DownloadFileInfo downloadFileInfo, 
+                                public void onMoveDownloadFileFailed(DownloadFileInfo downloadFileInfo,
                                                                      MoveDownloadFileFailReason failReason) {
                                     showToast(getString(R.string.main__move) + downloadFileInfo.getFileName() +
                                             getString(R.string.main__failed));
@@ -755,13 +770,13 @@ public class MainActivity extends Activity implements OnItemSelectListener {
                                 }
 
                                 @Override
-                                public void onMovingDownloadFiles(List<DownloadFileInfo> downloadFilesNeedMove, 
-                                                                  List<DownloadFileInfo> downloadFilesMoved, 
-                                                                  List<DownloadFileInfo> downloadFilesSkip, 
+                                public void onMovingDownloadFiles(List<DownloadFileInfo> downloadFilesNeedMove,
+                                                                  List<DownloadFileInfo> downloadFilesMoved,
+                                                                  List<DownloadFileInfo> downloadFilesSkip,
                                                                   DownloadFileInfo downloadFileMoving) {
                                     if (downloadFileMoving != null) {
                                         showToast(getString(R.string.main__moving) + downloadFileMoving.getFileName() +
-                                                getString(R.string.main__progress) + (downloadFilesMoved.size() + 
+                                                getString(R.string.main__progress) + (downloadFilesMoved.size() +
                                                 downloadFilesSkip.size()) + getString(R.string.main__failed2) +
 
                                                 downloadFilesSkip.size() + getString(R.string
@@ -772,11 +787,10 @@ public class MainActivity extends Activity implements OnItemSelectListener {
                                 }
 
                                 @Override
-                                public void onMoveDownloadFilesCompleted(List<DownloadFileInfo> 
-                                                                                 downloadFilesNeedMove, 
+                                public void onMoveDownloadFilesCompleted(List<DownloadFileInfo> downloadFilesNeedMove,
                                                                          List<DownloadFileInfo> downloadFilesMoved) {
                                     showToast(getString(R.string.main__move_finish) + downloadFilesMoved.size() +
-                                            getString(R.string.main__failed3) + (downloadFilesNeedMove.size() - 
+                                            getString(R.string.main__failed3) + (downloadFilesNeedMove.size() -
                                             downloadFilesMoved.size()));
                                 }
                             });
@@ -852,7 +866,7 @@ public class MainActivity extends Activity implements OnItemSelectListener {
 
                             String newName = etFileName.getText().toString();
 
-                            FileDownloader.rename(urls.get(0), newName, cbIncludedSuffix.isChecked(), new 
+                            FileDownloader.rename(urls.get(0), newName, cbIncludedSuffix.isChecked(), new
                                     OnRenameDownloadFileListener() {
 
                                 @Override
@@ -867,7 +881,7 @@ public class MainActivity extends Activity implements OnItemSelectListener {
                                 }
 
                                 @Override
-                                public void onRenameDownloadFileFailed(DownloadFileInfo downloadFileInfo, 
+                                public void onRenameDownloadFileFailed(DownloadFileInfo downloadFileInfo,
                                                                        RenameDownloadFileFailReason failReason) {
                                     showToast(getString(R.string.main__rename_failed));
                                     Log.e("wlf", "出错回调，重命名失败");

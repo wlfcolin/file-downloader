@@ -12,6 +12,7 @@ import org.wlf.filedownloader.util.UrlUtil;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * DeleteDownloadFilesTask
@@ -35,15 +36,15 @@ class DeleteDownloadFilesTask implements Runnable, Stoppable {
     private OnDeleteDownloadFilesListener mOnDeleteDownloadFilesListener;
 
     private boolean mIsStop = false;
-    private boolean mIsNotifyFinish = false;
+    private AtomicBoolean mIsNotifyFinish = new AtomicBoolean(false);
 
     private Object mLock = new Object();// lock
 
     private final List<DownloadFileInfo> mDownloadFilesNeedDelete = new ArrayList<DownloadFileInfo>();
-    final List<DownloadFileInfo> mDownloadFilesDeleted = new ArrayList<DownloadFileInfo>();
-    final List<DownloadFileInfo> mDownloadFilesSkip = new ArrayList<DownloadFileInfo>();
+    private final List<DownloadFileInfo> mDownloadFilesDeleted = new ArrayList<DownloadFileInfo>();
+    private final List<DownloadFileInfo> mDownloadFilesSkip = new ArrayList<DownloadFileInfo>();
 
-    public DeleteDownloadFilesTask(List<String> urls, boolean deleteDownloadedFile, ExecutorService taskEngine, 
+    public DeleteDownloadFilesTask(List<String> urls, boolean deleteDownloadedFile, ExecutorService taskEngine,
                                    DownloadFileDeleter downloadFileDeleter, Pauseable downloadTaskPauseable) {
         super();
         this.mUrls = urls;
@@ -108,7 +109,7 @@ class DeleteDownloadFilesTask implements Runnable, Stoppable {
             notifyDeleteDownloadFilesPrepared();
 
             // delete every single download file listener
-            final OnDeleteDownloadFileListener onDeleteEverySingleDownloadFileListener = new 
+            final OnDeleteDownloadFileListener onDeleteEverySingleDownloadFileListener = new
                     OnDeleteSingleDownloadFileListener();
 
             // delete every single one
@@ -161,7 +162,7 @@ class DeleteDownloadFilesTask implements Runnable, Stoppable {
                         }
 
                         @Override
-                        public void onStopFileDownloadTaskFailed(String url, StopDownloadFileTaskFailReason 
+                        public void onStopFileDownloadTaskFailed(String url, StopDownloadFileTaskFailReason
                                 failReason) {
 
                             // if the task stopped, notify completed
@@ -213,11 +214,11 @@ class DeleteDownloadFilesTask implements Runnable, Stoppable {
     /**
      * run delete single file task
      */
-    private void runSingleDeleteTask(String url, OnDeleteDownloadFileListener 
+    private void runSingleDeleteTask(String url, OnDeleteDownloadFileListener
             onDeleteEverySingleDownloadFileListener, boolean sync) {
 
         // init single delete task
-        DeleteDownloadFileTask deleteSingleDownloadFileTask = new DeleteDownloadFileTask(url, mDeleteDownloadedFile, 
+        DeleteDownloadFileTask deleteSingleDownloadFileTask = new DeleteDownloadFileTask(url, mDeleteDownloadedFile,
                 mDownloadFileDeleter);
         deleteSingleDownloadFileTask.enableSyncCallback();// sync callback
         deleteSingleDownloadFileTask.setOnDeleteDownloadFileListener(onDeleteEverySingleDownloadFileListener);
@@ -266,7 +267,7 @@ class DeleteDownloadFilesTask implements Runnable, Stoppable {
         }
 
         @Override
-        public void onDeleteDownloadFileFailed(DownloadFileInfo downloadFileInfo, DeleteDownloadFileFailReason 
+        public void onDeleteDownloadFileFailed(DownloadFileInfo downloadFileInfo, DeleteDownloadFileFailReason
                 failReason) {
 
             String url = null;
@@ -303,7 +304,7 @@ class DeleteDownloadFilesTask implements Runnable, Stoppable {
 
         Log.d(TAG, TAG + ".run 准备批量删除，大小：" + mDownloadFilesNeedDelete.size());
 
-        OnDeleteDownloadFilesListener.MainThreadHelper.onDeleteDownloadFilesPrepared(mDownloadFilesNeedDelete, 
+        OnDeleteDownloadFilesListener.MainThreadHelper.onDeleteDownloadFilesPrepared(mDownloadFilesNeedDelete,
                 mOnDeleteDownloadFilesListener);
     }
 
@@ -319,7 +320,7 @@ class DeleteDownloadFilesTask implements Runnable, Stoppable {
 
         Log.d(TAG, TAG + ".run 准备删除单个，url：" + url);
 
-        OnDeleteDownloadFilesListener.MainThreadHelper.onDeletingDownloadFiles(mDownloadFilesNeedDelete, 
+        OnDeleteDownloadFilesListener.MainThreadHelper.onDeletingDownloadFiles(mDownloadFilesNeedDelete,
                 mDownloadFilesDeleted, mDownloadFilesSkip, downloadFileInfo, mOnDeleteDownloadFilesListener);
     }
 
@@ -327,19 +328,22 @@ class DeleteDownloadFilesTask implements Runnable, Stoppable {
      * notifyDeleteDownloadFilesCompleted
      */
     private void notifyDeleteDownloadFilesCompleted() {
-        if (mIsNotifyFinish) {
+        if (mIsNotifyFinish.get()) {
             return;
         }
 
-        OnDeleteDownloadFilesListener.MainThreadHelper.onDeleteDownloadFilesCompleted(mDownloadFilesNeedDelete, 
-                mDownloadFilesDeleted, mOnDeleteDownloadFilesListener);
-        mIsNotifyFinish = true;
-        mIsStop = true;// the task is finish
+        if (mIsNotifyFinish.compareAndSet(false, true)) {
 
-        int failedSize = mDownloadFilesNeedDelete.size() - mDownloadFilesDeleted.size();
+            OnDeleteDownloadFilesListener.MainThreadHelper.onDeleteDownloadFilesCompleted(mDownloadFilesNeedDelete,
+                    mDownloadFilesDeleted, mOnDeleteDownloadFilesListener);
 
-        Log.d(TAG, TAG + ".run 批量删除文件主任务和其它相关任务全部【已结束】，总共需要删除：" + mDownloadFilesNeedDelete.size() + "，已删除：" +
-                mDownloadFilesDeleted.size() + "，失败：" + failedSize + "，跳过：" + mDownloadFilesSkip.size() +
-                "，跳过数量是否等于失败数量：" + (failedSize == mDownloadFilesSkip.size()));
+            mIsStop = true;// the task is finish
+
+            int failedSize = mDownloadFilesNeedDelete.size() - mDownloadFilesDeleted.size();
+
+            Log.d(TAG, TAG + ".run 批量删除文件主任务和其它相关任务全部【已结束】，总共需要删除：" + mDownloadFilesNeedDelete.size() + "，已删除：" +
+                    mDownloadFilesDeleted.size() + "，失败：" + failedSize + "，跳过：" + mDownloadFilesSkip.size() +
+                    "，跳过数量是否等于失败数量：" + (failedSize == mDownloadFilesSkip.size()));
+        }
     }
 }

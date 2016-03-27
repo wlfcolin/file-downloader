@@ -12,6 +12,7 @@ import org.wlf.filedownloader.util.DownloadFileUtil;
 
 import java.io.File;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * RenameDownloadFileTask
@@ -30,9 +31,11 @@ class RenameDownloadFileTask implements Runnable {
     private boolean includedSuffix;
     private DownloadFileRenamer mDownloadFileRenamer;
 
+    private AtomicBoolean mIsNotifyFinish = new AtomicBoolean(false);
+
     private OnRenameDownloadFileListener mOnRenameDownloadFileListener;
 
-    public RenameDownloadFileTask(String url, String newFileName, boolean includedSuffix, DownloadFileRenamer 
+    public RenameDownloadFileTask(String url, String newFileName, boolean includedSuffix, DownloadFileRenamer
             downloadFileRenamer) {
         super();
         this.mUrl = url;
@@ -77,7 +80,7 @@ class RenameDownloadFileTask implements Runnable {
             // ------------start checking conditions------------
 
             if (!DownloadFileUtil.isLegal(downloadFileInfo)) {
-                failReason = new OnRenameDownloadFileFailReason(mUrl, "the download file is not exist !", 
+                failReason = new OnRenameDownloadFileFailReason(mUrl, "the download file is not exist !",
                         OnRenameDownloadFileFailReason.TYPE_FILE_RECORD_IS_NOT_EXIST);
                 // goto finally, notifyFailed()
                 return;
@@ -89,7 +92,8 @@ class RenameDownloadFileTask implements Runnable {
             // check status
             if (!DownloadFileUtil.canRename(downloadFileInfo)) {
 
-                failReason = new OnRenameDownloadFileFailReason(mUrl, "the download file status error !", OnRenameDownloadFileFailReason.TYPE_FILE_STATUS_ERROR);
+                failReason = new OnRenameDownloadFileFailReason(mUrl, "the download file status error !",
+                        OnRenameDownloadFileFailReason.TYPE_FILE_STATUS_ERROR);
                 // goto finally, notifyFailed()
                 return;
             }
@@ -113,14 +117,14 @@ class RenameDownloadFileTask implements Runnable {
             File newFile = new File(dirPath, mNewFileName);
 
             if (TextUtils.isEmpty(mNewFileName)) {
-                failReason = new OnRenameDownloadFileFailReason(mUrl, "new file name is empty !", 
+                failReason = new OnRenameDownloadFileFailReason(mUrl, "new file name is empty !",
                         OnRenameDownloadFileFailReason.TYPE_NEW_FILE_NAME_IS_EMPTY);
                 // goto finally, notifyFailed()
                 return;
             }
 
             if (checkNewFileExist(newFile)) {
-                failReason = new OnRenameDownloadFileFailReason(mUrl, "the new file has been exist !", 
+                failReason = new OnRenameDownloadFileFailReason(mUrl, "the new file has been exist !",
                         OnRenameDownloadFileFailReason.TYPE_NEW_FILE_HAS_BEEN_EXIST);
                 // goto finally, notifyFailed()
                 return;
@@ -138,7 +142,7 @@ class RenameDownloadFileTask implements Runnable {
             }
 
             if (!renameResult) {
-                failReason = new OnRenameDownloadFileFailReason(mUrl, "rename file in db failed !", 
+                failReason = new OnRenameDownloadFileFailReason(mUrl, "rename file in db failed !",
                         OnRenameDownloadFileFailReason.TYPE_UNKNOWN);
                 // goto finally, notifyFailed()
                 return;
@@ -155,7 +159,7 @@ class RenameDownloadFileTask implements Runnable {
                     renameResult = oldSaveFile.renameTo(newFile);
                 } else {
                     renameResult = false;
-                    failReason = new OnRenameDownloadFileFailReason(mUrl, "the original file not exist !", 
+                    failReason = new OnRenameDownloadFileFailReason(mUrl, "the original file not exist !",
                             OnRenameDownloadFileFailReason.TYPE_ORIGINAL_FILE_NOT_EXIST);
                 }
 
@@ -175,7 +179,7 @@ class RenameDownloadFileTask implements Runnable {
                     }
 
                     if (failReason == null) {
-                        failReason = new OnRenameDownloadFileFailReason(mUrl, "rename file in file system failed !", 
+                        failReason = new OnRenameDownloadFileFailReason(mUrl, "rename file in file system failed !",
                                 OnRenameDownloadFileFailReason.TYPE_UNKNOWN);
                     }
                     // goto finally, notifyFailed()
@@ -246,7 +250,7 @@ class RenameDownloadFileTask implements Runnable {
         if (mOnRenameDownloadFileListener == null) {
             return;
         }
-        OnRenameDownloadFileListener.MainThreadHelper.onRenameDownloadFilePrepared(downloadFileInfo, 
+        OnRenameDownloadFileListener.MainThreadHelper.onRenameDownloadFilePrepared(downloadFileInfo,
                 mOnRenameDownloadFileListener);
     }
 
@@ -254,22 +258,30 @@ class RenameDownloadFileTask implements Runnable {
      * notifySuccess
      */
     private void notifySuccess(DownloadFileInfo downloadFileInfo) {
-        if (mOnRenameDownloadFileListener == null) {
+        if (mIsNotifyFinish.get()) {
             return;
         }
-        OnRenameDownloadFileListener.MainThreadHelper.onRenameDownloadFileSuccess(downloadFileInfo, 
-                mOnRenameDownloadFileListener);
+        if (mIsNotifyFinish.compareAndSet(false, true)) {
+            if (mOnRenameDownloadFileListener != null) {
+                OnRenameDownloadFileListener.MainThreadHelper.onRenameDownloadFileSuccess(downloadFileInfo,
+                        mOnRenameDownloadFileListener);
+            }
+        }
     }
 
     /**
      * notifyFailed
      */
     private void notifyFailed(DownloadFileInfo downloadFileInfo, RenameDownloadFileFailReason failReason) {
-        if (mOnRenameDownloadFileListener == null) {
+        if (mIsNotifyFinish.get()) {
             return;
         }
-        OnRenameDownloadFileListener.MainThreadHelper.onRenameDownloadFileFailed(downloadFileInfo, failReason, 
-                mOnRenameDownloadFileListener);
+        if (mIsNotifyFinish.compareAndSet(false, true)) {
+            if (mOnRenameDownloadFileListener != null) {
+                OnRenameDownloadFileListener.MainThreadHelper.onRenameDownloadFileFailed(downloadFileInfo,
+                        failReason, mOnRenameDownloadFileListener);
+            }
+        }
     }
 
 }

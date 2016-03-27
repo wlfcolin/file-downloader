@@ -8,6 +8,7 @@ import org.wlf.filedownloader.listener.OnDeleteDownloadFileListener.OnDeleteDown
 import org.wlf.filedownloader.util.DownloadFileUtil;
 
 import java.io.File;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * DeleteDownloadFile Task
@@ -26,9 +27,11 @@ class DeleteDownloadFileTask implements Runnable {
     private DownloadFileDeleter mDownloadFileDeleter;
     private boolean mIsSyncCallback = false;
 
+    private AtomicBoolean mIsNotifyFinish = new AtomicBoolean(false);
+
     private OnDeleteDownloadFileListener mOnDeleteDownloadFileListener;
 
-    public DeleteDownloadFileTask(String url, boolean deleteDownloadedFileInPath, DownloadFileDeleter 
+    public DeleteDownloadFileTask(String url, boolean deleteDownloadedFileInPath, DownloadFileDeleter
             downloadFileDeleter) {
         super();
         this.mUrl = url;
@@ -67,7 +70,8 @@ class DeleteDownloadFileTask implements Runnable {
             // ------------start checking conditions------------
             {
                 if (!DownloadFileUtil.isLegal(downloadFileInfo)) {
-                    failReason = new OnDeleteDownloadFileFailReason(mUrl, "the download file not exist !", OnDeleteDownloadFileFailReason.TYPE_FILE_RECORD_IS_NOT_EXIST);
+                    failReason = new OnDeleteDownloadFileFailReason(mUrl, "the download file not exist !",
+                            OnDeleteDownloadFileFailReason.TYPE_FILE_RECORD_IS_NOT_EXIST);
 
                     // goto finally, notifyFailed()
                     return;
@@ -78,7 +82,7 @@ class DeleteDownloadFileTask implements Runnable {
 
                 // check status
                 if (!DownloadFileUtil.canDelete(downloadFileInfo)) {
-                    failReason = new OnDeleteDownloadFileFailReason(mUrl, "the download file status error !", 
+                    failReason = new OnDeleteDownloadFileFailReason(mUrl, "the download file status error !",
                             OnDeleteDownloadFileFailReason.TYPE_FILE_STATUS_ERROR);
                     // goto finally, notifyFailed()
                     return;
@@ -96,7 +100,7 @@ class DeleteDownloadFileTask implements Runnable {
             }
 
             if (!deleteResult) {
-                failReason = new OnDeleteDownloadFileFailReason(mUrl, "delete file in record failed !", 
+                failReason = new OnDeleteDownloadFileFailReason(mUrl, "delete file in record failed !",
                         OnDeleteDownloadFileFailReason.TYPE_UNKNOWN);
                 // goto finally, notifyFailed()
                 return;
@@ -120,7 +124,7 @@ class DeleteDownloadFileTask implements Runnable {
             }
 
             if (!deleteResult) {
-                failReason = new OnDeleteDownloadFileFailReason(mUrl, "delete file in path failed !", 
+                failReason = new OnDeleteDownloadFileFailReason(mUrl, "delete file in path failed !",
                         OnDeleteDownloadFileFailReason.TYPE_UNKNOWN);
                 // goto finally, notifyFailed()
                 return;
@@ -164,7 +168,7 @@ class DeleteDownloadFileTask implements Runnable {
         if (mIsSyncCallback) {
             mOnDeleteDownloadFileListener.onDeleteDownloadFilePrepared(downloadFileInfo);
         } else {
-            OnDeleteDownloadFileListener.MainThreadHelper.onDeleteDownloadFilePrepared(downloadFileInfo, 
+            OnDeleteDownloadFileListener.MainThreadHelper.onDeleteDownloadFilePrepared(downloadFileInfo,
                     mOnDeleteDownloadFileListener);
         }
     }
@@ -173,14 +177,19 @@ class DeleteDownloadFileTask implements Runnable {
      * notifySuccess
      */
     private void notifySuccess(DownloadFileInfo downloadFileInfo) {
-        if (mOnDeleteDownloadFileListener == null) {
+        if (mIsNotifyFinish.get()) {
             return;
         }
-        if (mIsSyncCallback) {
-            mOnDeleteDownloadFileListener.onDeleteDownloadFileSuccess(downloadFileInfo);
-        } else {
-            OnDeleteDownloadFileListener.MainThreadHelper.onDeleteDownloadFileSuccess(downloadFileInfo, 
-                    mOnDeleteDownloadFileListener);
+
+        if (mIsNotifyFinish.compareAndSet(false, true)) {
+            if (mOnDeleteDownloadFileListener != null) {
+                if (mIsSyncCallback) {
+                    mOnDeleteDownloadFileListener.onDeleteDownloadFileSuccess(downloadFileInfo);
+                } else {
+                    OnDeleteDownloadFileListener.MainThreadHelper.onDeleteDownloadFileSuccess(downloadFileInfo,
+                            mOnDeleteDownloadFileListener);
+                }
+            }
         }
     }
 
@@ -188,14 +197,19 @@ class DeleteDownloadFileTask implements Runnable {
      * notifyFailed
      */
     private void notifyFailed(DownloadFileInfo downloadFileInfo, DeleteDownloadFileFailReason failReason) {
-        if (mOnDeleteDownloadFileListener == null) {
+        if (mIsNotifyFinish.get()) {
             return;
         }
-        if (mIsSyncCallback) {
-            mOnDeleteDownloadFileListener.onDeleteDownloadFileFailed(downloadFileInfo, failReason);
-        } else {
-            OnDeleteDownloadFileListener.MainThreadHelper.onDeleteDownloadFileFailed(downloadFileInfo, failReason, 
-                    mOnDeleteDownloadFileListener);
+
+        if (mIsNotifyFinish.compareAndSet(false, true)) {
+            if (mOnDeleteDownloadFileListener != null) {
+                if (mIsSyncCallback) {
+                    mOnDeleteDownloadFileListener.onDeleteDownloadFileFailed(downloadFileInfo, failReason);
+                } else {
+                    OnDeleteDownloadFileListener.MainThreadHelper.onDeleteDownloadFileFailed(downloadFileInfo,
+                            failReason, mOnDeleteDownloadFileListener);
+                }
+            }
         }
     }
 }

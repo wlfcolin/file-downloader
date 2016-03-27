@@ -16,6 +16,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * MoveDownloadFilesTask
@@ -41,13 +42,13 @@ class MoveDownloadFilesTask implements Runnable, Stoppable {
     private OnMoveDownloadFilesListener mOnMoveDownloadFilesListener;
 
     private boolean mIsStop = false;
-    private boolean mIsNotifyFinish = false;
+    private AtomicBoolean mIsNotifyFinish = new AtomicBoolean(false);
 
     private Object mLock = new Object();// lock
 
-    final List<DownloadFileInfo> mDownloadFilesNeedMove = new ArrayList<DownloadFileInfo>();
-    final List<DownloadFileInfo> mDownloadFilesMoved = new ArrayList<DownloadFileInfo>();
-    final List<DownloadFileInfo> mDownloadFilesSkip = new ArrayList<DownloadFileInfo>();
+    private final List<DownloadFileInfo> mDownloadFilesNeedMove = new ArrayList<DownloadFileInfo>();
+    private final List<DownloadFileInfo> mDownloadFilesMoved = new ArrayList<DownloadFileInfo>();
+    private final List<DownloadFileInfo> mDownloadFilesSkip = new ArrayList<DownloadFileInfo>();
 
     public MoveDownloadFilesTask(List<String> urls, String newDirPath, ExecutorService taskEngine, DownloadFileMover 
             downloadFileMover, Pauseable downloadTaskPauseable) {
@@ -310,7 +311,7 @@ class MoveDownloadFilesTask implements Runnable, Stoppable {
 
         Log.d(TAG, TAG + ".run 准备批量移动，大小：" + mDownloadFilesNeedMove.size());
 
-        OnMoveDownloadFilesListener.MainThreadHelper.onMoveDownloadFilesPrepared(mDownloadFilesNeedMove, 
+        OnMoveDownloadFilesListener.MainThreadHelper.onMoveDownloadFilesPrepared(mDownloadFilesNeedMove,
                 mOnMoveDownloadFilesListener);
     }
 
@@ -326,7 +327,7 @@ class MoveDownloadFilesTask implements Runnable, Stoppable {
 
         Log.d(TAG, TAG + ".run 准备移动单个，url：" + url);
 
-        OnMoveDownloadFilesListener.MainThreadHelper.onMovingDownloadFiles(mDownloadFilesNeedMove, 
+        OnMoveDownloadFilesListener.MainThreadHelper.onMovingDownloadFiles(mDownloadFilesNeedMove,
                 mDownloadFilesMoved, mDownloadFilesSkip, downloadFileInfo, mOnMoveDownloadFilesListener);
     }
 
@@ -334,22 +335,25 @@ class MoveDownloadFilesTask implements Runnable, Stoppable {
      * notifyMoveDownloadFilesCompleted
      */
     private void notifyMoveDownloadFilesCompleted() {
-        if (mIsNotifyFinish) {
+        if (mIsNotifyFinish.get()) {
             return;
         }
 
-        checkRollback();// rollback check
+        if (mIsNotifyFinish.compareAndSet(false, true)) {
 
-        OnMoveDownloadFilesListener.MainThreadHelper.onMoveDownloadFilesCompleted(mDownloadFilesNeedMove, 
-                mDownloadFilesMoved, mOnMoveDownloadFilesListener);
-        mIsNotifyFinish = true;
-        mIsStop = true;// the task is finish
+            checkRollback();// rollback check
 
-        int failedSize = mDownloadFilesNeedMove.size() - mDownloadFilesMoved.size();
+            OnMoveDownloadFilesListener.MainThreadHelper.onMoveDownloadFilesCompleted(mDownloadFilesNeedMove,
+                    mDownloadFilesMoved, mOnMoveDownloadFilesListener);
 
-        Log.d(TAG, TAG + ".run，批量移动文件主任务和其它相关任务全部【已结束】，总共需要移动：" + mDownloadFilesNeedMove.size() + "，已移动：" +
-                mDownloadFilesMoved.size() + "，失败：" + failedSize + "，跳过：" + mDownloadFilesSkip.size() +
-                "，跳过数量是否等于失败数量：" + (failedSize == mDownloadFilesSkip.size()));
+            mIsStop = true;// the task is finish
+
+            int failedSize = mDownloadFilesNeedMove.size() - mDownloadFilesMoved.size();
+
+            Log.d(TAG, TAG + ".run，批量移动文件主任务和其它相关任务全部【已结束】，总共需要移动：" + mDownloadFilesNeedMove.size() + "，已移动：" +
+                    mDownloadFilesMoved.size() + "，失败：" + failedSize + "，跳过：" + mDownloadFilesSkip.size() +
+                    "，跳过数量是否等于失败数量：" + (failedSize == mDownloadFilesSkip.size()));
+        }
     }
 
     /**

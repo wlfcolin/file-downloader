@@ -9,6 +9,7 @@ import org.wlf.filedownloader.util.DownloadFileUtil;
 import org.wlf.filedownloader.util.FileUtil;
 
 import java.io.File;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * move download file
@@ -26,6 +27,7 @@ class MoveDownloadFileTask implements Runnable {
     private String mNewDirPath;
     private DownloadFileMover mDownloadFileMover;
     private boolean mIsSyncCallback = false;
+    private AtomicBoolean mIsNotifyFinish = new AtomicBoolean(false);
 
     private OnMoveDownloadFileListener mOnMoveDownloadFileListener;
 
@@ -67,7 +69,7 @@ class MoveDownloadFileTask implements Runnable {
             // ------------start checking conditions------------
             // check null
             if (!DownloadFileUtil.isLegal(downloadFileInfo)) {
-                failReason = new OnMoveDownloadFileFailReason(mUrl, "the DownloadFile is empty !", 
+                failReason = new OnMoveDownloadFileFailReason(mUrl, "the DownloadFile is empty !",
                         OnMoveDownloadFileFailReason.TYPE_NULL_POINTER);
                 // goto finally, notifyFailed()
                 return;
@@ -78,7 +80,8 @@ class MoveDownloadFileTask implements Runnable {
 
             // check status
             if (!DownloadFileUtil.canMove(downloadFileInfo)) {
-                failReason = new OnMoveDownloadFileFailReason(mUrl, "the download file status error !", OnMoveDownloadFileFailReason.TYPE_FILE_STATUS_ERROR);
+                failReason = new OnMoveDownloadFileFailReason(mUrl, "the download file status error !",
+                        OnMoveDownloadFileFailReason.TYPE_FILE_STATUS_ERROR);
                 // goto finally, notifyFailed()
                 return;
             }
@@ -97,7 +100,7 @@ class MoveDownloadFileTask implements Runnable {
 
             // check original file
             if (oldFile == null || !oldFile.exists()) {
-                failReason = new OnMoveDownloadFileFailReason(mUrl, "the original file does not exist !", 
+                failReason = new OnMoveDownloadFileFailReason(mUrl, "the original file does not exist !",
                         OnMoveDownloadFileFailReason.TYPE_ORIGINAL_FILE_NOT_EXIST);
                 // goto finally, notifyFailed()
                 return;
@@ -105,7 +108,7 @@ class MoveDownloadFileTask implements Runnable {
 
             // check new file
             if (newFile != null && newFile.exists()) {
-                failReason = new OnMoveDownloadFileFailReason(mUrl, "the target file exist !", 
+                failReason = new OnMoveDownloadFileFailReason(mUrl, "the target file exist !",
                         OnMoveDownloadFileFailReason.TYPE_TARGET_FILE_EXIST);
                 // goto finally, notifyFailed()
                 return;
@@ -132,7 +135,7 @@ class MoveDownloadFileTask implements Runnable {
 
             if (!moveResult) {
                 // move in db failed
-                failReason = new OnMoveDownloadFileFailReason(mUrl, "update record error !", 
+                failReason = new OnMoveDownloadFileFailReason(mUrl, "update record error !",
                         OnMoveDownloadFileFailReason.TYPE_UPDATE_RECORD_ERROR);
                 // goto finally, notifyFailed()
                 return;
@@ -155,7 +158,7 @@ class MoveDownloadFileTask implements Runnable {
                         // ignore   
                     }
                 }
-                failReason = new OnMoveDownloadFileFailReason(mUrl, "update record error !", 
+                failReason = new OnMoveDownloadFileFailReason(mUrl, "update record error !",
                         OnMoveDownloadFileFailReason.TYPE_UPDATE_RECORD_ERROR);
                 // goto finally, notifyFailed()
                 return;
@@ -199,7 +202,7 @@ class MoveDownloadFileTask implements Runnable {
         if (mIsSyncCallback) {
             mOnMoveDownloadFileListener.onMoveDownloadFilePrepared(downloadFileInfo);
         } else {
-            OnMoveDownloadFileListener.MainThreadHelper.onMoveDownloadFilePrepared(downloadFileInfo, 
+            OnMoveDownloadFileListener.MainThreadHelper.onMoveDownloadFilePrepared(downloadFileInfo,
                     mOnMoveDownloadFileListener);
         }
     }
@@ -208,14 +211,18 @@ class MoveDownloadFileTask implements Runnable {
      * notifySuccess
      */
     private void notifySuccess(DownloadFileInfo downloadFileInfo) {
-        if (mOnMoveDownloadFileListener == null) {
+        if (mIsNotifyFinish.get()) {
             return;
         }
-        if (mIsSyncCallback) {
-            mOnMoveDownloadFileListener.onMoveDownloadFileSuccess(downloadFileInfo);
-        } else {
-            OnMoveDownloadFileListener.MainThreadHelper.onMoveDownloadFileSuccess(downloadFileInfo, 
-                    mOnMoveDownloadFileListener);
+        if (mIsNotifyFinish.compareAndSet(false, true)) {
+            if (mOnMoveDownloadFileListener != null) {
+                if (mIsSyncCallback) {
+                    mOnMoveDownloadFileListener.onMoveDownloadFileSuccess(downloadFileInfo);
+                } else {
+                    OnMoveDownloadFileListener.MainThreadHelper.onMoveDownloadFileSuccess(downloadFileInfo,
+                            mOnMoveDownloadFileListener);
+                }
+            }
         }
     }
 
@@ -223,14 +230,18 @@ class MoveDownloadFileTask implements Runnable {
      * notifyFailed
      */
     private void notifyFailed(DownloadFileInfo downloadFileInfo, MoveDownloadFileFailReason failReason) {
-        if (mOnMoveDownloadFileListener == null) {
+        if (mIsNotifyFinish.get()) {
             return;
         }
-        if (mIsSyncCallback) {
-            mOnMoveDownloadFileListener.onMoveDownloadFileFailed(downloadFileInfo, failReason);
-        } else {
-            OnMoveDownloadFileListener.MainThreadHelper.onMoveDownloadFileFailed(downloadFileInfo, failReason, 
-                    mOnMoveDownloadFileListener);
+        if (mIsNotifyFinish.compareAndSet(false, true)) {
+            if (mOnMoveDownloadFileListener != null) {
+                if (mIsSyncCallback) {
+                    mOnMoveDownloadFileListener.onMoveDownloadFileFailed(downloadFileInfo, failReason);
+                } else {
+                    OnMoveDownloadFileListener.MainThreadHelper.onMoveDownloadFileFailed(downloadFileInfo,
+                            failReason, mOnMoveDownloadFileListener);
+                }
+            }
         }
     }
 }
