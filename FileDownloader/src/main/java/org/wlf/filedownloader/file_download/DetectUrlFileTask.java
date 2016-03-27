@@ -43,7 +43,7 @@ class DetectUrlFileTask implements Runnable {
     private DownloadRecorder mDownloadRecorder;
     private OnDetectBigUrlFileListener mOnDetectBigUrlFileListener;
 
-    // if it id true, that means force detect without check whether the file is downloaded
+    // if it is true, that means force detect without check whether the file is downloaded
     private boolean mIsForceDetect = false;
 
     private ExecutorService mCloseConnectionEngine;// engine use for closing the http connection

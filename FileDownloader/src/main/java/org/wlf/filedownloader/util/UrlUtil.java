@@ -390,6 +390,21 @@ public class UrlUtil {
             return false;
         }
 
+        // if it is included special character encoded, that means it is has been encoded
+        // if this time use the follow codes to check will throws java.lang.IllegalArgumentException: Invalid XXX
+        // sequence by URLDecoder.decode
+
+        Log.d("wlf", "isEncoded，check content：" + content);
+
+        for (EncodeInfo info : SPECIAL_CHARACTER_ENCODER_MAP) {
+            if (info == null) {
+                continue;
+            }
+            if (content.contains(info.needEncode)) {
+                return false;
+            }
+        }
+
         String decodedContent = null;
         try {
             decodedContent = URLDecoder.decode(content, charset);
@@ -551,7 +566,12 @@ public class UrlUtil {
         }
 
         try {
-            fileName = url.substring(url.lastIndexOf('/') + 1);
+            if (url.contains("/")) {
+                fileName = url.substring(url.lastIndexOf('/') + 1);
+                if (fileName != null && fileName.contains("?")) {
+                    fileName = fileName.substring(0, fileName.indexOf('?'));
+                }
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
