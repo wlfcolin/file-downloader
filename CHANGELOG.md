@@ -18,6 +18,9 @@
  * reStart(String, final DownloadConfiguration)
  * reStart(List<String>, DownloadConfiguration)
 
+* New Features
+ * add https URL support
+ * add DownloadConfiguration to support download config such as http heads,timeout and so on
 
 **0.3.1**
 * Fix the bug that can not download file from some php servers
