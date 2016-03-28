@@ -22,6 +22,7 @@
  * add https URL support
  * add DownloadConfiguration to support download config such as http heads,timeout and so on
 
+
 **0.3.1**
 * Fix the bug that can not download file from some php servers
 * Fix the bug that the method FileDownloader.registerDownloadFileChangeListener(OnDownloadFileChangeListener, DownloadFileChangeConfiguration) is not static
