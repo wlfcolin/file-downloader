@@ -20,11 +20,11 @@
 **四、快速上手使用**
 * 第一步、在项目模块的build.gradle配置gradle
 ``` java
-compile 'org.wlf:FileDownloader:0.3.1'
+compile 'org.wlf:FileDownloader:0.3.2'
 ``` 
 eclipse用户，可以在这里下载jar包：
-**[FileDownloader-0.3.1.jar](https://github.com/wlfcolin/file-downloader/raw/master/download/release/FileDownloader-0.3.1.jar)**,
-**[FileDownloader-0.3.1-sources.jar](https://dl.bintray.com/wlfcolin/maven/org/wlf/FileDownloader/0.3.1/FileDownloader-0.3.1-sources.jar)**
+**[FileDownloader-0.3.2.jar](https://github.com/wlfcolin/file-downloader/raw/master/download/release/FileDownloader-0.3.2.jar)**,
+**[FileDownloader-0.3.2-sources.jar](https://dl.bintray.com/wlfcolin/maven/org/wlf/FileDownloader/0.3.2/FileDownloader-0.3.2-sources.jar)**
 
 * 第二步、在你的应用application的onCreate()中初始化FileDownloader
 ``` java
@@ -201,7 +201,7 @@ FileDownloader.unregisterDownloadFileChangeListener(mOnDownloadFileChangeListene
 ```
 
 
-**[五、详细API文档](http://htmlpreview.github.io/?https://raw.githubusercontent.com/wlfcolin/file-downloader/master/download/release/FileDownloader-0.3.1-javadoc/index.html)**
+**[五、详细API文档](http://htmlpreview.github.io/?https://raw.githubusercontent.com/wlfcolin/file-downloader/master/download/release/FileDownloader-0.3.2-javadoc/index.html)**
 
 
 **[六、版本更新日志](https://github.com/wlfcolin/file-downloader/blob/master/CHANGELOG.md)**

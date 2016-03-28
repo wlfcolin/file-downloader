@@ -1,5 +1,24 @@
 # file-downloader Version Change Log
 
+**0.3.2**
+* Fix the bug that can not download the URL with encoded chinese
+* Fix the bug that will call OnFileDownloadStatusListener.onFileDownloadStatusCompleted twice sometimes
+* Fix the bug that delete/move/rename will both call fail callback and success
+* Fix the bug that can not detect file by redirecting over one time
+* Fix the bug that can not auto detect file name when the URL included params
+* Fix the bug that it is will overwrite the file that the exist one with the file name
+* Fix the bug that it may case the file error or the download status/size in a exception when using pause after the start operation in a short time
+
+* New API in FileDownloader
+ * detect(String, OnDetectBigUrlFileListener, DownloadConfiguration)
+ * createAndStart(String, String, String, DownloadConfiguration)
+ * start(String, DownloadConfiguration)
+ * start(List<String>, DownloadConfiguration)
+ * continueAll(boolean, DownloadConfiguration)
+ * reStart(String, final DownloadConfiguration)
+ * reStart(List<String>, DownloadConfiguration)
+
+
 **0.3.1**
 * Fix the bug that can not download file from some php servers
 * Fix the bug that the method FileDownloader.registerDownloadFileChangeListener(OnDownloadFileChangeListener, DownloadFileChangeConfiguration) is not static

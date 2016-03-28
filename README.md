@@ -16,11 +16,11 @@ FileDownloader, a powerful http/https file download tool, I am to make downloadi
 **Quick start**
 * step 1. add in dependencies in your module's build.gradle
 ``` java
-compile 'org.wlf:FileDownloader:0.3.1'
+compile 'org.wlf:FileDownloader:0.3.2'
 ``` 
 for eclipse users, jars here:
-**[FileDownloader-0.3.1.jar](https://github.com/wlfcolin/file-downloader/raw/master/download/release/FileDownloader-0.3.1.jar)**,
-**[FileDownloader-0.3.1-sources.jar](https://dl.bintray.com/wlfcolin/maven/org/wlf/FileDownloader/0.3.1/FileDownloader-0.3.1-sources.jar)**
+**[FileDownloader-0.3.2.jar](https://github.com/wlfcolin/file-downloader/raw/master/download/release/FileDownloader-0.3.2.jar)**,
+**[FileDownloader-0.3.2-sources.jar](https://dl.bintray.com/wlfcolin/maven/org/wlf/FileDownloader/0.3.2/FileDownloader-0.3.2-sources.jar)**
 
 * step 2. init FileDownloader in your application's onCreate()
 ``` java
@@ -199,7 +199,7 @@ FileDownloader.unregisterDownloadFileChangeListener(mOnDownloadFileChangeListene
 ```
 
 ----------------------------------------------------------------------
-**[API docs](http://htmlpreview.github.io/?https://raw.githubusercontent.com/wlfcolin/file-downloader/master/download/release/FileDownloader-0.3.1-javadoc/index.html)**
+**[API docs](http://htmlpreview.github.io/?https://raw.githubusercontent.com/wlfcolin/file-downloader/master/download/release/FileDownloader-0.3.2-javadoc/index.html)**
 
 ----------------------------------------------------------------------
 **[Version change log](https://github.com/wlfcolin/file-downloader/blob/master/CHANGELOG.md)**

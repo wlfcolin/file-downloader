@@ -9,7 +9,7 @@ android {
         minSdkVersion 8
         targetSdkVersion 15
         versionCode 7
-        versionName "0.3.2-preview"
+        versionName "0.3.2"
     }
 
     buildTypes {
@@ -22,5 +22,5 @@ android {
 
 dependencies {
     compile project(':FileDownloader')
-    // compile 'org.wlf:FileDownloader:0.3.1'
+    // compile 'org.wlf:FileDownloader:0.3.2'
 }
