@@ -129,6 +129,7 @@ public class DownloadTaskManager implements Pauseable {
                     }
                     // notify caller
                     notifyReleased(onReleaseListener);
+                    mIsNotify = true;
                 }
             }
         });
