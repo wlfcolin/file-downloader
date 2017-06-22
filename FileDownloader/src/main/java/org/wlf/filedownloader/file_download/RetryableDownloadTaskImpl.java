@@ -402,8 +402,8 @@ class RetryableDownloadTaskImpl implements RetryableDownloadTask, OnFileDownload
             DownloadFileInfo downloadFileInfo = getDownloadFile();
 
             while (DownloadFileUtil.isTempFileExist(downloadFileInfo) && !mIsTaskStop && mHasRetriedTimes <
-                    mRetryDownloadTimes && mRetryDownloadTimes > 0 && mFinishState.status == Status
-                    .DOWNLOAD_STATUS_ERROR) {
+                    mRetryDownloadTimes && mRetryDownloadTimes > 0 && mFinishState != null && mFinishState.status ==
+                    Status.DOWNLOAD_STATUS_ERROR) {
                 // get internal impl stop status
                 isInternalStop.set(mFileDownloadTaskImpl.isStopped());
 

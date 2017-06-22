@@ -666,7 +666,15 @@ public class DownloadCacher implements DownloadRecorder, DownloadFileMover, Down
 
         // if this time the memory cache is not empty,return the cache
         if (!MapUtil.isEmpty(mDownloadFileInfoMap)) {
-            List<DownloadFileInfo> downloadFileInfos = new ArrayList<DownloadFileInfo>(mDownloadFileInfoMap.values());
+            List<DownloadFileInfo> downloadFileInfos = null;
+            try {
+                downloadFileInfos = new ArrayList<DownloadFileInfo>(mDownloadFileInfoMap.values());
+            }catch (Exception e){
+                // maybe java.util.ConcurrentModificationException
+                synchronized (mModifyLock) {
+                    downloadFileInfos = new ArrayList<DownloadFileInfo>(mDownloadFileInfoMap.values());
+                }
+            }
 
             // check status
             if (!CollectionUtil.isEmpty(downloadFileInfos)) {
